@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>30 Quant Research Projects</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A self-directed programme of 30 out-of-sample research projects in quantitative finance.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap wide">
+<header class="hero">
+<p class="eyebrow">Self-directed research programme · 1 of 30 published</p>
+<h1>30 Quant Research Projects</h1>
+<p class="lede">Thirty questions in quantitative finance, from Monte Carlo and portfolio construction to
+stochastic volatility, statistical arbitrage, market making and deep hedging. Each one is answered out of
+sample, against honest baselines, with reproducible code and a section on what does not work.</p>
+<div class="principles">
+<div><b>A question, not a tutorial</b>Every project states a falsifiable question and answers it with a number.</div>
+<div><b>Out of sample only</b>Rolling or walk-forward estimation, no look-ahead, fixed seeds.</div>
+<div><b>Proper statistics</b>Formal tests, effect sizes and the textbook baseline in every comparison.</div>
+<div><b>One command to reproduce</b>Every table and figure rebuilds from the repository.</div>
+</div>
+</header>
+<section class="tier"><h2>Foundations · 01–10</h2><div class="rows"><a class="row" href="01-monte-carlo-calibration/"><span class="n">01</span><span class="t">Which Monte Carlo Tells the Truth?<span class="q">Five return simulators, 87,598 out-of-sample forecasts, seven asset classes: whose probabilities come true in calm and in crisis?</span></span><span class="s">Read</span></a><div class="row"><span class="n">02</span><span class="t">Returns &amp; volatility dashboard</span><span class="s">Planned</span></div><div class="row"><span class="n">03</span><span class="t">Moving-average backtest</span><span class="s">Planned</span></div><div class="row"><span class="n">04</span><span class="t">Black–Scholes pricer</span><span class="s">Planned</span></div><div class="row"><span class="n">05</span><span class="t">Efficient frontier</span><span class="s">Planned</span></div><div class="row"><span class="n">06</span><span class="t">Value-at-Risk calculator</span><span class="s">Planned</span></div><div class="row"><span class="n">07</span><span class="t">Kelly criterion simulator</span><span class="s">Planned</span></div><div class="row"><span class="n">08</span><span class="t">Correlation structure</span><span class="s">Planned</span></div><div class="row"><span class="n">09</span><span class="t">Beta &amp; CAPM regression</span><span class="s">Planned</span></div><div class="row"><span class="n">10</span><span class="t">Mini market terminal</span><span class="s">Planned</span></div></div></section><section class="tier"><h2>Intermediate · 11–20</h2><div class="rows"><div class="row"><span class="n">11</span><span class="t">Pairs trading</span><span class="s">Planned</span></div><div class="row"><span class="n">12</span><span class="t">Momentum with transaction costs</span><span class="s">Planned</span></div><div class="row"><span class="n">13</span><span class="t">GARCH volatility forecasting</span><span class="s">Planned</span></div><div class="row"><span class="n">14</span><span class="t">Implied volatility surface</span><span class="s">Planned</span></div><div class="row"><span class="n">15</span><span class="t">Binomial tree pricing</span><span class="s">Planned</span></div><div class="row"><span class="n">16</span><span class="t">Delta-hedging simulation</span><span class="s">Planned</span></div><div class="row"><span class="n">17</span><span class="t">Fama–French factors</span><span class="s">Planned</span></div><div class="row"><span class="n">18</span><span class="t">Yield-curve PCA</span><span class="s">Planned</span></div><div class="row"><span class="n">19</span><span class="t">Regime detection with HMMs</span><span class="s">Planned</span></div><div class="row"><span class="n">20</span><span class="t">Risk parity</span><span class="s">Planned</span></div></div></section><section class="tier"><h2>Advanced · 21–30</h2><div class="rows"><div class="row"><span class="n">21</span><span class="t">Event-driven backtest engine</span><span class="s">Planned</span></div><div class="row"><span class="n">22</span><span class="t">Purged cross-validation</span><span class="s">Planned</span></div><div class="row"><span class="n">23</span><span class="t">Deflated Sharpe ratio</span><span class="s">Planned</span></div><div class="row"><span class="n">24</span><span class="t">PCA statistical arbitrage</span><span class="s">Planned</span></div><div class="row"><span class="n">25</span><span class="t">Kalman-filter hedge ratio</span><span class="s">Planned</span></div><div class="row"><span class="n">26</span><span class="t">Heston calibration</span><span class="s">Planned</span></div><div class="row"><span class="n">27</span><span class="t">Merton structural credit model</span><span class="s">Planned</span></div><div class="row"><span class="n">28</span><span class="t">Market-making agent</span><span class="s">Planned</span></div><div class="row"><span class="n">29</span><span class="t">Optimal execution</span><span class="s">Planned</span></div><div class="row"><span class="n">30</span><span class="t">Deep hedging</span><span class="s">Planned</span></div></div></section>
+<footer>Source: <a href="https://github.com/<your-github-username>/30-quant-research-projects"><your-github-username>/30-quant-research-projects</a>. Not investment advice.</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Which Monte Carlo Tells the Truth?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Five return simulators, 87,598 out-of-sample forecasts, seven asset classes: whose probabilities come true in calm and in crisis?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 01 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 01</p>
+<h1>Which Monte Carlo Tells the Truth?</h1>
+<p><strong>Out-of-sample calibration of five return simulators across seven asset classes, 2008–2026</strong></p>
+<p><em>Project 01 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Conditional coverage" loading="lazy" src="figures/fig1_conditional_coverage.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Monte Carlo simulation is the most common way to turn a return model into probabilities: price ranges,
+Value-at-Risk, retirement odds, "a 5% chance of losing more than X". The usual project stops at a fan of
+simulated paths. The question I care about is different: <strong>are the probabilities any good?</strong></p>
+<p>I run five widely used simulators (geometric Brownian motion, Merton jump-diffusion, GJR-GARCH with Student-t
+innovations, a two-state Markov-switching model and a stationary block bootstrap) plus an equal-weight
+pool of all five, producing <strong>87,598 strictly out-of-sample forecast distributions</strong> (6,257 one-week
+forecasts per simulator) at weekly origins from April 2008 to October 2026, across seven cross-asset ETFs: US and emerging-market equities, long Treasuries,
+high-yield credit, gold, crude oil and uranium. I test calibration with coverage, PIT histograms,
+Kupiec, Christoffersen and Berkowitz tests, and score the full distribution with CRPS and Diebold–Mariano
+tests. A sixth simulator, GJR-GARCH with Gaussian shocks, is added as a control so the design becomes a
+2×2: static vs dynamic volatility, thin vs fat tails.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>Right on average, wrong in every regime.</strong> Unconditionally, GBM's 1-week 90% interval contains
+   92.1% of outcomes, which looks fine. Split by the volatility state at the forecast origin and it
+   covers <strong>96.9% in calm weeks and only 78.7% in stressed weeks</strong>. The block bootstrap, often sold as
+   "model-free", is the worst at 76.6%.</li>
+<li><strong>It is the volatility dynamics, not the fat tails.</strong> Adding fat tails to a static model (Merton:
+   77.7% in stress) changes almost nothing. Adding GARCH dynamics to a <em>Gaussian</em> model brings stressed-week
+   coverage to 91.1%. Fat tails help only as a second step: once dynamics are in, Student-t shocks cut
+   GFC 98%-band breaches from 1.4× to 1.0× nominal.</li>
+<li><strong>Static models breach in clusters.</strong> In the Global Financial Crisis, GBM, Merton and the bootstrap
+   saw moves outside their 98% band <strong>10–11× more often than promised</strong>. GJR-GARCH-t: 1.0×. Static
+   models fail the Christoffersen independence test at the 1% level for 5 of 7 assets; GJR-GARCH-t for 1.</li>
+<li><strong>Nobody was ready for COVID.</strong> Even the best simulator breached its 98% band 7.6× too often in
+   Feb–May 2020. A one-week horizon is shorter than the time a GARCH filter needs to react to a shock that
+   arrives at full speed. That is a real limit of history-only models, not a tuning problem.</li>
+<li><strong>Merton's "jumps" are not rare.</strong> In 87% of rolling re-estimations the MLE jump intensity sits at its
+   cap of 25 jumps a year, and jumps explain 22–63% of daily variance. The likelihood is using "jumps" to
+   approximate volatility clustering, which is why Merton behaves like GBM out of sample.</li>
+<li><strong>Better calibration also means better forecasts.</strong> GJR-GARCH-t improves CRPS over GBM on all seven
+   assets, significantly on six (Diebold–Mariano, Newey–West). Gains range from 0.8% (uranium, not
+   significant) to 13.4% (high-yield credit).</li>
+</ol>
+<hr />
+<h2>1. Why this question</h2>
+<p>A simulator is only as useful as its probabilities. If a 90% interval is really an 80% interval in the
+weeks that matter, every number built on top of it inherits that error: VaR limits, option hedges,
+margin, position sizing, the probability of a drawdown. Most textbook Monte Carlo exercises check
+whether the simulated paths "look reasonable" and never check whether the stated probabilities come
+true. Forecast evaluation has a mature toolkit for this (Dawid, 1984; Diebold, Gunther &amp; Tay, 1998;
+Gneiting, Balabdaoui &amp; Raftery, 2007). This project applies that toolkit to the simulators people
+actually use.</p>
+<p>Two design choices make it more than a horse race:</p>
+<ul>
+<li><strong>Conditional calibration.</strong> Average coverage hides opposite errors in calm and stressed markets. I
+  split every forecast by the volatility state <em>known at the origin</em> (the quintile of trailing 21-day
+  realised volatility against the asset's own history up to that date, so there is no look-ahead) and
+  ask whether the stated probabilities hold <em>in each state</em>.</li>
+<li><strong>A factorial control.</strong> Fat tails and volatility clustering are usually added together, so it is
+  never clear which one does the work. Adding GJR-GARCH with Gaussian shocks completes a 2×2 design
+  and separates the two effects.</li>
+</ul>
+<h2>2. Data</h2>
+<p>Daily adjusted closes from Yahoo Finance, converted to log returns (dividends and splits included),
+10 April 2006 to 20 November 2026, aligned to the NYSE calendar.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Ticker</th>
+<th>Exposure</th>
+<th>Why it is here</th>
+<th>First forecast</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SPY</td>
+<td>US large-cap equities</td>
+<td>benchmark</td>
+<td>Apr 2008</td>
+</tr>
+<tr>
+<td>EEM</td>
+<td>Emerging-market equities</td>
+<td>FX and contagion risk</td>
+<td>Apr 2008</td>
+</tr>
+<tr>
+<td>TLT</td>
+<td>20y+ US Treasuries</td>
+<td>rates; the 2022 drawdown</td>
+<td>Apr 2008</td>
+</tr>
+<tr>
+<td>HYG</td>
+<td>US high-yield credit</td>
+<td>very low vol, gap risk</td>
+<td>Apr 2009</td>
+</tr>
+<tr>
+<td>GLD</td>
+<td>Gold</td>
+<td>safe haven with its own crashes</td>
+<td>Apr 2008</td>
+</tr>
+<tr>
+<td>USO</td>
+<td>Front-month WTI futures</td>
+<td>contango, April 2020</td>
+<td>Apr 2008</td>
+</tr>
+<tr>
+<td>URA</td>
+<td>Uranium miners</td>
+<td>small, thematic, jumpy</td>
+<td>Nov 2012</td>
+</tr>
+</tbody>
+</table></div>
+<p>The universe is chosen to stress the simulators in very different ways (rates, credit, commodities, a
+thematic equity niche), not to flatter any of them. The derived return file is in <code>data/</code>.
+<code>src/fetch_data.py</code> rebuilds it from scratch.</p>
+<h2>3. Simulators</h2>
+<p>All simulators are implemented from scratch in <code>src/models.py</code>. Each draws 10,000 paths per origin and
+records cumulative log returns at h = 5 (1 week) and h = 21 trading days (1 month).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Simulator</th>
+<th>Volatility</th>
+<th>Tails</th>
+<th>Estimation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GBM</strong></td>
+<td>static</td>
+<td>Gaussian</td>
+<td>sample mean and s.d. of the window</td>
+</tr>
+<tr>
+<td><strong>Merton jump-diffusion</strong></td>
+<td>static</td>
+<td>compound-Poisson Gaussian jumps</td>
+<td>MLE (Poisson mixture truncated at 8 jumps/day; intensity capped at 0.1/day)</td>
+</tr>
+<tr>
+<td><strong>GJR-GARCH(1,1)-t</strong></td>
+<td>dynamic, asymmetric</td>
+<td>Student-t</td>
+<td>QMLE via <code>arch</code>; paths simulated with the variance recursion</td>
+</tr>
+<tr>
+<td><strong>Markov switching</strong></td>
+<td>two regimes</td>
+<td>Gaussian mixture</td>
+<td>Baum–Welch EM; simulation starts from the filtered regime probabilities</td>
+</tr>
+<tr>
+<td><strong>Stationary block bootstrap</strong></td>
+<td>static (resampled)</td>
+<td>empirical</td>
+<td>Politis–Romano, mean block 10 days</td>
+</tr>
+<tr>
+<td><strong>Pool</strong></td>
+<td>—</td>
+<td>—</td>
+<td>equal-weight linear pool of the five</td>
+</tr>
+<tr>
+<td><em>GJR-GARCH(1,1)-N (control)</em></td>
+<td>dynamic, asymmetric</td>
+<td>Gaussian</td>
+<td>as above, not part of the pool</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. Backtest protocol</h2>
+<ul>
+<li><strong>Origins:</strong> every 5th trading day once at least 500 days of history exist. There are 934 origins
+  per full-history asset, 6,257 one-week forecasts per simulator and 87,598 forecast distributions in
+  total.</li>
+<li><strong>Window:</strong> the last ≤ 1,260 trading days (about 5 years). Only data up to the close before the
+  origin is used.</li>
+<li><strong>Refits:</strong> parameters are re-estimated every 4 origins (about monthly). Between refits the GARCH
+  variance and the regime probabilities are still filtered through every new observation.</li>
+<li><strong>Overlap:</strong> 1-month forecasts issued weekly overlap. Every test on h = 21 uses a non-overlapping
+  subsample (every 5th origin).</li>
+<li><strong>Seeds:</strong> each (asset, origin) has its own deterministic seed, and all simulators share the stream.
+  Results are exactly reproducible.</li>
+</ul>
+<h2>5. Evaluation</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Tool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Do central 50/90/98% intervals contain 50/90/98% of outcomes?</td>
+<td>empirical coverage</td>
+</tr>
+<tr>
+<td>Is the entire predictive distribution right?</td>
+<td>PIT histograms; Berkowitz (2001) LR test on Φ⁻¹(PIT)</td>
+</tr>
+<tr>
+<td>Are tail breaches as frequent as promised?</td>
+<td>Kupiec (1995) unconditional coverage at 1% and 5%</td>
+</tr>
+<tr>
+<td>Do breaches cluster?</td>
+<td>Christoffersen (1998) independence test</td>
+</tr>
+<tr>
+<td>Which forecast is better overall?</td>
+<td>CRPS (proper scoring rule) and Diebold–Mariano with Newey–West errors</td>
+</tr>
+<tr>
+<td>Does calibration depend on market state?</td>
+<td>coverage by quintile of trailing realised vol at the origin</td>
+</tr>
+<tr>
+<td>What happens in crises?</td>
+<td>GFC, Euro crisis, 2014–16 oil crash, COVID, 2022 inflation shock</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Results</h2>
+<h3>6.1 Unconditional calibration looks fine, which is exactly the trap</h3>
+<p>1-week horizon, all assets pooled (6,257 forecasts each):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Simulator</th>
+<th>50% cov.</th>
+<th>90% cov.</th>
+<th>98% cov.</th>
+<th>1% left-tail breaches</th>
+<th>98%-band breaches vs nominal</th>
+<th>PIT s.d. (0.289 = uniform)</th>
+<th>CRPS (×100)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GBM</td>
+<td>61.6%</td>
+<td>92.1%</td>
+<td>96.9%</td>
+<td>1.76%</td>
+<td>1.54×</td>
+<td>0.257</td>
+<td>1.687</td>
+</tr>
+<tr>
+<td>Merton jumps</td>
+<td>56.4%</td>
+<td>91.4%</td>
+<td>97.5%</td>
+<td>1.29%</td>
+<td>1.23×</td>
+<td>0.271</td>
+<td>1.667</td>
+</tr>
+<tr>
+<td>GJR-GARCH-t</td>
+<td>51.0%</td>
+<td>90.2%</td>
+<td>97.8%</td>
+<td>1.39%</td>
+<td>1.12×</td>
+<td>0.286</td>
+<td><strong>1.615</strong></td>
+</tr>
+<tr>
+<td>GJR-GARCH-N (control)</td>
+<td>52.5%</td>
+<td>90.7%</td>
+<td>97.4%</td>
+<td>1.58%</td>
+<td>1.29×</td>
+<td>0.282</td>
+<td><strong>1.615</strong></td>
+</tr>
+<tr>
+<td>Markov switching</td>
+<td>53.5%</td>
+<td>90.8%</td>
+<td>97.9%</td>
+<td>1.21%</td>
+<td><strong>1.03×</strong></td>
+<td>0.279</td>
+<td>1.653</td>
+</tr>
+<tr>
+<td>Block bootstrap</td>
+<td>52.3%</td>
+<td>90.4%</td>
+<td>97.7%</td>
+<td>1.20%</td>
+<td>1.14×</td>
+<td>0.283</td>
+<td>1.661</td>
+</tr>
+<tr>
+<td>Pool</td>
+<td>54.3%</td>
+<td>92.3%</td>
+<td>98.6%</td>
+<td>0.83%</td>
+<td>0.71×</td>
+<td>0.273</td>
+<td>1.641</td>
+</tr>
+</tbody>
+</table></div>
+<p>GBM's signature is visible even here. Its 50% interval contains 61.6% of outcomes (too wide in the
+centre) while its 98% interval misses 1.5× too often (too narrow in the tails). That is the PIT
+"hump plus wings" pattern of a distribution with too little kurtosis. Every other number in this table
+looks acceptable, and the next section shows why it is misleading.</p>
+<p><img alt="PIT histograms" loading="lazy" src="figures/fig2_pit_histograms.png" /></p>
+<h3>6.2 Conditional calibration: the main result</h3>
+<p>90% interval coverage by volatility state at the origin (1-week horizon, all assets):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Simulator</th>
+<th>Q1 calm</th>
+<th>Q2</th>
+<th>Q3</th>
+<th>Q4</th>
+<th>Q5 stressed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GBM</td>
+<td>96.9%</td>
+<td>96.1%</td>
+<td>93.0%</td>
+<td>89.9%</td>
+<td><strong>78.7%</strong></td>
+</tr>
+<tr>
+<td>Merton jumps</td>
+<td>96.7%</td>
+<td>95.3%</td>
+<td>92.6%</td>
+<td>89.0%</td>
+<td>77.7%</td>
+</tr>
+<tr>
+<td>Block bootstrap</td>
+<td>96.1%</td>
+<td>94.9%</td>
+<td>91.5%</td>
+<td>86.4%</td>
+<td>76.6%</td>
+</tr>
+<tr>
+<td>Markov switching</td>
+<td>93.3%</td>
+<td>91.7%</td>
+<td>89.3%</td>
+<td>90.1%</td>
+<td>87.3%</td>
+</tr>
+<tr>
+<td>Pool</td>
+<td>95.8%</td>
+<td>94.7%</td>
+<td>92.2%</td>
+<td>89.7%</td>
+<td>85.2%</td>
+</tr>
+<tr>
+<td>GJR-GARCH-N</td>
+<td>90.6%</td>
+<td>91.4%</td>
+<td>89.5%</td>
+<td>91.0%</td>
+<td>91.1%</td>
+</tr>
+<tr>
+<td><strong>GJR-GARCH-t</strong></td>
+<td>89.5%</td>
+<td>90.7%</td>
+<td>89.7%</td>
+<td>90.8%</td>
+<td>90.8%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The static simulators keep roughly the same width whatever the market does. GBM's 90% band is only
+16% wider in stressed weeks than in calm ones (10.1% → 11.7% of log return). GJR-GARCH-t's band
+widens 2.7× (6.3% → 16.8%), and that is what keeps it close to 90% in every state. Static simulators
+waste width when nothing happens and run out of width when it matters. Averaged over time the two errors
+cancel, so unconditional tests miss them.</p>
+<p>The same holds at 98% (GBM: 99.5% calm, 89.7% stressed; GJR-GARCH-t: 97.1% to 98.3%) and at the
+1-month horizon (GBM 97.6% to 82.6%; GJR-GARCH-t 89.6% to 92.1%).</p>
+<h3>6.3 Dynamics vs fat tails: the factorial</h3>
+<p><img alt="Factorial" loading="lazy" src="figures/fig7_factorial_dynamics_vs_tails.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Static volatility</th>
+<th>Dynamic volatility (GJR-GARCH)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Thin tails</strong></td>
+<td>GBM: 78.7% stressed-week cov. · GFC breaches 10.7×</td>
+<td>GJR-GARCH-N: 91.1% · GFC 1.4×</td>
+</tr>
+<tr>
+<td><strong>Fat tails</strong></td>
+<td>Merton: 77.7% · GFC 10.0×</td>
+<td>GJR-GARCH-t: 90.8% · GFC 1.0×</td>
+</tr>
+</tbody>
+</table></div>
+<p>Moving along the "tails" axis changes stressed-week coverage by about one point. Moving along the
+"dynamics" axis changes it by twelve. Fat tails become useful only <em>after</em> the dynamics are right: they
+improve the extreme quantiles (98%-band breaches: 1.29× → 1.12× overall; 2022: 1.69× → 1.27×) and leave
+the body of the distribution unchanged (identical mean CRPS to three decimals).</p>
+<p>This also explains the Merton result. Across 396 rolling re-estimations the MLE puts the jump intensity
+at its cap (25 jumps a year) 87% of the time, and the jump component carries 22–63% of daily variance
+(<code>results/merton_diagnostic.csv</code>). The model is not finding rare discontinuities. It is approximating
+the unconditional <em>mixture</em> of calm and turbulent days with a static scale mixture. That fixes the
+unconditional kurtosis but cannot place the fat tails in the right weeks.</p>
+<h3>6.4 Asset by asset</h3>
+<p><img alt="Tail multiplier heatmap" loading="lazy" src="figures/fig3_tail_multiplier_heatmap.png" /></p>
+<ul>
+<li>GBM's 98% band is too narrow on every asset, from barely (1.02× for EEM and HYG) to badly: uranium
+  2.35×, oil 1.93×, gold 1.77×.</li>
+<li>High-yield credit is the most deceptive asset. Its tiny daily vol and rare violent gaps make the
+  bootstrap, Markov switching and the pool far too wide in the tails (0.23–0.57×), and it is where
+  volatility dynamics pay off most (CRPS +13.4% vs GBM).</li>
+<li>Gold is hard for everyone (1.2–1.8×). Several of its largest weekly moves (for example the April 2013
+  crash) arrived out of quiet markets, so there was little for a volatility filter to pick up in advance.</li>
+</ul>
+<p><img alt="SPY bands" loading="lazy" src="figures/fig4_bands_spy.png" /></p>
+<p>For SPY the <em>count</em> of GBM breaches is only mildly too high (24 vs 19 expected). Their <em>timing</em> is the
+problem: the breaches pile up in late 2008, March 2020 and 2022, while the band is visibly too wide
+through 2012–2019. The GJR-GARCH-t band breathes with the market.</p>
+<h3>6.5 Tail tests</h3>
+<p>1-week horizon, number of the seven assets where each test rejects at 5%:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Simulator</th>
+<th>Kupiec 1%</th>
+<th>Christoffersen 1%</th>
+<th>Kupiec 5%</th>
+<th>Christoffersen 5%</th>
+<th>Berkowitz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GBM</td>
+<td>3</td>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Merton jumps</td>
+<td>1</td>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Block bootstrap</td>
+<td>1</td>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Markov switching</td>
+<td>1</td>
+<td>3</td>
+<td>0</td>
+<td>0</td>
+<td>4</td>
+</tr>
+<tr>
+<td>GJR-GARCH-N</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>GJR-GARCH-t</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Pool</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>0</td>
+<td>4</td>
+</tr>
+</tbody>
+</table></div>
+<p>The breach <em>count</em> tests (Kupiec) barely separate the models. The breach <em>clustering</em> tests
+(Christoffersen) and the full-distribution test (Berkowitz) do. Validating a risk model only on "the
+right number of exceptions", as many backtesting practices do, would miss most of what goes wrong here.</p>
+<h3>6.6 Crises</h3>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig6_stress_windows.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>GBM</th>
+<th>Merton</th>
+<th>GJR-GARCH-t</th>
+<th>Markov sw.</th>
+<th>Bootstrap</th>
+<th>Pool</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GFC (Sep 08–Mar 09)</td>
+<td>10.7×</td>
+<td>10.0×</td>
+<td><strong>1.0×</strong></td>
+<td>6.6×</td>
+<td>10.7×</td>
+<td>4.8×</td>
+</tr>
+<tr>
+<td>Euro crisis (H2 2011)</td>
+<td>1.3×</td>
+<td>1.3×</td>
+<td>2.3×</td>
+<td>2.0×</td>
+<td>1.0×</td>
+<td>1.0×</td>
+</tr>
+<tr>
+<td>Oil crash (Nov 14–Feb 16)</td>
+<td>2.3×</td>
+<td>1.9×</td>
+<td>1.2×</td>
+<td>1.5×</td>
+<td>1.4×</td>
+<td>1.1×</td>
+</tr>
+<tr>
+<td>COVID (Feb–May 2020)</td>
+<td>18.2×</td>
+<td>17.7×</td>
+<td><strong>7.6×</strong></td>
+<td>13.6×</td>
+<td>16.7×</td>
+<td>8.6×</td>
+</tr>
+<tr>
+<td>Inflation shock (2022)</td>
+<td>3.1×</td>
+<td>2.4×</td>
+<td>1.3×</td>
+<td>0.6×</td>
+<td>2.8×</td>
+<td>1.0×</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>(98%-band breaches relative to the nominal 2%, all assets pooled.)</em></p>
+<p>The GFC built up over months, so a filter could see it coming. COVID went from record calm to the fastest
+bear market on record in about a month, and every history-only simulator was too narrow. The Euro-crisis row
+is the reverse case. GARCH bands had tightened during the calm first half of 2011 and were caught by
+the August shock, while the static models were still estimated on a window that contained 2008 and
+were wide by accident. No simulator wins in every window, but the static
+ones lose the windows that matter most.</p>
+<h3>6.7 Proper scoring</h3>
+<p><img alt="CRPS skill" loading="lazy" src="figures/fig5_crps_skill.png" /></p>
+<p>CRPS rewards calibration and sharpness together. GJR-GARCH (either innovation) beats GBM on every asset
+and significantly on six. The pool comes second. It never wins, but it never loses badly either, which
+is the usual case for forecast combination. Its tails are too wide (0.71× breaches), because averaging
+five distributions with different widths adds dispersion.</p>
+<h2>7. What this means in practice</h2>
+<ul>
+<li><strong>Report calibration by regime, not on average.</strong> One unconditional coverage number can hide a
+  20-point error in the weeks that matter.</li>
+<li><strong>If you add one ingredient to GBM, add volatility dynamics.</strong> Fat tails without dynamics look good
+  in a histogram and do little out of sample.</li>
+<li><strong>"Model-free" is not "assumption-free".</strong> The block bootstrap assumes the next week looks like a
+  random week from the last five years. In stress that is the worst assumption of the set.</li>
+<li><strong>Short-horizon crash risk needs forward-looking information.</strong> No backward-looking simulator
+  anticipated March 2020. The obvious next step is to anchor the simulator to option-implied volatility,
+  which is where projects 13 (GARCH), 14 (implied vol surface) and 26 (Heston calibration) of this
+  series lead.</li>
+</ul>
+<h2>8. Limitations and robustness notes</h2>
+<ul>
+<li><strong>One estimation design.</strong> A 5-year rolling window, monthly refits and a 10-day bootstrap block. A
+  shorter window would help the static models adapt faster, at the cost of noisier estimates. I keep one
+  pre-committed design rather than tuning it on the test sample.</li>
+<li><strong>Merton cap.</strong> Without a cap the intensity runs to the boundary and the model becomes a pure
+  variance mixture. The cap of 0.1/day keeps "jumps" interpretable. The diagnostic in §6.3 reports how
+  often it binds.</li>
+<li><strong>Pooled tests.</strong> Pooled-across-assets statistics treat assets as independent, and they are
+  correlated in crises, so pooled standard errors are optimistic. Per-asset tests are reported
+  separately in <code>results/var_backtests.csv</code>.</li>
+<li><strong>ETF data.</strong> USO's roll yield and URA's short history are features of the instruments, not of the
+  underlying commodities. Results are for investable ETFs.</li>
+<li><strong>Means.</strong> All simulators use the sample mean of the window as drift. At 1–4 week horizons the
+  drift is negligible relative to the volatility, but it is the same for every model, so it does not
+  drive the comparisons.</li>
+</ul>
+<h2>9. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+python src/fetch_data.py      # optional: rebuild data/etf_daily_log_returns.csv from Yahoo Finance
+python src/backtest.py        # ~6 min on 4 cores -&gt; results/forecasts.csv.gz
+python src/evaluate.py        # calibration tests and summaries -&gt; results/*.csv
+python src/merton_diagnostic.py
+python src/figures.py         # -&gt; figures/*.png
+</code></pre>
+<p>or <code>bash run_all.sh</code>.</p>
+<h2>10. Repository layout</h2>
+<pre><code>01-monte-carlo-calibration/
+├── data/etf_daily_log_returns.csv   daily log returns, 7 ETFs, 2006-2026
+├── src/models.py                    the six simulators, from scratch
+├── src/backtest.py                  rolling out-of-sample forecast engine
+├── src/evaluate.py                  coverage, Kupiec, Christoffersen, Berkowitz, CRPS, DM
+├── src/merton_diagnostic.py         are jumps really jumps?
+├── src/figures.py                   all figures
+├── results/                         every number quoted above, as CSV
+└── figures/                         all charts
+</code></pre>
+<h2>References</h2>
+<ul>
+<li>Berkowitz, J. (2001). Testing density forecasts, with applications to risk management. <em>JBES</em>, 19(4).</li>
+<li>Christoffersen, P. (1998). Evaluating interval forecasts. <em>International Economic Review</em>, 39(4).</li>
+<li>Dawid, A. P. (1984). Statistical theory: the prequential approach. <em>JRSS A</em>, 147(2).</li>
+<li>Diebold, F. X., Gunther, T. A. &amp; Tay, A. S. (1998). Evaluating density forecasts with applications to financial risk management. <em>International Economic Review</em>, 39(4).</li>
+<li>Diebold, F. X. &amp; Mariano, R. S. (1995). Comparing predictive accuracy. <em>JBES</em>, 13(3).</li>
+<li>Glosten, L., Jagannathan, R. &amp; Runkle, D. (1993). On the relation between the expected value and the volatility of the nominal excess return on stocks. <em>Journal of Finance</em>, 48(5).</li>
+<li>Gneiting, T., Balabdaoui, F. &amp; Raftery, A. E. (2007). Probabilistic forecasts, calibration and sharpness. <em>JRSS B</em>, 69(2).</li>
+<li>Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. <em>Econometrica</em>, 57(2).</li>
+<li>Kupiec, P. (1995). Techniques for verifying the accuracy of risk measurement models. <em>Journal of Derivatives</em>, 3(2).</li>
+<li>Merton, R. C. (1976). Option pricing when underlying stock returns are discontinuous. <em>Journal of Financial Economics</em>, 3(1–2).</li>
+<li>Politis, D. N. &amp; Romano, J. P. (1994). The stationary bootstrap. <em>JASA</em>, 89(428).</li>
+</ul>
+<hr />
+<p><em>Data: Yahoo Finance adjusted closes, used for research only. This is not investment advice.</em></p>
+<footer>Code, data and every number in this article: <a href="https://github.com/<your-github-username>/30-quant-research-projects/tree/main/01-monte-carlo-calibration">01-monte-carlo-calibration on GitHub</a>.</footer>
+</div>
+</body>
+</html>
