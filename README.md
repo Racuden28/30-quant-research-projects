@@ -22,7 +22,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 07 | Kelly criterion simulator | | ⏳ Planned |
 | 08 | Correlation structure | | ⏳ Planned |
 | 09 | Beta & CAPM regression | | ⏳ Planned |
-| 10 | Mini market terminal | | ⏳ Planned |
+| 10 | [What on a Market Screen Is Worth Looking At?](10-market-terminal/) | Which of fourteen terminal widgets forecast returns, volatility or drawdowns out of sample, beyond realised volatility? | ✅ Published |
 | 11 | Pairs trading | | ⏳ Planned |
 | 12 | Momentum with transaction costs | | ⏳ Planned |
 | 13 | GARCH volatility forecasting | | ⏳ Planned |

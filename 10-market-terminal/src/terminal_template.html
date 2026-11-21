@@ -1,0 +1,223 @@
+<title>Honest Market Terminal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A market screen that labels each of its numbers by what it has actually forecast out of sample.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: terminal = ticker rail (left) + instrument panel (right); stacks to one column on phones.
+   Same tokens as the 30-projects site, plus three semantic states for "does this number carry information?" */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9;
+  --info:#0f7a55; --info-soft:#dcf2e8; --weak:#8a6a00; --weak-soft:#f6edcf; --noise:#9aa1ad; --noise-soft:#eef0f3;
+  --up:#0f7a55; --down:#b3261e; --bar:#c9d3e0;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b;
+  --info:#4cc995; --info-soft:#123326; --weak:#e2bd4f; --weak-soft:#352b0f; --noise:#6b7380; --noise-soft:#1c2129;
+  --up:#4cc995; --down:#f08a89; --bar:#33404f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b;
+  --info:#4cc995; --info-soft:#123326; --weak:#e2bd4f; --weak-soft:#352b0f; --noise:#6b7380; --noise-soft:#1c2129;
+  --up:#4cc995; --down:#f08a89; --bar:#33404f; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:72rem;margin:0 auto;padding-block:1.5rem 3rem}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:.5rem 1.5rem;
+  padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+h1{font:700 clamp(1.6rem,4vw,2.2rem)/1.1 var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{font:500 .72rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{color:var(--fg2);max-width:62ch;margin:.6rem 0 0}
+.asof{font:500 .8rem var(--mono);color:var(--muted)}
+.grid{display:grid;grid-template-columns:15rem minmax(0,1fr);gap:1.5rem;margin-top:1.5rem}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+/* rail */
+.rail{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
+@media (max-width:760px){.rail{flex-direction:row;overflow-x:auto;border:0;gap:.4rem;padding-bottom:.3rem}}
+.tk{display:grid;grid-template-columns:1fr auto;gap:.1rem .6rem;padding:.6rem .7rem;border:0;border-bottom:1px solid var(--rule);
+  background:none;color:inherit;text-align:left;font:inherit;cursor:pointer;border-left:3px solid transparent}
+.tk:hover{background:var(--surface)}
+.tk[aria-selected="true"]{background:var(--surface);border-left-color:var(--accent)}
+@media (max-width:760px){.tk{border:1px solid var(--rule);border-radius:4px;min-width:8.5rem;border-left-width:1px}
+  .tk[aria-selected="true"]{border-color:var(--accent)}}
+.tk b{font:600 .95rem var(--mono)}
+.tk .nm{grid-column:1/-1;font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk .ch{font:500 .85rem var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.up{color:var(--up)} .down{color:var(--down)}
+/* panel */
+.panel{min-width:0;display:flex;flex-direction:column;gap:1.2rem}
+.head{display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:flex-end;justify-content:space-between}
+.head h2{font:700 1.6rem/1.1 var(--display);margin:0}
+.head .sub{color:var(--fg2);font-size:.9rem}
+.spark{width:min(100%,22rem);height:4.2rem;display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:1rem 1.1rem;min-width:0}
+.card .k{font:500 .72rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card .v{font:600 2rem/1.15 var(--mono);font-variant-numeric:tabular-nums;margin:.3rem 0 .2rem}
+.card .v.none{color:var(--noise);font-size:1.6rem}
+.card p{margin:.2rem 0 0;font-size:.86rem;color:var(--fg2)}
+.controls{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center;justify-content:space-between}
+.legend{display:flex;flex-wrap:wrap;gap:.4rem .9rem;font-size:.8rem;color:var(--fg2)}
+.toggle{display:flex;align-items:center;gap:.45rem;font-size:.86rem;cursor:pointer}
+.toggle input{width:1rem;height:1rem;accent-color:var(--accent)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:44rem;font-size:.86rem}
+th,td{padding:.55rem .7rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:middle}
+th{font:500 .7rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+tr.noise td{color:var(--noise)}
+tr.noise td .lbl{text-decoration:line-through;text-decoration-color:var(--noise)}
+.fam{display:block;font:500 .68rem var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.pbar{position:relative;width:6.5rem;height:.5rem;background:var(--noise-soft);border-radius:999px}
+.pbar i{position:absolute;top:-.2rem;width:.18rem;height:.9rem;background:var(--fg);border-radius:1px}
+.pbar span{position:absolute;left:0;top:0;bottom:0;background:var(--bar);border-radius:999px}
+.chip{display:inline-block;font:500 .72rem/1 var(--mono);padding:.28rem .45rem;border-radius:3px;white-space:nowrap}
+.chip.dm{background:var(--info-soft);color:var(--info)}
+.chip.cw{background:var(--weak-soft);color:var(--weak)}
+.chip.none{background:var(--noise-soft);color:var(--noise)}
+.note{font-size:.84rem;color:var(--fg2);max-width:70ch}
+footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.82rem;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div>
+    <p class="eyebrow">Project 10 · 30 Quant Research Projects</p>
+    <h1>Honest Market Terminal</h1>
+    <p class="lede">The usual fourteen numbers for each ticker, each labelled with what it actually forecast out of sample
+      between 2012 and 2026. Numbers that carry no information are struck through.</p>
+  </div>
+  <span class="asof" id="asof"></span>
+</header>
+
+<div class="grid">
+  <nav class="rail" id="rail" role="tablist" aria-label="Instruments"></nav>
+  <main class="panel" id="panel"></main>
+</div>
+
+<footer>Audit and method: <a href="../">the working paper</a>. Daily data to the close shown; next-month means the next
+21 trading days. Volatility forecast = OLS of log forward volatility on log 21-day realised vol and Bollinger %b, fitted on
+the asset's full history; range = 5th–95th percentile of its residuals. Research, not investment advice.</footer>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const LV = {dm:"Informative", cw:"Weak", none:"No info"};
+const TIP = {dm:"Beats the baseline out of sample, survives FDR on the strict Diebold–Mariano test",
+             cw:"Positive out-of-sample R² and significant on the lenient Clark–West test, but not on the strict test",
+             none:"No out-of-sample information"};
+const FAM = {return:"read as a return signal", trend:"trend", risk:"risk"};
+let hideNoise = true;
+try { hideNoise = localStorage.getItem("hideNoise") !== "0"; } catch (e) {}
+
+function pct(x, d=1){ return (x>=0?"+":"") + (x*100).toFixed(d) + "%"; }
+function fmt(w){
+  const v = w.value;
+  switch (w.id) {
+    case "chg1d": case "chg5d": case "chg21d": case "mom12_1": case "ma200": case "hi52": case "dd":
+      return pct(Math.expm1(v));
+    case "cross": return v > 0 ? "golden" : "death";
+    case "rsi14": return v.toFixed(1);
+    case "boll": return (v*100).toFixed(0) + "%";
+    case "z1d": return (v>=0?"+":"") + v.toFixed(2) + "σ";
+    case "streak": return (v>0?"+":"") + v.toFixed(0) + (Math.abs(v)===1?" day":" days");
+    case "rv21": return (v*100).toFixed(1) + "%";
+    case "volratio": return "×" + Math.exp(v).toFixed(2);
+  }
+  return v.toFixed(3);
+}
+function chip(b, label){
+  if (!b) return '<span class="chip none">—</span>';
+  return `<span class="chip ${b.level}" title="${TIP[b.level]} (R²OS ${b.r2os>=0?"+":""}${b.r2os.toFixed(1)}%)">${label}${LV[b.level]}</span>`;
+}
+function spark(vals){
+  const W=320,H=64,p=3, mn=Math.min(...vals), mx=Math.max(...vals);
+  const x=i=>p+i*(W-2*p)/(vals.length-1), y=v=>H-p-(v-mn)/((mx-mn)||1)*(H-2*p);
+  const d=vals.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join("");
+  const up = vals[vals.length-1] >= vals[0];
+  const col = up ? "var(--up)" : "var(--down)";
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Last 12 months">
+    <line x1="${p}" x2="${W-p}" y1="${y(0)}" y2="${y(0)}" stroke="var(--rule)" stroke-dasharray="3 3"/>
+    <path d="${d}L${x(vals.length-1)} ${H}L${p} ${H}Z" fill="${col}" opacity=".08"/>
+    <path d="${d}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+    <circle cx="${x(vals.length-1)}" cy="${y(vals[vals.length-1])}" r="3" fill="${col}"/></svg>`;
+}
+function rail(sel){
+  document.getElementById("rail").innerHTML = DATA.assets.map(a=>{
+    const c=Math.expm1(a.chg1d);
+    return `<button class="tk" role="tab" aria-selected="${a.ticker===sel}" data-t="${a.ticker}">
+      <b>${a.ticker}</b><span class="ch ${c>=0?"up":"down"}">${pct(c,2)}</span><span class="nm">${a.name}</span></button>`;
+  }).join("");
+  document.querySelectorAll(".tk").forEach(b=>b.addEventListener("click",()=>{ location.hash = b.dataset.t; }));
+}
+function panel(a){
+  const yr = Math.expm1(a.spark[a.spark.length-1]);
+  const rows = a.widgets.map(w=>{
+    const noise = (!w.vol || w.vol.level==="none") && (!w.ret || w.ret.level==="none") && (!w.mdd || w.mdd.level==="none");
+    const weakOnly = !noise && ![w.ret,w.vol,w.mdd].some(b=>b && b.level==="dm");
+    const hide = hideNoise && (noise || weakOnly);
+    const eff = w.vol_effect_pct;
+    const effTxt = eff===null ? `<span title="Forecast input">base</span>` :
+      (w.vol && w.vol.level==="dm" ? `<span class="${eff>0?"down":"up"}">${eff>=0?"+":""}${eff.toFixed(0)}%</span>`
+                                    : `<span style="color:var(--noise)">${eff>=0?"+":""}${eff.toFixed(0)}%</span>`);
+    return `<tr class="${(noise||weakOnly)?"noise":""}" ${hide?"hidden":""}>
+      <td><span class="lbl">${w.label}</span><span class="fam">${FAM[w.family]}</span></td>
+      <td class="num">${fmt(w)}</td>
+      <td><div class="pbar" title="${(w.pctile*100).toFixed(0)}th percentile of this asset's history"><span style="width:${(w.pctile*100).toFixed(0)}%"></span><i style="left:calc(${(w.pctile*100).toFixed(0)}% - .09rem)"></i></div></td>
+      <td>${chip(w.ret,"")}</td><td>${chip(w.vol,"")}</td><td>${chip(w.mdd,"")}</td>
+      <td class="num">${effTxt}</td></tr>`;
+  }).join("");
+  const nHidden = a.widgets.filter(w=>![w.ret,w.vol,w.mdd].some(b=>b && b.level==="dm")).length;
+  document.getElementById("panel").innerHTML = `
+  <div class="head">
+    <div><p class="eyebrow">${a.ticker}</p><h2>${a.name}</h2>
+      <div class="sub">12 months: <b class="${yr>=0?"up":"down"}">${pct(yr)}</b> · today <b class="${a.chg1d>=0?"up":"down"}">${pct(Math.expm1(a.chg1d),2)}</b></div></div>
+    ${spark(a.spark)}
+  </div>
+  <div class="cards">
+    <div class="card"><div class="k">Next-month return forecast</div>
+      <div class="v none">No signal</div>
+      <p>None of the 14 numbers beat the historical average out of sample on the strict test. 122 years of S&amp;P 500 data agree.</p></div>
+    <div class="card"><div class="k">Next-month volatility forecast</div>
+      <div class="v">${(a.vol_fc*100).toFixed(1)}%</div>
+      <p>90% range ${(a.vol_lo*100).toFixed(0)}–${(a.vol_hi*100).toFixed(0)}% annualised. Realised vol alone says
+      ${(a.vol_rv_only*100).toFixed(1)}%; the asset's typical month is ${(a.vol_hist_median*100).toFixed(1)}%.</p></div>
+  </div>
+  <div class="controls">
+    <div class="legend"><span><span class="chip dm">Informative</span> beats baseline, strict test</span>
+      <span><span class="chip cw">Weak</span> positive, lenient test only</span><span><span class="chip none">No info</span></span></div>
+    <label class="toggle" for="hide"><input type="checkbox" id="hide" ${hideNoise?"checked":""}>
+      Hide numbers with no reliable information (${nHidden} of 14)</label>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Number on the screen</th><th style="text-align:right">Now</th><th>vs. own history</th>
+      <th>Return info</th><th>Vol info</th><th>Drawdown info</th><th style="text-align:right" title="Change in next-month vol forecast from this number's current value, vs. the number at its median, holding realised vol fixed">Vol impact</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+  <p class="note">Return info compares each number with the historical average. Vol and drawdown info measure what the number adds
+  <em>beyond 21-day realised volatility</em>, which is the base of every risk forecast here. Vol impact: how much the number's current
+  value moves next month's volatility forecast, holding realised vol fixed. Grey means the audit found no reliable effect.</p>`;
+  document.getElementById("hide").addEventListener("change", e=>{
+    hideNoise = e.target.checked;
+    try { localStorage.setItem("hideNoise", hideNoise ? "1" : "0"); } catch (err) {}
+    panel(a);
+  });
+}
+function route(){
+  const t = (location.hash || "").slice(1).toUpperCase();
+  const a = DATA.assets.find(x=>x.ticker===t) || DATA.assets[0];
+  rail(a.ticker); panel(a);
+}
+document.getElementById("asof").textContent = "Close of " + DATA.meta.asof;
+window.addEventListener("hashchange", route);
+route();
+</script>
