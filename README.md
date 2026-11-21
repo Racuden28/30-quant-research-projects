@@ -15,7 +15,7 @@ in the write-up as CSV, and a section on what does *not* work.
 |---|---|---|---|
 | 01 | [Which Monte Carlo Tells the Truth?](01-monte-carlo-calibration/) | Do the probabilities from five standard return simulators come true out of sample, in calm and in crisis? | ✅ Published |
 | 02 | [What Your Volatility Dashboard Gets Wrong](02-volatility-dashboard-audit/) | Which hidden choice in a volatility dashboard (estimator, window, √t scaling) matters out of sample? | ✅ Published |
-| 03 | Moving-average backtest | | ⏳ Planned |
+| 03 | [Not a Volatility Filter: What the 200-Day Moving Average Actually Knows](03-moving-average-volatility/) | Is the 200-day rule just a volatility filter, or does the trend know something today's volatility does not? | ✅ Published |
 | 04 | [The Smile History Would Have Charged](04-black-scholes-breakeven-smile/) | What Black–Scholes volatility, strike by strike, would have made a delta-hedged option seller break even, and where does the smile come from? | ✅ Published |
 | 05 | [Where Does the Efficient Frontier Break?](05-efficient-frontier/) | When mean-variance fails out of sample, is it the expected returns or the covariances? | ✅ Published |
 | 06 | [Is It Cheaper to Be Wrong?](06-var-backtesting-incentives/) | Does the Basel VaR traffic light reward banks for understating risk when tails are fat? | ✅ Published |

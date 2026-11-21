@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Not a Volatility Filter: What the 200-Day Moving Average Actually Knows</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Is the 200-day rule just a volatility filter, or does the trend know something today&#x27;s volatility does not?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 03 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 03</p>
+<h1>Not a Volatility Filter: What the 200-Day Moving Average Actually Knows</h1>
+<p><em>Project 03 of <a href="../">30 Quant Research Projects</a> · 10 equity indices · S&amp;P 500 back to 1933 · ≈430 market-years of daily data</em></p>
+<blockquote>
+<p><strong>Headline.</strong> People often explain the 200-day moving-average rule as a volatility filter: it is out of the market mostly when volatility is high. That is true, and it is also not why the rule works. I built a placebo that keeps the rule's exposure in each volatility decile and destroys everything else. That volatility-timing part has a <strong>negative</strong> point estimate in <strong>10 of 10</strong> markets (−0.03 to −0.16 Sharpe; sign test p = 0.001). Each market on its own is noisy: the 95% CI excludes zero only for the FTSE 100, and none survives Holm. So the evidence is in the consistency of the sign, not in any single market. Everything the rule adds over buy &amp; hold comes from information <em>beyond</em> today's volatility. Most of that information is about <strong>risk</strong>: while the rule is invested, volatility is 1.4–2.3 points a year lower than the placebo's, and that is significant in <strong>10 of 10</strong> markets after a Holm correction. Some of it is about <strong>returns</strong>: those are about 2 points a year higher in 8 of 10 markets, but only the S&amp;P 500 is significant after the Holm correction across the 10 markets. On the S&amp;P 500 after the rule was published (1992–2026), it matches buy &amp; hold's Sharpe ratio (0.40 vs 0.41) with half the maximum drawdown (−34% vs −66%).</p>
+</blockquote>
+<p><img alt="Decomposition" loading="lazy" src="figures/fig2_decomposition.png" /></p>
+<hr />
+<h2>1. Question</h2>
+<p>The 200-day moving-average rule is invested when the index closes above its 200-day average and holds cash otherwise. It is the most-cited technical rule there is (Brock, Lakonishok &amp; LeBaron 1992; Siegel; Faber 2007). Its record is well known: lower drawdowns and, in long US samples, a higher Sharpe ratio.</p>
+<p>A common and plausible explanation is that the rule is a <strong>volatility filter in disguise</strong>. Prices fall when volatility rises (the leverage effect), so "price below its trend" is almost the same thing as "volatility is high". Being out of the market in high-volatility states lowers risk, so the Sharpe ratio rises. If that is all the rule does, a simpler and more transparent rule that looks only at volatility should do the same job.</p>
+<p><strong>Research question.</strong> How much of the moving-average rule's performance comes from timing <em>current</em> volatility, and how much from information about future returns or future risk that current volatility does not contain?</p>
+<p><strong>Hypotheses (fixed before running the tests, see §3).</strong>
+* <strong>H1 (volatility filter).</strong> Within volatility states, the trend signal carries no information: a placebo with the same exposure <em>in each volatility state</em> earns the same Sharpe ratio as the rule.
+* <strong>H2 (return forecast).</strong> Controlling for the volatility state, the signal predicts next-month volatility-standardised returns (coefficient &gt; 0).
+* <strong>H3 (risk forecast).</strong> Controlling for current volatility, the signal predicts next-month realised volatility (coefficient &lt; 0 when the rule is invested).</p>
+<p>Why it matters: if H1 held, the rule would be redundant with volatility targeting, which is cheaper to run and easier to scale. If it fails, the next question is <em>what</em> the price trend knows, because that decides whether a moving average belongs in a risk model (#06, #13, #19) or in an alpha model (#12).</p>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Yahoo symbol</th>
+<th>Sample used (after warm-up)</th>
+<th>Years</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500</td>
+<td>^GSPC</td>
+<td>1933-01 – 2026-11</td>
+<td>93.6</td>
+</tr>
+<tr>
+<td>Nasdaq Composite</td>
+<td>^IXIC</td>
+<td>1976-02 – 2026-11</td>
+<td>50.8</td>
+</tr>
+<tr>
+<td>Nikkei 225</td>
+<td>^N225</td>
+<td>1970-02 – 2026-11</td>
+<td>55.4</td>
+</tr>
+<tr>
+<td>TSX (Canada)</td>
+<td>^GSPTSE</td>
+<td>1984-07 – 2026-11</td>
+<td>42.2</td>
+</tr>
+<tr>
+<td>FTSE 100</td>
+<td>^FTSE</td>
+<td>1988-12 – 2026-11</td>
+<td>38.0</td>
+</tr>
+<tr>
+<td>DAX</td>
+<td>^GDAXI</td>
+<td>1993-01 – 2026-11</td>
+<td>34.0</td>
+</tr>
+<tr>
+<td>Hang Seng</td>
+<td>^HSI</td>
+<td>1992-02 – 2026-11</td>
+<td>34.1</td>
+</tr>
+<tr>
+<td>CAC 40</td>
+<td>^FCHI</td>
+<td>1995-03 – 2026-11</td>
+<td>32.0</td>
+</tr>
+<tr>
+<td>ASX 200</td>
+<td>^AXJO</td>
+<td>1997-11 – 2026-11</td>
+<td>29.1</td>
+</tr>
+<tr>
+<td>Ibovespa</td>
+<td>^BVSP</td>
+<td>2000-02 – 2026-11</td>
+<td>26.3</td>
+</tr>
+</tbody>
+</table></div>
+<p>Daily closes from Yahoo Finance, pulled on 2026-11-18 (<code>data/index_closes.csv</code>, <code>src/fetch_data.py</code>). Each sample starts once the 200-day average and the 5-year placebo window are available. Ibovespa starts in 1995, before warm-up, to skip the hyperinflation years. Cash is the 13-week T-bill (^IRX) for the two US indices from 1960, and zero before that and for non-US indices (see Limitations). Every window from §6.4 is covered: 1937–38, 1973–74, 1987, 2000–02, 2008, 2020 and 2022.</p>
+<p>The universe is deliberately different from project 01's ETFs: here the point is <em>long</em> history across many markets, and only price indices go back that far. That choice costs us dividends. §7 shows why it does not bias the main comparison.</p>
+<h2>3. Design (pre-registered)</h2>
+<p>These choices were fixed before any result was seen. The items marked <em>(added)</em> were added after the first results, to resolve a puzzle, and are reported as such.</p>
+<ul>
+<li><strong>Rule.</strong> Signal $S_t = 1{P_t &gt; \text{MA}_{200}(P)_t}$ uses closes up to and including day $t$. It is held over the return from close $t$ to close $t+1$, so nothing on day $t+1$ is known when the decision is taken (<code>tests/test_core.py::test_signal_has_no_look_ahead</code>). Cost: 5 bp per one-way trade. Results are shown with 0, 10 and 20 bp too.</li>
+<li><strong>Volatility state.</strong> Trailing 21-day realised volatility, ranked against its own past 5 years (1,260 days), so each state is relative to the market's recent normal.</li>
+<li><strong>Matched volatility placebo.</strong> It is invested iff today's volatility is below the quantile of the past 5 years that equals the rule's own invested fraction over the same 5 years. It never sees prices, only volatility. It has the same average exposure as the rule and is out in exactly the highest-volatility states.</li>
+<li><strong>Spell-shuffle null.</strong> Shuffles the rule's own in/out spells at random (1,000 draws). That keeps exposure and turnover and destroys all timing information.</li>
+<li><strong>Baselines.</strong> Buy &amp; hold, plus a long-only volatility target $w_t=\min(1,\ \bar\sigma_{5y}/\sigma_t)$, the textbook continuous version of the volatility idea.</li>
+<li><strong>Inference.</strong> Sharpe-ratio differences use the Ledoit–Wolf (2008) HAC delta-method test and a stationary block bootstrap (63-day mean blocks, 999 draws). Predictive regressions use Newey–West errors, and the pooled panel uses Driscoll–Kraay errors. Across 10 markets I apply Holm, and across the 9-rule grid within a market I apply Romano–Wolf step-down.</li>
+<li><em>(added)</em> <strong>Volatility-stratified decomposition</strong> (§5.2). It is the clean test of H1.</li>
+</ul>
+<h2>4. Baseline results</h2>
+<p><img alt="Sharpe by index" loading="lazy" src="figures/fig1_sharpe_by_index.png" /></p>
+<p><strong>Table 1. Net Sharpe ratio (excess of cash, 5 bp per trade) and maximum drawdown</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Buy &amp; hold</th>
+<th>MA200</th>
+<th>Vol placebo</th>
+<th>Vol target</th>
+<th>MaxDD B&amp;H</th>
+<th>MaxDD MA200</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500</td>
+<td>0.33</td>
+<td><strong>0.45</strong></td>
+<td>0.14</td>
+<td>0.31</td>
+<td>−66%</td>
+<td>−37%</td>
+</tr>
+<tr>
+<td>Nasdaq</td>
+<td>0.43</td>
+<td><strong>0.60</strong></td>
+<td>0.44</td>
+<td>0.49</td>
+<td>−81%</td>
+<td>−51%</td>
+</tr>
+<tr>
+<td>TSX</td>
+<td>0.51</td>
+<td><strong>0.63</strong></td>
+<td>0.33</td>
+<td>0.56</td>
+<td>−50%</td>
+<td>−26%</td>
+</tr>
+<tr>
+<td>DAX</td>
+<td>0.49</td>
+<td><strong>0.61</strong></td>
+<td>0.36</td>
+<td>0.50</td>
+<td>−73%</td>
+<td>−36%</td>
+</tr>
+<tr>
+<td>Nikkei 225</td>
+<td>0.38</td>
+<td><strong>0.48</strong></td>
+<td>0.21</td>
+<td>0.34</td>
+<td>−82%</td>
+<td>−33%</td>
+</tr>
+<tr>
+<td>Hang Seng</td>
+<td>0.31</td>
+<td><strong>0.40</strong></td>
+<td>0.31</td>
+<td>0.27</td>
+<td>−65%</td>
+<td>−39%</td>
+</tr>
+<tr>
+<td>CAC 40</td>
+<td>0.33</td>
+<td><strong>0.37</strong></td>
+<td>−0.05</td>
+<td>0.29</td>
+<td>−65%</td>
+<td>−29%</td>
+</tr>
+<tr>
+<td>ASX 200</td>
+<td><strong>0.36</strong></td>
+<td>0.27</td>
+<td>0.08</td>
+<td>0.35</td>
+<td>−54%</td>
+<td>−26%</td>
+</tr>
+<tr>
+<td>Ibovespa</td>
+<td><strong>0.45</strong></td>
+<td>0.34</td>
+<td>0.16</td>
+<td>0.45</td>
+<td>−60%</td>
+<td>−46%</td>
+</tr>
+<tr>
+<td>FTSE 100</td>
+<td><strong>0.36</strong></td>
+<td>0.16</td>
+<td>0.03</td>
+<td>0.32</td>
+<td>−53%</td>
+<td>−51%</td>
+</tr>
+</tbody>
+</table></div>
+<p>(<code>results/performance.csv</code>, <code>results/sharpe_tests.csv</code>)</p>
+<p>Three facts set up the puzzle:</p>
+<ol>
+<li><strong>The rule beats buy &amp; hold in 7 of 10 markets, but none of those gaps is individually significant.</strong> HAC p-values run from 0.14 to 0.74. The rule's reliable benefit is the drawdown: it cuts the maximum drawdown in all 10 markets, typically by half.</li>
+<li><strong>The volatility placebo is worse than buy &amp; hold in 9 of 10 markets.</strong> The exception is Nasdaq, 0.44 vs 0.43. Simply stepping out when volatility is high does not work.</li>
+<li><strong>The rule beats its own volatility placebo in 10 of 10 markets.</strong> The gap is 0.04 to 0.42 Sharpe, significant at 5% (HAC) for the S&amp;P 500, TSX, CAC 40 and Nikkei. Against the spell-shuffle null, the rule's Sharpe is in the top 5% in 5 of 10 markets. The placebo is in the top 5% in none.</li>
+</ol>
+<p>So whatever the rule does, it is not "be out when volatility is high". The next section measures what it is.</p>
+<h2>5. What the trend signal knows</h2>
+<h3>5.1 It is strongly correlated with volatility</h3>
+<p><img alt="Mechanism" loading="lazy" src="figures/fig4_mechanism.png" /></p>
+<p>Panel A shows the premise is right. In the calmest decile of volatility the rule is out 9% of the time; in the most turbulent, 67%. The relation is monotone in every market.</p>
+<h3>5.2 Decomposition: volatility timing vs everything else</h3>
+<p>Write the rule's exposure in each volatility decile $k$ as $p_k$. The <strong>volatility-matched benchmark</strong> holds $p_k$ of the index on every day in decile $k$. That is the expectation of shuffling the rule's signal <em>within</em> each decile, which keeps the rule's link to volatility exactly and destroys anything else. Then:</p>
+<p>$$\underbrace{SR_{MA}-SR_{B\&amp;H}}<em>{\text{total}} = \underbrace{SR</em>{bench}-SR_{B\&amp;H}}<em>{\text{volatility timing}} + \underbrace{SR</em>{MA}-SR_{bench}}_{\text{information beyond current vol}}$$</p>
+<p>All three quantities get 95% CIs from a stationary block bootstrap that re-estimates $p_k$ inside every draw, so the serial dependence of both the signal and the returns is respected (<code>results/stratified_decomposition.csv</code>).</p>
+<p><strong>Table 2. Sharpe decomposition (gross of costs)</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Total [95% CI]</th>
+<th>Volatility timing [95% CI]</th>
+<th>Beyond current vol [95% CI]</th>
+<th>Holm p (beyond vol)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500</td>
+<td>+0.18 [0.03, 0.35]</td>
+<td>−0.05 [−0.11, 0.02]</td>
+<td><strong>+0.24</strong> [0.09, 0.38]</td>
+<td><strong>0.010</strong></td>
+</tr>
+<tr>
+<td>TSX</td>
+<td>+0.17 [−0.09, 0.43]</td>
+<td>−0.06 [−0.17, 0.05]</td>
+<td>+0.24 [0.02, 0.46]</td>
+<td>0.117</td>
+</tr>
+<tr>
+<td>Nikkei 225</td>
+<td>+0.13 [−0.07, 0.34]</td>
+<td>−0.08 [−0.15, 0.01]</td>
+<td>+0.21 [0.03, 0.38]</td>
+<td>0.117</td>
+</tr>
+<tr>
+<td>CAC 40</td>
+<td>+0.09 [−0.19, 0.37]</td>
+<td>−0.16 [−0.30, 0.01]</td>
+<td>+0.25 [−0.02, 0.50]</td>
+<td>0.252</td>
+</tr>
+<tr>
+<td>DAX</td>
+<td>+0.16 [−0.12, 0.46]</td>
+<td>−0.07 [−0.18, 0.07]</td>
+<td>+0.23 [−0.01, 0.48]</td>
+<td>0.252</td>
+</tr>
+<tr>
+<td>Nasdaq</td>
+<td>+0.19 [−0.05, 0.44]</td>
+<td>−0.03 [−0.10, 0.07]</td>
+<td>+0.22 [−0.01, 0.42]</td>
+<td>0.252</td>
+</tr>
+<tr>
+<td>Hang Seng</td>
+<td>+0.13 [−0.14, 0.38]</td>
+<td>−0.05 [−0.17, 0.08]</td>
+<td>+0.17 [−0.08, 0.39]</td>
+<td>0.284</td>
+</tr>
+<tr>
+<td>ASX 200</td>
+<td>+0.02 [−0.28, 0.32]</td>
+<td>−0.12 [−0.27, 0.05]</td>
+<td>+0.14 [−0.12, 0.36]</td>
+<td>0.504</td>
+</tr>
+<tr>
+<td>FTSE 100</td>
+<td>−0.17 [−0.45, 0.05]</td>
+<td><strong>−0.14 [−0.24, −0.03]</strong></td>
+<td>−0.04 [−0.27, 0.17]</td>
+<td>1.000</td>
+</tr>
+<tr>
+<td>Ibovespa</td>
+<td>−0.10 [−0.39, 0.16]</td>
+<td>−0.04 [−0.17, 0.11]</td>
+<td>−0.06 [−0.30, 0.15]</td>
+<td>1.000</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>H1 is rejected statistically in the S&amp;P 500, and in direction in 8 of 10 markets.</strong> The volatility-timing part has a negative point estimate in all 10 markets. That is unlikely by chance: a sign test gives p = 0.001 if the markets were independent. They are correlated, so read that as an upper bound on the evidence. Market by market the part is small next to its noise. Its CI excludes zero only for the FTSE 100 (one-sided bootstrap p &lt; 0.05 in 3 of 10: FTSE, CAC 40, Nikkei), and none survives Holm. The defensible claim is that volatility timing does not <em>help</em> in any market, and that it most likely costs Sharpe. The part beyond volatility is positive in 8 of 10. Its own CI excludes zero in 3 of 10 (S&amp;P 500, TSX, Nikkei; unadjusted bootstrap p &lt; 0.05 in 6 of 10), and only the S&amp;P 500 survives Holm across the 10 markets. In this paper "survives" always means significant after that Holm correction.</p>
+<p>Why does volatility timing hurt? In the top volatility quintile, days when the price is <em>above</em> its trend still have high returns: 13% a year annualised for the S&amp;P 500 (<code>results/mechanism.csv</code>). Those are recoveries and melt-ups, and a pure volatility rule sits them out.</p>
+<h3>5.3 Risk forecast vs return forecast</h3>
+<p><img alt="Return vs risk" loading="lazy" src="figures/fig3_return_vs_risk_forecast.png" /></p>
+<p>The "beyond current volatility" part can come from a higher mean, a lower volatility, or both. Splitting it (<code>analytic_mean_gap</code>, <code>analytic_vol_gap</code>):</p>
+<ul>
+<li><strong>Risk (H3): significant in 10 of 10 markets after Holm.</strong> The rule's returns are 1.4–2.3 points a year less volatile than the volatility-matched benchmark's, 7–16% lower in relative terms. Panel B of the mechanism figure shows the reason: at the <em>same</em> current volatility, days below trend are followed by a more volatile month (pooled 29% vs 20% in the top quintile). The predictive regression agrees. With log 21-day and 63-day volatility as controls, the signal lowers next-month log realised volatility in all 10 markets, with |t| &gt; 2 in 7 (<code>results/direction_regressions.csv</code>).</li>
+<li><strong>Returns (H2): positive in 8 of 10, significant in 1.</strong> The mean gap is about +2 points a year (0.9 to 3.0) in the 8 positive markets. Only the S&amp;P 500 is significant after Holm (p = 0.04). In the regression of next-month volatility-standardised returns on the signal plus volatility-quintile dummies, only the S&amp;P 500 has t &gt; 2 (2.51). The pooled 10-market panel with Driscoll–Kraay errors gives b = 0.085, t = 1.53. None of the 90 rule × market coefficients survives Holm.</li>
+</ul>
+<p>In Sharpe terms the return part is the larger piece of the point estimate, roughly 70–95% in the markets where the rule works. But it is the fragile piece. The risk part is smaller, roughly 5–30%, and it is universal. The honest summary: <strong>the moving average is a reliable risk forecaster and an unreliable return forecaster, and it is not a volatility filter.</strong></p>
+<h2>6. Robustness</h2>
+<h3>6.1 Other rules and multiple testing</h3>
+<p><img alt="Grid" loading="lazy" src="figures/fig6_rule_grid.png" /></p>
+<p>Nine rules (MA 20–300 and the 20/100 and 50/200 crossovers) × 10 markets. The rule beats its own volatility placebo in <strong>81 of 90</strong> cases, and 17 survive Romano–Wolf at 5% within their market. Against buy &amp; hold, only 2 of 90 survive: Nasdaq MA20 and MA50. Those two are consistent with the known positive autocorrelation of the early Nasdaq Composite from stale small-cap prices, not with a tradable edge (<code>results/grid_romano_wolf.csv</code>).</p>
+<h3>6.2 Design choices (all variants on the same dates per market)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>MA200 − placebo (mean, # &gt; 0)</th>
+<th>Placebo − B&amp;H (mean, # &gt; 0)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline, 5 bp</td>
+<td>+0.09, 7/10</td>
+<td>−0.14, 1/10</td>
+</tr>
+<tr>
+<td>0 / 10 / 20 bp</td>
+<td>+0.09 / +0.09 / +0.08</td>
+<td>−0.11 / −0.17 / −0.22</td>
+</tr>
+<tr>
+<td>63-day volatility state</td>
+<td>+0.04, 6/10</td>
+<td>−0.09, 2/10</td>
+</tr>
+<tr>
+<td>1-year placebo window</td>
+<td>+0.08, 8/10</td>
+<td>−0.13, 2/10</td>
+</tr>
+<tr>
+<td>20-year placebo window</td>
+<td>+0.04, 6/10</td>
+<td>−0.09, 3/10</td>
+</tr>
+<tr>
+<td>Extra day of execution lag</td>
+<td>+0.08, 7/10</td>
+<td>−0.15, 1/10</td>
+</tr>
+<tr>
+<td>Dividend proxy (+3% a year)</td>
+<td>+0.09, 8/10</td>
+<td>−0.12, 1/10</td>
+</tr>
+</tbody>
+</table></div>
+<p>These use a common, shorter sample: the latest start any variant allows, for example 1943 for the S&amp;P 500 and 2010 for Ibovespa (<code>results/robustness.csv</code>). The sign of both columns holds in every variant. The size of the rule's advantage over the placebo is sensitive to how the placebo is defined. The decomposition in §5.2 is the version that does not depend on that choice. Re-run with 1-year, 5-year and 20-year deciles and with 63-day volatility, the volatility-timing part stays negative in 8 to 10 markets and the volatility gap stays negative in <strong>10 of 10</strong> under every definition (<code>results/stratified_robustness.csv</code>).</p>
+<h3>6.3 Sub-periods: the publication test</h3>
+<p><img alt="S&amp;P 500" loading="lazy" src="figures/fig5_sp500_wealth.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>S&amp;P 500</th>
+<th>B&amp;H Sharpe</th>
+<th>MA200 Sharpe</th>
+<th>MA200 MaxDD</th>
+<th>B&amp;H MaxDD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1934–1961</td>
+<td>0.48</td>
+<td><strong>0.70</strong></td>
+<td>−38%</td>
+<td>−60%</td>
+</tr>
+<tr>
+<td>1962–1991</td>
+<td>0.02</td>
+<td><strong>0.30</strong></td>
+<td>−27%</td>
+<td>−66%</td>
+</tr>
+<tr>
+<td>1992–2026 (after BLL 1992)</td>
+<td><strong>0.41</strong></td>
+<td>0.40</td>
+<td>−34%</td>
+<td>−66%</td>
+</tr>
+</tbody>
+</table></div>
+<p>Every Sharpe advantage over buy &amp; hold was earned before the rule was published. After 1992 it is gone, consistent with McLean &amp; Pontiff's evidence of post-publication decay. What survives is the <em>risk</em> benefit: the same Sharpe with half the drawdown. In the 2010s the rule trailed (0.48 vs 0.76), because sharp V-shaped recoveries punish a slow signal.</p>
+<p><img alt="Rolling" loading="lazy" src="figures/fig7_rolling_sharpe_sp500.png" /></p>
+<h3>6.4 Stress windows</h3>
+<p>Median cumulative return across the markets available in each window (<code>results/stress_windows.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Buy &amp; hold</th>
+<th>MA200</th>
+<th>Vol placebo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2000–02 dot-com (10 markets)</td>
+<td>−44%</td>
+<td><strong>−19%</strong></td>
+<td>−48%</td>
+</tr>
+<tr>
+<td>2008 GFC (10)</td>
+<td>−47%</td>
+<td><strong>−6%</strong></td>
+<td>−21%</td>
+</tr>
+<tr>
+<td>2020 Covid crash (10)</td>
+<td>−19%</td>
+<td>−9%</td>
+<td><strong>−5%</strong></td>
+</tr>
+<tr>
+<td>2022 inflation (10)</td>
+<td>−10%</td>
+<td><strong>−7%</strong></td>
+<td>−8%</td>
+</tr>
+<tr>
+<td>1987 crash (4)</td>
+<td>−23%</td>
+<td><strong>−8%</strong></td>
+<td>−10%</td>
+</tr>
+<tr>
+<td>1973–74 (2)</td>
+<td>−38%</td>
+<td>−18%</td>
+<td><strong>−10%</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>The rule protects best in slow bear markets (2000–02, 2008). In the 2020 crash, and on the S&amp;P 500 in 1987 and 1973–74, the volatility rule got out faster. This is the mechanism of §5 seen in the data: volatility moves first in a sudden crash, and the trend moves first in a slow decline.</p>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>Price indices, not total return.</strong> Dividends are missing. Buy &amp; hold loses the full yield and the rule loses it only while invested, so the rule-vs-buy-&amp;-hold gap is <em>flattered</em> by about 0.3 × yield ≈ 0.6–1 point a year. The rule-vs-placebo comparison and the decomposition compare equal exposures, so they are close to unaffected. A +3% dividend proxy changes nothing (§6.2).</li>
+<li><strong>Cash.</strong> The non-US indices use a zero cash rate and are in local currency. The decomposition is unaffected (equal exposure), but the absolute Sharpe ratios are not comparable across countries.</li>
+<li><strong>Index, not instrument.</strong> Before index futures and ETFs (pre-1982 for the US) you could not trade the index at 5 bp. The pre-1960 S&amp;P 500 results describe a signal, not a strategy.</li>
+<li><strong>One family of signals.</strong> I test simple price-vs-average rules. Time-series momentum (#12) and regime models (#19) are natural extensions.</li>
+<li><strong>The return-forecasting evidence rests mostly on one market.</strong> The S&amp;P 500 is also the market where the rule was discovered, so its 1934–1991 history is in-sample for the literature even though it is out-of-sample here.</li>
+<li><strong>Market selection.</strong> The 10 indices are markets that exist and are well documented today. Markets that collapsed or closed (for example Russia in 1917 or Argentina) are missing, which flatters buy &amp; hold more than the rule.</li>
+<li><strong>Early S&amp;P 500 data.</strong> Before 1957 the Yahoo series is the S&amp;P 90 / reconstructed index. The warm-up also drops 1928–1932, so the 1929 crash, where the rule famously shone, is <em>excluded</em>. That makes the S&amp;P 500 results conservative for the rule.</li>
+<li><strong>The binary placebo is one of many possible volatility rules.</strong> The continuous volatility target (Table 1) does no better overall: it beats the rule in only 3 of 10 markets, and it beats buy &amp; hold in only 4 of 10.</li>
+</ul>
+<h2>8. Referee-style self-review: what it changed</h2>
+<p>Before publishing I reviewed the project as a hostile referee would. Each point below changed the analysis or the text:</p>
+<ol>
+<li><strong>"Your placebo is a straw man."</strong> The binary placebo's result depends on how it is built: with a 20-year window it is much closer to the rule. I added the volatility-stratified decomposition (§5.2). It copies the rule's exposure by volatility decile exactly, so it needs no design choice, and it is now the main test.</li>
+<li><strong>"Different variants use different samples."</strong> The first robustness table compared variants with different start dates. Every variant is now evaluated on the same dates per market (§6.2).</li>
+<li><strong>"Permutation p-values ignore serial dependence."</strong> A day-level shuffle treats days as independent, which makes p-values too small. The primary inference is now a stationary block bootstrap (63-day blocks) that re-estimates the benchmark inside each draw. The permutation p-values are kept in the CSV as secondary.</li>
+<li><strong>"Overclaiming."</strong> An early draft said the placebo loses to buy &amp; hold in 10 of 10 markets. That is true for the stratified benchmark, but for the binary placebo it is 9 of 10. Every count in the text was re-checked against <code>results/</code>.</li>
+<li><strong>"Missing dividends."</strong> I added a dividend-proxy variant and the bias argument in §7.</li>
+<li><strong>"Which whisker is which, and what does 10/10 mean?"</strong> (Manager review.) The star chart now gives each quantity (total, volatility timing, information) its own bar and its own CI, and Table 2 reports all three CIs. "Lowers Sharpe in 10/10" was rewritten as "negative point estimate in 10/10, sign test p = 0.001, individually significant in 1/10".</li>
+<li><strong>"Return or risk?"</strong> The first draft said the signal "predicts direction". The split into a mean gap and a volatility gap (§5.3) showed that the robust part is the risk forecast. The headline was rewritten around that.</li>
+</ol>
+<h2>9. Conclusion</h2>
+<p>The 200-day moving average is correlated with volatility, but that correlation is not where its value comes from. A rule built only from that correlation loses money relative to buy &amp; hold. What the trend adds is information about the <em>next</em> month's risk that today's volatility does not contain. That is a falling market whose volatility is about to rise, the leverage effect working with a lag. The information is universal across 10 markets and robust to every design choice tested. Its information about returns is weaker, concentrated in the pre-1992 S&amp;P 500, and not distinguishable from noise elsewhere after multiple-testing correction.</p>
+<p><strong>How this fits the rest of the series.</strong> Project #10 asks a neighbouring question from the forecasting side: it tests a 200-day <em>gap</em> as a predictor of next-week returns and volatility on project #01's seven ETFs (2006–2026) and monthly S&amp;P 500 data, with Clark–West tests against 21-day realised volatility. It finds the trend numbers useless for returns and only weakly informative about volatility beyond RV21. The two projects agree on the main point: there is no return forecast, and whatever information exists is about risk. They differ in strength. Here the evidence for risk information is strong (10 of 10 markets) because the test is at the strategy level, over a month, across 430 market-years, and it conditions on the volatility <em>state</em> rather than on a linear RV21 term. Project #07 finds that volatility timing is "the smaller lever" in Kelly sizing; §5.2 finds that binary volatility timing is actually harmful at fixed exposure.</p>
+<p>Practical reading: a moving average belongs in a <strong>risk overlay</strong> (it halves drawdowns at roughly unchanged Sharpe), not in an alpha model. Links: #06 (VaR) and #13 (GARCH) for the risk models this signal complements, #12 for momentum with costs, #19 for regime detection, #23 for the multiple-testing issue behind any "best" moving-average length.</p>
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh          # tests, all experiments, all figures; about 6 minutes on one core
+</code></pre>
+<p>All numbers in this document are in <code>results/*.csv</code>. Seeds are fixed. Data refresh: <code>python src/fetch_data.py</code>.</p>
+<h2>References</h2>
+<p>Brock, W., Lakonishok, J., LeBaron, B. (1992). Simple technical trading rules and the stochastic properties of stock returns. <em>Journal of Finance</em> 47(5).
+Faber, M. (2007). A quantitative approach to tactical asset allocation. <em>Journal of Wealth Management</em> 9(4).
+Moreira, A., Muir, T. (2017). Volatility-managed portfolios. <em>Journal of Finance</em> 72(4).
+Ledoit, O., Wolf, M. (2008). Robust performance hypothesis testing with the Sharpe ratio. <em>Journal of Empirical Finance</em> 15(5).
+Romano, J., Wolf, M. (2005). Stepwise multiple testing as formalized data snooping. <em>Econometrica</em> 73(4).
+Politis, D., Romano, J. (1994). The stationary bootstrap. <em>JASA</em> 89(428).
+Driscoll, J., Kraay, A. (1998). Consistent covariance matrix estimation with spatially dependent panel data. <em>REStat</em> 80(4).
+McLean, R. D., Pontiff, J. (2016). Does academic research destroy stock return predictability? <em>Journal of Finance</em> 71(1).
+Black, F. (1976). Studies of stock price volatility changes. <em>Proceedings of the ASA</em>. (leverage effect)</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/03-moving-average-volatility">03-moving-average-volatility on GitHub</a>.</footer>
+</div>
+</body>
+</html>
