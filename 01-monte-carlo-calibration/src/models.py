@@ -122,6 +122,8 @@ class GARCH:
             "mu": pr["mu"] / 100, "omega": pr["omega"] / 1e4, "alpha": pr["alpha[1]"],
             "gamma": pr["gamma[1]"], "beta": pr["beta[1]"],
             "nu": max(pr["nu"], 2.2) if cls.dist == "t" else np.inf,
+            "converged": int(res.convergence_flag == 0),
+            "persistence": pr["alpha[1]"] + 0.5 * pr["gamma[1]"] + pr["beta[1]"],
         }
 
     @staticmethod
@@ -250,5 +252,36 @@ class GARCHNormal(GARCH):
     dist = "normal"
 
 
+class GBMShortWindow(GBM):
+    """Control arm: GBM re-estimated on the last 252 days only (a 'shorter memory' fix of GBM)."""
+
+    name = "GBM 1y window"
+
+    @staticmethod
+    def fit(r):
+        return GBM.fit(r[-252:])
+
+
+class EWMA:
+    """Control arm: RiskMetrics (1996) exponentially weighted volatility, lambda = 0.94, Gaussian shocks,
+    variance held flat over the horizon (the industry square-root-of-time convention)."""
+
+    name = "EWMA (RiskMetrics)"
+    lam = 0.94
+
+    @staticmethod
+    def fit(r):
+        return {"mu": float(np.mean(r))}
+
+    @staticmethod
+    def simulate(p, r, H, n, rng):
+        e2 = (r - p["mu"]) ** 2
+        w = EWMA.lam ** np.arange(len(r))[::-1]
+        s2 = (1 - EWMA.lam) * np.sum(w * e2) + EWMA.lam ** len(r) * np.mean(e2)
+        segs = np.diff([0, *H])
+        inc = [p["mu"] * d + np.sqrt(s2 * d) * rng.standard_normal(n) for d in segs]
+        return np.cumsum(np.column_stack(inc), axis=1)
+
+
 MODELS = [GBM, Merton, GARCH, RegimeSwitching, BlockBootstrap]  # the five simulators in the pool
-CONTROLS = [GARCHNormal]  # evaluated alongside, but not part of the pool
+CONTROLS = [GARCHNormal, GBMShortWindow, EWMA]  # evaluated alongside, but not part of the pool

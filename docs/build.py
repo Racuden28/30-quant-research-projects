@@ -25,7 +25,7 @@ REPO_URL = "https://github.com/<your-github-username>/30-quant-research-projects
 PROJECTS = [
     # (number, folder or None, title, one-line question)
     (1, "01-monte-carlo-calibration", "Which Monte Carlo Tells the Truth?",
-     "Five return simulators, 87,598 out-of-sample forecasts, seven asset classes: whose probabilities come true in calm and in crisis?"),
+     "Five return simulators, 112,626 out-of-sample forecasts, seven asset classes: whose probabilities come true in calm and in crisis?"),
     (2, None, "Returns & volatility dashboard", ""), (3, None, "Moving-average backtest", ""),
     (4, None, "Black–Scholes pricer", ""), (5, None, "Efficient frontier", ""),
     (6, None, "Value-at-Risk calculator", ""), (7, None, "Kelly criterion simulator", ""),

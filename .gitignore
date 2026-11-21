@@ -3,3 +3,6 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 *.log
+
+# personal study notes (Spanish), not for the public repo
+*/study/

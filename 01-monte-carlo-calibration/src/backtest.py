@@ -8,6 +8,8 @@ At every weekly forecast origin t (close of day t-1):
     the conditional models still filter their latent state (GARCH variance, regime
     probabilities) through the newest data, so no forecast ever uses information after t-1;
   * each simulator draws N_PATHS paths of cumulative log returns for h = 5 and h = 21 days;
+  * the "origin" date stored with each forecast is the first trading day of the forecast horizon;
+    the information set ends at the previous close;
   * we record the probability integral transform (PIT) of the realised outcome, a set of
     predictive quantiles, the CRPS and the predictive standard deviation.
 
@@ -66,7 +68,7 @@ def run_asset(asset: str, n_paths: int = N_PATHS, max_origins: int | None = None
     # trailing 21-day realised volatility at each origin (annualised), used for conditional analysis
     rv = pd.Series(r).rolling(21).std().values * np.sqrt(252)
 
-    rows, params, merton_x0 = [], {}, None
+    rows, plog, params, merton_x0 = [], [], {}, None
     t0 = time.time()
     for k, t in enumerate(origins):
         win = r[max(0, t - WINDOW):t]
@@ -77,13 +79,17 @@ def run_asset(asset: str, n_paths: int = N_PATHS, max_origins: int | None = None
                     merton_x0 = params[M.name]["x"]
                 else:
                     params[M.name] = M.fit(win)
+            for name in ("Merton jumps", "GJR-GARCH-t", "GJR-GARCH-N"):
+                plog.append({"asset": asset, "origin": dates[t], "model": name,
+                             **{k_: v for k_, v in params[name].items() if k_ != "x"}})
         rng = np.random.default_rng([zlib.crc32(asset.encode()), t])
         u = rng.random()
         realised = [r[t:t + h].sum() for h in H]
         sims = {M.name: M.simulate(params[M.name], win, H, n_paths, rng) for M in MODELS}
         sims["Pool"] = np.vstack(list(sims.values()))
         sims.update({M.name: M.simulate(params[M.name], win, H, n_paths, rng) for M in CONTROLS})
-        hist_rv = rv[MIN_WINDOW - 1:t]  # expanding history of the vol state, no look-ahead
+        # percentile of today's trailing vol within the asset's own history up to t-1 (no look-ahead)
+        hist_rv = rv[:t]
         rv_pct = float(np.mean(hist_rv[~np.isnan(hist_rv)] <= rv[t - 1]))
         for name, X in sims.items():
             for j, h in enumerate(H):
@@ -99,14 +105,16 @@ def run_asset(asset: str, n_paths: int = N_PATHS, max_origins: int | None = None
         if k % 100 == 0:
             print(f"[{asset}] origin {k + 1}/{len(origins)} {dates[t].date()} "
                   f"({time.time() - t0:.0f}s)", flush=True)
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), pd.DataFrame(plog)
 
 
 def main():
     assets = pd.read_csv(DATA, index_col=0, nrows=1).columns.tolist()
     with Pool(min(4, len(assets))) as pool:
         frames = pool.map(run_asset, assets)
-    out = pd.concat(frames, ignore_index=True)
+    out = pd.concat([f[0] for f in frames], ignore_index=True)
+    pd.concat([f[1] for f in frames], ignore_index=True).to_csv(
+        ROOT / "results" / "fitted_params.csv.gz", index=False, float_format="%.6g", compression="gzip")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(OUT, index=False, float_format="%.6g", compression="gzip")
     print("saved", OUT, out.shape)

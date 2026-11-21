@@ -7,7 +7,10 @@ Outputs (results/):
   var_backtests.csv           Kupiec / Christoffersen / Berkowitz tests per asset x model (h=5)
   conditional_coverage.csv    90% interval coverage by volatility-state quintile
   stress_windows.csv          tail exceedances inside named crisis windows
-  crps_dm.csv                 CRPS skill vs GBM with Diebold-Mariano (Newey-West) t-stats
+  crps_dm.csv                 CRPS skill vs GBM with Diebold-Mariano (Newey-West) t-stats and Holm p-values
+  conditional_coverage_ci.csv 95% block-bootstrap confidence intervals for the conditional coverage
+  q5_coverage_by_asset.csv    stressed-quintile coverage asset by asset (robustness of the pooled result)
+  param_diagnostics.csv       convergence / persistence / jump-intensity diagnostics of the fitted models
 """
 from __future__ import annotations
 
@@ -20,7 +23,7 @@ from scipy import optimize, stats
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "results"
 MODEL_ORDER = ["GBM", "Merton jumps", "GJR-GARCH-t", "Markov switching", "Block bootstrap", "Pool"]
-CONTROL_ORDER = ["GJR-GARCH-N"]
+CONTROL_ORDER = ["GJR-GARCH-N", "GBM 1y window", "EWMA (RiskMetrics)"]
 ALL_MODELS = MODEL_ORDER + CONTROL_ORDER
 ASSET_ORDER = ["SPY", "EEM", "TLT", "HYG", "GLD", "USO", "URA"]
 
@@ -95,7 +98,6 @@ def berkowitz(pit: np.ndarray) -> tuple[float, float]:
 
 
 def nw_tstat(d: np.ndarray, lags: int) -> float:
-    d = d - 0  # mean differential
     n = len(d)
     m = d.mean()
     e = d - m
@@ -117,6 +119,82 @@ def summarise(g: pd.DataFrame) -> pd.Series:
         "tail_mult_98": g.hit98.mean() / 0.02,
         "pit_sd": g.pit.std(), "crps": g.crps.mean(), "width90": g.width90.mean(),
     })
+
+
+VOL_LABELS = ["Q1 calm", "Q2", "Q3", "Q4", "Q5 stressed"]
+
+
+def add_vol_quintile(df: pd.DataFrame) -> pd.DataFrame:
+    df["vol_q"] = pd.cut(df.rv_pct, [0, .2, .4, .6, .8, 1.0001], labels=VOL_LABELS, include_lowest=True)
+    return df
+
+
+def block_bootstrap_ci(df: pd.DataFrame, col: str, B: int = 2000, block: int = 8, seed: int = 7):
+    """
+    95% CIs for coverage by (model, vol quintile), resampling calendar weeks in moving blocks of
+    `block` weeks. All assets and models observed in the same week are resampled together, so the
+    intervals respect both cross-asset correlation and serial dependence.
+    """
+    d = df.copy()
+    d["week"] = d.origin.dt.to_period("W").astype(str)
+    weeks = np.array(sorted(d.week.unique()))
+    widx = {w: i for i, w in enumerate(weeks)}
+    d["wi"] = d.week.map(widx)
+    keys = list(d.groupby(["model", "vol_q"], observed=True).groups)
+    hits = np.zeros((len(keys), len(weeks)))
+    cnt = np.zeros((len(keys), len(weeks)))
+    for k, ((m, q), g) in enumerate(d.groupby(["model", "vol_q"], observed=True)):
+        np.add.at(hits[k], g.wi.values, g[col].values)
+        np.add.at(cnt[k], g.wi.values, 1)
+    rng = np.random.default_rng(seed)
+    nW = len(weeks)
+    nb = int(np.ceil(nW / block))
+    stats_ = np.empty((B, len(keys)))
+    for b in range(B):
+        starts = rng.integers(0, nW - block + 1, nb)
+        idx = (starts[:, None] + np.arange(block)[None]).ravel()[:nW]
+        stats_[b] = 1 - hits[:, idx].sum(1) / cnt[:, idx].sum(1)
+    lo, hi = np.nanpercentile(stats_, [2.5, 97.5], axis=0)
+    point = 1 - hits.sum(1) / cnt.sum(1)
+    out = pd.DataFrame({"model": [k[0] for k in keys], "vol_q": [k[1] for k in keys],
+                        "coverage": point, "ci_low": lo, "ci_high": hi})
+    # bootstrap distribution of the Q5 - Q1 gap per model
+    gaps = []
+    for m in out.model.unique():
+        i5 = keys.index((m, "Q5 stressed"))
+        i1 = keys.index((m, "Q1 calm"))
+        g = stats_[:, i1] - stats_[:, i5]
+        gaps.append({"model": m, "vol_q": "gap Q1-Q5", "coverage": point[i1] - point[i5],
+                     "ci_low": np.percentile(g, 2.5), "ci_high": np.percentile(g, 97.5)})
+    return pd.concat([out, pd.DataFrame(gaps)], ignore_index=True)
+
+
+def holm(p: np.ndarray) -> np.ndarray:
+    order = np.argsort(p)
+    m = len(p)
+    adj = np.empty(m)
+    run = 0.0
+    for rank, i in enumerate(order):
+        run = max(run, (m - rank) * p[i])
+        adj[i] = min(run, 1.0)
+    return adj
+
+
+def param_diagnostics() -> pd.DataFrame:
+    p = pd.read_csv(RES / "fitted_params.csv.gz")
+    rows = []
+    for (a, m), g in p.groupby(["asset", "model"]):
+        if m == "Merton jumps":
+            jv = g.lam * (g.sJ**2 + g.muJ**2)
+            rows.append({"asset": a, "model": m, "fits": len(g), "lam_at_cap_share": (g.lam > 0.098).mean(),
+                         "median_jumps_per_year": (g.lam * 252).median(),
+                         "median_jump_var_share": (jv / (jv + g.sigma**2)).median()})
+        else:
+            rows.append({"asset": a, "model": m, "fits": len(g), "converged_share": g.converged.mean(),
+                         "median_persistence": g.persistence.median(),
+                         "share_persistence_ge_1": (g.persistence >= 1).mean(),
+                         "median_nu": g.nu.replace(np.inf, np.nan).median()})
+    return pd.DataFrame(rows)
 
 
 def main():
@@ -143,8 +221,7 @@ def main():
     vb.to_csv(RES / "var_backtests.csv", index=False, float_format="%.4g")
 
     # conditional coverage by volatility state (pooled across assets)
-    df["vol_q"] = pd.cut(df.rv_pct, [0, .2, .4, .6, .8, 1.0001], labels=["Q1 calm", "Q2", "Q3", "Q4", "Q5 stressed"],
-                         include_lowest=True)
+    df = add_vol_quintile(df)
     cc = df.groupby(["h", "model", "vol_q"], observed=True).agg(
         n=("hit90", "size"), cov90=("hit90", lambda x: 1 - x.mean()), cov98=("hit98", lambda x: 1 - x.mean()),
         var1_rate=("var1", "mean"), pit_sd=("pit", "std"), width90=("width90", "mean")).reset_index()
@@ -169,7 +246,23 @@ def main():
             rows.append({"h": h, "asset": a, "model": m,
                          "skill_vs_gbm": 1 - piv[m].mean() / piv["GBM"].mean(),
                          "dm_t": nw_tstat(d, lags=4)})
-    pd.DataFrame(rows).to_csv(RES / "crps_dm.csv", index=False, float_format="%.4f")
+    dm = pd.DataFrame(rows)
+    dm["p"] = 2 * stats.norm.sf(np.abs(dm.dm_t))
+    # Holm correction across the 7 assets for each (model, horizon) family
+    dm["p_holm"] = dm.groupby(["h", "model"]).p.transform(lambda s: pd.Series(holm(s.values), index=s.index))
+    dm.to_csv(RES / "crps_dm.csv", index=False, float_format="%.4g")
+
+    # uncertainty: block-bootstrap CIs for conditional coverage (h = 5)
+    h5 = df[df.h == 5]
+    ci = pd.concat([block_bootstrap_ci(h5, "hit90").assign(level=0.90),
+                    block_bootstrap_ci(h5, "hit98").assign(level=0.98)], ignore_index=True)
+    ci.to_csv(RES / "conditional_coverage_ci.csv", index=False, float_format="%.4f")
+
+    # robustness: stressed-quintile coverage asset by asset
+    q5 = h5[h5.vol_q == "Q5 stressed"].groupby(["asset", "model"]).agg(
+        n=("hit90", "size"), cov90=("hit90", lambda x: 1 - x.mean()), cov98=("hit98", lambda x: 1 - x.mean()))
+    q5.reset_index().to_csv(RES / "q5_coverage_by_asset.csv", index=False, float_format="%.4f")
+    param_diagnostics().to_csv(RES / "param_diagnostics.csv", index=False, float_format="%.4f")
     print(by_model[by_model.h == 5].to_string())
     print(cc[cc.h == 5].pivot(index="model", columns="vol_q", values="cov90").round(3).to_string())
 

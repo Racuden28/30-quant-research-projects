@@ -11,7 +11,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm  # noqa: E402
 
-from evaluate import ASSET_ORDER, MODEL_ORDER, STRESS, load  # noqa: E402
+from evaluate import ALL_MODELS, ASSET_ORDER, MODEL_ORDER, STRESS, load  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RES, FIG = ROOT / "results", ROOT / "figures"
@@ -45,17 +45,19 @@ def title(fig, t, sub):
     fig.text(0.01, 0.965, sub, fontsize=10, color=INK2, ha="left", va="bottom")
 
 
-def fig_conditional(df_cc):
+def fig_conditional(df_cc, ci):
     cc = df_cc[df_cc.h == 5]
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.4))
+    offs = np.linspace(-0.12, 0.12, len(MODEL_ORDER))
     for ax, col, nominal, lab in [(axes[0], "cov90", 0.90, "90% interval"), (axes[1], "cov98", 0.98, "98% interval")]:
-        for m in MODEL_ORDER:
+        for k, m in enumerate(MODEL_ORDER):
             g = cc[cc.model == m]
-            x = np.arange(len(g))
+            c = ci[(ci.model == m) & (ci.level == nominal) & (ci.vol_q != "gap Q1-Q5")].set_index("vol_q").loc[g.vol_q]
+            x = np.arange(len(g)) + offs[k]
+            ax.vlines(x, c.ci_low.values, c.ci_high.values, color=COLORS[m], lw=1, alpha=0.7)
             ax.plot(x, g[col].values, color=COLORS[m], lw=2, marker=MARKERS[m], ms=7,
                     markeredgecolor=SURFACE, markeredgewidth=1.2, label=m)
-        ax.axhline(nominal, color=INK, lw=1, ls=(0, (4, 3)))
-        ax.text(4.9, nominal, f"nominal {nominal:.0%}", va="bottom", ha="right", fontsize=8.5, color=INK2)
+        ax.axhline(nominal, color=INK, lw=1, ls=(0, (4, 3)), label=f"Nominal {nominal:.0%}")
         ax.yaxis.set_major_locator(matplotlib.ticker.MultipleLocator(0.02 if nominal < 0.95 else 0.01))
         ax.set_xticks(range(5), ["Q1\ncalm", "Q2", "Q3", "Q4", "Q5\nstressed"])
         ax.set_xlabel("Volatility state at forecast origin (quintile of trailing 21-day realised vol)")
@@ -64,8 +66,10 @@ def fig_conditional(df_cc):
         ax.set_title(lab, loc="left")
         ax.set_xlim(-0.3, 4.9)
     axes[0].legend(loc="lower left", fontsize=8.5, ncol=2)
-    title(fig, "Static simulators are right on average and wrong in every regime",
-          "1-week-ahead interval coverage by volatility state, 7 assets pooled, weekly origins 2008-2026")
+    axes[1].legend(handles=[axes[1].get_lines()[-1]], loc="lower left", fontsize=8.5)
+    title(fig, "Static simulators are right on average and wrong at both extremes",
+          "1-week-ahead coverage by volatility state at the origin, 7 assets pooled, 2008-2026. "
+          "Whiskers: 95% block-bootstrap CI")
     fig.tight_layout(rect=(0, 0, 1, 0.95))
     save(fig, "fig1_conditional_coverage")
 
@@ -184,7 +188,7 @@ def fig_stress(st):
     ax.axhline(1, color=INK, lw=1, ls=(0, (4, 3)))
     ax.text(len(d) - 0.45, 1.05, "honest = 1x", fontsize=8.5, color=INK2, ha="right", va="bottom")
     ax.set_xticks(x, [s.replace(" (", "\n(") for s in d.index], fontsize=8.5)
-    ax.set_ylabel("Observed / nominal exceedances of 98% band")
+    ax.set_ylabel("98%-band breaches, observed / nominal (x)")
     ax.legend(ncol=3, fontsize=8.5, loc="upper left")
     ax.grid(axis="x", visible=False)
     title(fig, "Crisis windows: who saw it coming?",
@@ -232,9 +236,46 @@ def fig_factorial(cc, st):
     save(fig, "fig7_factorial_dynamics_vs_tails")
 
 
+def fig_dumbbell(ci):
+    d = ci[(ci.level == 0.90) & ci.vol_q.isin(["Q1 calm", "Q5 stressed"])]
+    order = (d[d.vol_q == "Q5 stressed"].set_index("model").coverage.sort_values()).index.tolist()
+    fig, ax = plt.subplots(figsize=(10, 5.2))
+    calm_c, stress_c = "#2a78d6", "#eb6834"
+    for i, m in enumerate(order):
+        c1 = d[(d.model == m) & (d.vol_q == "Q1 calm")].iloc[0]
+        c5 = d[(d.model == m) & (d.vol_q == "Q5 stressed")].iloc[0]
+        ax.plot([c1.coverage, c5.coverage], [i, i], color=AXIS, lw=2.5, zorder=1, solid_capstyle="round")
+        for c, col, mk in [(c1, calm_c, "o"), (c5, stress_c, "D")]:
+            ax.hlines(i, c.ci_low, c.ci_high, color=col, lw=1.2, alpha=0.8, zorder=2)
+            ax.scatter(c.coverage, i, s=70, color=col, marker=mk, edgecolor=SURFACE, lw=1.2, zorder=3)
+        ax.text(1.015, i, f"{c5.coverage:.1%}", transform=ax.get_yaxis_transform(), va="center",
+                fontsize=9, color=INK, clip_on=False)
+        ax.text(1.13, i, f"{c1.coverage:.1%}", transform=ax.get_yaxis_transform(), va="center",
+                fontsize=9, color=INK2, clip_on=False)
+    ax.axvline(0.90, color=INK, lw=1, ls=(0, (4, 3)))
+    ax.text(0.901, len(order) - 0.45, "nominal 90%", fontsize=8.5, color=INK2)
+    ax.set_yticks(range(len(order)), order)
+    ax.xaxis.set_major_formatter(matplotlib.ticker.PercentFormatter(1, decimals=0))
+    ax.set_xlabel("Realised coverage of the 1-week 90% interval (95% block-bootstrap CI)")
+    ax.scatter([], [], color=stress_c, marker="D", s=50, label="Most stressed 20% of weeks")
+    ax.scatter([], [], color=calm_c, marker="o", s=50, label="Calmest 20% of weeks")
+    ax.legend(loc="upper left", fontsize=8.5)
+    ax.grid(axis="y", visible=False)
+    ax.set_xlim(0.72, 1.0)
+    for x, lab in [(1.015, "stressed"), (1.13, "calm")]:
+        ax.text(x, len(order) - 0.4, lab, transform=ax.get_yaxis_transform(), fontsize=8.5,
+                color=INK2, fontweight="bold", clip_on=False)
+    title(fig, "Calm vs stress: the gap is the problem",
+          "Every forecaster, including three control arms. A calibrated simulator puts both dots on the 90% line")
+    fig.tight_layout(rect=(0, 0, 1, 0.92))
+    save(fig, "fig8_calm_vs_stress_all_models")
+
+
 def main():
     df = load()
-    fig_conditional(pd.read_csv(RES / "conditional_coverage.csv"))
+    ci = pd.read_csv(RES / "conditional_coverage_ci.csv")
+    fig_conditional(pd.read_csv(RES / "conditional_coverage.csv"), ci)
+    fig_dumbbell(ci)
     fig_pit(df)
     fig_heat(pd.read_csv(RES / "summary_by_asset_model.csv"))
     fig_bands(df, "SPY")
