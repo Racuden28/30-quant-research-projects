@@ -86,8 +86,9 @@ def fig_knowability(k):
         ax2.plot(ys[a], i, "o", color=CAT[1], ms=8, markeredgecolor=SURFACE, markeredgewidth=1.5, zorder=3)
         ax2.plot(ya[a], i, "D", color=CAT[0], ms=7, markeredgecolor=SURFACE, markeredgewidth=1.5, zorder=3)
         lab = f"{ys[a]:,.0f}" if ys[a] < 1e4 else ">10,000"
-        ax2.text(ys[a], i + 0.28, lab, ha="center", fontsize=8, color=INK2)
-        ax2.text(ya[a], i - 0.42, f"{ya[a]:,.0f}", ha="center", fontsize=8, color=INK2)
+        box = dict(facecolor=SURFACE, edgecolor="none", pad=0.6)
+        ax2.text(ys[a], i + 0.17, lab, ha="center", va="bottom", fontsize=8, color=INK2, bbox=box, zorder=4)
+        ax2.text(ya[a], i - 0.17, f"{ya[a]:,.0f}", ha="center", va="top", fontsize=8, color=INK2, bbox=box, zorder=4)
     ax2.axvline(k.years.max(), color=INK, lw=1, ls=(0, (4, 3)))
     ax2.text(k.years.max() * 1.1, -0.75, "data we have (~20 yrs)", fontsize=8.5, color=INK2, va="center")
     ax2.set_ylim(-0.95, len(k) - 0.5)

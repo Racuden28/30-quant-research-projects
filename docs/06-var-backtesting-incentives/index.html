@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Is It Cheaper to Be Wrong?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does the Basel traffic light reward understating VaR? Closed form, Monte Carlo and 216,552 out-of-sample forecasts: with fat tails, yes.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 06 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 06</p>
+<h1>Is It Cheaper to Be Wrong?</h1>
+<p><strong>The incentive structure of the Basel VaR traffic light: closed form, Monte Carlo and 216,552 out-of-sample forecasts, 2008–2026</strong></p>
+<p><em>Project 06 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="The Basel plus-factor table vs the break-even schedule" loading="lazy" src="figures/fig1_break_even.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>A Value-at-Risk calculator is usually judged by how often its forecast is breached. Regulators turn
+those breaches into money: since 1996 a bank's market-risk charge is a multiple of its own reported
+VaR, and the multiple rises (the "plus factor") only when the bank sees five or more breaches in 250
+days. This project asks whether that rule makes honest reporting the cheapest strategy, or whether
+a bank that <strong>shades</strong> its VaR by a factor λ &lt; 1 pays less capital than it is penalised.</p>
+<p>The analysis has three parts. A <strong>closed form</strong> under i.i.d. losses gives the plus factor that would
+exactly offset the capital saved by shading. A <strong>Monte Carlo</strong> with GARCH(1,1)-t losses and the real
+quarterly review mechanics checks it. Then an <strong>empirical test</strong> runs six standard VaR/ES models
+(historical simulation, RiskMetrics, filtered HS, GARCH-t, GJR-GARCH skew-t, GJR-GARCH + EVT) strictly
+out of sample on seven ETFs and a multi-asset book, from April 2008 to November 2026, under both the
+Basel 2.5 rule and the FRTB rule.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The 1996 traffic light is the Gaussian break-even schedule, almost to the second decimal.</strong> If
+   losses are normal, the plus factor that exactly cancels the saving from shading is 0.40, 0.65, 0.88
+   and 0.99 at 5, 7, 9 and 10 expected exceptions. The Basel table charges 0.40, 0.65, 0.85 and 1.00.
+   Under normality, shading is roughly a zero-sum bet; the best "safe" shading saves 3.8% of capital.</li>
+<li><strong>With fat tails it is not.</strong> With Student-t losses (ν = 3), the break-even plus factor at 10
+   exceptions is 2.23, more than twice what the table charges. A bank can report 75% of its true VaR,
+   keep the chance of a red-zone year under 5%, and save <strong>17.6%</strong> of its capital (GARCH Monte Carlo:
+   17.1%, 95% CI 16.8–17.8%). The saving falls monotonically from 21% at ν = 2.5 to 3.8% at the
+   Gaussian limit. FRTB inherits the same incentive because its plus factor follows the same counts.</li>
+<li><strong>On real data the hidden room is smaller but systematic.</strong> For every one of the 48 series × model
+   cells, the capital-minimising reporting scale lies <em>below</em> the scale a strictly consistent score
+   calls honest (median gap 0.12). Without adding a single red-zone quarter, the median cell could have
+   cut its Basel 2.5 charge by 3.7% relative to its own forecast (up to 10.4%), and by 6.0% relative to
+   its calibrated forecast. The pre-registered test against λ = 1 passes only just: in 27 of 48 cells
+   (needed: 24) the bootstrap CI for the capital-optimal λ lies entirely below 1, and a run with an
+   earlier bootstrap seed gave 23, so this count is borderline.</li>
+<li><strong>A strictly consistent score points the other way.</strong> The FZ0 joint VaR/ES score and the quantile
+   score agree on the honest scale within 0.03 (median), and both are U-shaped around it. The capital
+   rule is monotone in λ until red quarters appear.</li>
+<li><strong>Without hindsight, the room cannot be harvested safely.</strong> An ex-ante "exception budget" rule
+   saves 7.1% (median) when it aims at 7 exceptions a year, but puts the bank in the red zone in 28% of
+   quarters, against 0% for honest reporting in most books. The traffic light's real teeth are the red
+   zone and crisis clustering, not the plus factor.</li>
+<li><strong>Picking the model by capital picks the wrong model.</strong> A bank choosing among its red-free models by
+   capital picks the model the FZ0 score ranks best in only 3 of 16 series × regime cases.</li>
+</ol>
+<p><strong>What this means.</strong> A VaR backtest that only counts exceptions is not incentive compatible once
+losses have fat tails, which they do on every asset here (Hill tail index 2.8 to 4.3). The fix the
+theory suggests is not a steeper table for one distribution but a capital add-on tied to a strictly
+consistent score, which rewards the honest forecast for any distribution.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>Most "VaR calculator" projects compute a number and count how often it was breached. That tells you
+whether a forecast is calibrated. It does not answer the question a regulator cares about: <strong>does the
+rule that turns breaches into capital make honesty the cheapest strategy?</strong></p>
+<p>The internal-models approach works like this. A bank reports its 99% one-day VaR each day. Its charge is</p>
+<p>$$\text{charge}<em>t = \max\Big(\text{VaR}^{10d}</em>{t-1},\; (3 + \text{plus}<em>t)\cdot\tfrac{1}{60}\textstyle\sum</em>{i=1}^{60}\text{VaR}^{10d}_{t-i}\Big),$$</p>
+<p>where the plus factor depends on the number N of days in the last 250 on which the loss exceeded the
+reported VaR (green N ≤ 4: 0; yellow 5–9: 0.40 to 0.85; red N ≥ 10: 1.00, and the supervisor may reject
+the model). FRTB kept the machinery: 1.5 + plus (0 to 0.50) now multiplies the 97.5% Expected Shortfall,
+but the plus factor is still driven by 99% VaR exceptions.</p>
+<p>A bank that reports λ·VaR pays λ times less, and is punished only through the plus factor. So the
+question has a precise form:</p>
+<blockquote>
+<p><strong>Is λ · (3 + E[plus(N) | λ]) minimised at λ = 1?</strong></p>
+</blockquote>
+<p>Pieces of the answer exist. Pérignon &amp; Smith (2010) and Kerkhof &amp; Melenberg (2004) study banks' reported
+VaRs, Berkowitz, Christoffersen &amp; Pelletier (2011) show that exception-count tests have little power at
+250 observations, and elicitability theory (Gneiting 2011; Fissler &amp; Ziegel 2016) says that scoring
+functions can make honest reporting optimal while ES alone cannot. What I could not find is the direct
+calculation: <strong>how much capital the traffic light lets a bank save by shading, how that depends on the
+tail of the loss distribution, and what it looks like with real models on real data.</strong></p>
+<h2>2. Hypotheses and pre-registration</h2>
+<p>H1 and H2 test the closed form; their thresholds were set after the first theory run, so they are
+checks, not pre-registered tests. <strong>H3 to H5 were written down before any capital, shading or
+model-choice number was computed</strong> (only the forecasts' exception rates had been looked at).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Hypothesis</th>
+<th>Falsified if</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Under i.i.d. Gaussian losses the plus-factor table is close to break-even.</td>
+<td>Safe shading saves &gt; 5% at ν = ∞</td>
+<td><strong>Holds</strong> (3.8%)</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>The saving from safe shading grows as the tail gets fatter.</td>
+<td>Saving not monotone in ν</td>
+<td><strong>Holds</strong> (closed form and Monte Carlo)</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>On real data, most cells have a capital-optimal scale below 1 that adds no red-zone quarters.</td>
+<td>&lt; 24 of 48 cells with a 95% block-bootstrap CI for λ_capital entirely below 1</td>
+<td><strong>Borderline pass</strong> (27/48; 23/48 with another seed); against the calibrated scale: 41/48</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>A strictly consistent score does not reward that shading.</td>
+<td>Median |λ_FZ0 − λ_quantile| &gt; 0.05</td>
+<td><strong>Holds</strong> (0.03)</td>
+</tr>
+<tr>
+<td>H5</td>
+<td>Choosing the model by capital does not pick the score-best model.</td>
+<td>Same model in ≥ 50% of cases</td>
+<td><strong>Holds</strong> (3/16), but only 2 of 13 differences are significant</td>
+</tr>
+</tbody>
+</table></div>
+<h2>3. Part A: when does shading pay? (closed form)</h2>
+<p>Let the true one-day loss have 99% quantile q, and let the bank report λq. With i.i.d. losses the number
+of exceptions in a year is N ~ Binomial(250, p(λ)), with p(λ) = P(L &gt; λq), and in steady state the
+charge is proportional to</p>
+<p>$$C(\lambda) = \lambda\,\big(3 + \mathbb{E}[\text{plus}(N)]\big).$$</p>
+<p><strong>The break-even schedule.</strong> Fix the expected number of exceptions a shading bank would produce, N̄.
+Solving 250·p(λ) = N̄ gives the shading λ(N̄), and the plus factor that exactly cancels the saving is
+plus*(N̄) = 3(1/λ(N̄) − 1). This depends only on the shape of the tail.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>expected exceptions</th>
+<th>5</th>
+<th>7</th>
+<th>9</th>
+<th>10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Basel plus factor</td>
+<td>0.40</td>
+<td>0.65</td>
+<td>0.85</td>
+<td>1.00</td>
+</tr>
+<tr>
+<td>break-even, Gaussian</td>
+<td>0.40</td>
+<td>0.65</td>
+<td>0.88</td>
+<td>0.99</td>
+</tr>
+<tr>
+<td>break-even, t (ν = 10)</td>
+<td>0.51</td>
+<td>0.84</td>
+<td>1.12</td>
+<td>1.26</td>
+</tr>
+<tr>
+<td>break-even, t (ν = 5)</td>
+<td>0.66</td>
+<td>1.07</td>
+<td>1.44</td>
+<td>1.61</td>
+</tr>
+<tr>
+<td>break-even, t (ν = 3)</td>
+<td>0.91</td>
+<td>1.49</td>
+<td>1.99</td>
+<td>2.23</td>
+</tr>
+</tbody>
+</table></div>
+<p>The 1996 table reproduces the Gaussian break-even almost exactly (Figure 1). Under normality, shading
+moves the bank along a nearly flat line. With fat tails, shading the VaR by a given fraction produces
+<em>fewer</em> extra exceptions, because the quantile is far out in a tail that thins slowly: a t3 bank that
+reports 0.8·VaR breaches 1.8% of days, a Gaussian bank 3.1%. The plus factor therefore bites late and
+too gently.</p>
+<p><strong>Unconstrained, shading always pays.</strong> Because the plus factor is capped at +1 (one third of the base
+multiplier), the unconstrained minimum is at the edge of the grid (λ = 0.5, a 34% saving) for every ν.
+The only real deterrent is the red zone, which in practice can trigger model rejection. So the relevant
+question is how much shading pays <strong>while keeping the chance of a red year at or below 5%</strong>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>tail index ν</th>
+<th>2.5</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>10</th>
+<th>30</th>
+<th>Gaussian</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>safe λ</td>
+<td>0.71</td>
+<td>0.75</td>
+<td>0.78</td>
+<td>0.80</td>
+<td>0.82</td>
+<td>0.84</td>
+<td>0.86</td>
+<td>0.88</td>
+</tr>
+<tr>
+<td>capital saved</td>
+<td>21.2%</td>
+<td>17.6%</td>
+<td>13.7%</td>
+<td>11.4%</td>
+<td>10.0%</td>
+<td>7.4%</td>
+<td>4.9%</td>
+<td>3.8%</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Theory and Monte Carlo" loading="lazy" src="figures/fig2_theory_safe_shading.png" /></p>
+<p><strong>Monte Carlo check.</strong> 200 paths of 4,000 days from GARCH(1,1) with standardised t innovations
+(ω = 0.02, α = 0.08, β = 0.90), the bank knows the true conditional VaR, the supervisor counts
+exceptions over 250 days and resets the plus factor every quarter, and the constraint is ≤ 5% of quarters
+in the red zone. Results agree with the closed form (Figure 2, right): ν = 3, λ = 0.75, saving 17.1%
+(95% bootstrap CI 16.8–17.8%); ν = 6, 9.3%; ν = 50, 4.3%. Volatility clustering does not rescue the rule.</p>
+<h2>4. Part B: data and models</h2>
+<p><strong>Data.</strong> The same daily total-return series as <a href="../01-monte-carlo-calibration/">project 01</a>: SPY, EEM,
+TLT, HYG, GLD, USO and URA (Yahoo Finance adjusted closes, log returns, April 2006 to 20 November 2026),
+plus a <strong>multi-asset book</strong>: a daily rebalanced 40/10/35/15 mix of SPY, EEM, TLT and GLD. Reusing the
+universe is deliberate: project 01 showed which return models are calibrated at 90–98%; this one goes
+to the 99% tail and asks what the regulator does with it.</p>
+<p><strong>Forecasters.</strong> Each one issues a one-day 99% VaR, a 97.5% VaR and a 97.5% ES every day, using only
+data before that day. Parametric models are re-estimated every 20 days on a rolling 500-day window and
+filtered daily with frozen parameters, as in production.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Volatility</th>
+<th>Shock distribution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HS-250</td>
+<td>none (last 250 days)</td>
+<td>empirical</td>
+</tr>
+<tr>
+<td>RiskMetrics</td>
+<td>EWMA, λ = 0.94</td>
+<td>Gaussian</td>
+</tr>
+<tr>
+<td>FHS-EWMA</td>
+<td>EWMA, λ = 0.94</td>
+<td>empirical standardised residuals (500 days)</td>
+</tr>
+<tr>
+<td>GARCH-t</td>
+<td>GARCH(1,1)</td>
+<td>standardised Student t</td>
+</tr>
+<tr>
+<td>GJR-skew-t</td>
+<td>GJR-GARCH(1,1,1)</td>
+<td>Hansen skewed t</td>
+</tr>
+<tr>
+<td>GJR-EVT</td>
+<td>GJR-GARCH(1,1,1), Gaussian QML</td>
+<td>GPD tail above the 90% residual quantile (McNeil &amp; Frey 2000)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Out-of-sample periods start on 8 April 2008 (HYG: April 2009, URA: November 2012) and end on
+20 November 2026: 36,092 forecast days per model, <strong>216,552 VaR/ES forecasts in total</strong>.</p>
+<p><strong>Capital rules.</strong> Basel 2.5: 3 + plus (1996 table) times the 60-day mean of √10·VaR99. FRTB (simplified):
+1.5 + plus (MAR99 table) times the 60-day mean of √10·ES97.5, with no liquidity horizons, stressed
+calibration or non-modellable factors. In both, exceptions are counted against the <em>reported</em>
+λ·VaR99 over the last 250 days, the plus factor is reset every 63 trading days, and the first 250
+out-of-sample days are burn-in.</p>
+<p><strong>Shading.</strong> A bank reports λ × (its model's VaR and ES) with λ on a grid from 0.50 to 1.50. The
+<em>capital-optimal</em> λ minimises the average charge subject to <strong>no more red-zone quarters than honest
+reporting</strong>. The <em>honest</em> λ minimises the quantile score of VaR99 (equivalently, recalibrates the
+model's scale); I also report the λ that minimises the FZ0 score of (VaR97.5, ES97.5). Uncertainty
+for λ_capital comes from a moving-block bootstrap with 250-day blocks (200 replications for Basel 2.5,
+100 for FRTB).</p>
+<h2>5. Classical backtests: what a standard VaR project would report</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>99% exception rate (avg)</th>
+<th>Kupiec rejects (Holm, of 8)</th>
+<th>DQ rejects</th>
+<th>Acerbi–Szekely Z2 rejects</th>
+<th>FZ0 rank (avg)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HS-250</td>
+<td>1.49%</td>
+<td>4</td>
+<td>8</td>
+<td>0</td>
+<td>6.0</td>
+</tr>
+<tr>
+<td>RiskMetrics</td>
+<td>2.00%</td>
+<td>7</td>
+<td>8</td>
+<td>6</td>
+<td>4.6</td>
+</tr>
+<tr>
+<td>FHS-EWMA</td>
+<td>1.21%</td>
+<td>0</td>
+<td>5</td>
+<td>0</td>
+<td>3.8</td>
+</tr>
+<tr>
+<td>GARCH-t</td>
+<td>1.46%</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>2.6</td>
+</tr>
+<tr>
+<td>GJR-skew-t</td>
+<td>1.15%</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td><strong>1.6</strong></td>
+</tr>
+<tr>
+<td>GJR-EVT</td>
+<td>1.16%</td>
+<td>0</td>
+<td>4</td>
+<td>0</td>
+<td>2.4</td>
+</tr>
+</tbody>
+</table></div>
+<p>Tests are Kupiec (unconditional coverage), Christoffersen (independence), the Engle–Manganelli dynamic
+quantile test (4 lags + VaR), and the Acerbi–Szekely Z2 test for ES with a HAC standard error. p-values
+are adjusted with Holm across the 48 cells of each test (Benjamini–Hochberg in <code>results/backtests.csv</code>).
+The ranking is the familiar one: an asymmetric GARCH with a fat-tailed, skewed shock is best (lowest
+FZ0 score in 6 of 8 series), RiskMetrics' Gaussian tail is too thin, and historical simulation reacts
+too slowly. This table is where most VaR projects end. It says nothing about whether the bank had a
+reason to report these numbers.</p>
+<h2>6. Results</h2>
+<h3>6.1 A cheaper scale exists almost everywhere</h3>
+<p><img alt="Capital saved by ex-post safe shading" loading="lazy" src="figures/fig3_saving_heatmap.png" /></p>
+<p>In 45 of 48 cells some λ &lt; 1 lowers the Basel 2.5 charge without adding a red-zone quarter. The median
+saving is 3.7% of the charge (the median cell's block-bootstrap 95% CI is 0.4% to 9.1%), the largest
+10.4% (FHS-EWMA on gold). The three zero cells are historical simulation on
+SPY, USO and URA, whose crisis exceptions already use up the red-zone budget. The FRTB numbers are
+almost identical (median 3.7%), because the incentive comes from the same exception counts.</p>
+<p>The pre-registered test (H3) asks for a bootstrap CI entirely below λ = 1. That happens in 27 of 48 cells
+(Basel 2.5) and 25 of 48 (FRTB), just above the threshold of 24. The count is sensitive to the bootstrap
+draw: an earlier run with a different seed gave 23 for Basel 2.5, so I read H3 as borderline, not as
+confirmed. The more meaningful
+comparison is against the <em>calibrated</em> scale, because several models under-predict risk to begin with
+(honest λ &gt; 1 for HS, GARCH-t and RiskMetrics). Against that, the CI lies entirely below the honest λ in
+<strong>41 of 48</strong> cells, and the gap between the two is positive in <strong>all 48</strong> (median 0.12).</p>
+<h3>6.2 Opposite incentives from the same forecasts</h3>
+<p><img alt="Score vs capital" loading="lazy" src="figures/fig4_score_vs_capital.png" /></p>
+<p>For the multi-asset book with the best model (GJR-skew-t), the charge keeps falling as λ shrinks until
+red-zone quarters appear, and it is minimised at λ = 0.93. Both strictly consistent scores are U-shaped
+and minimised at λ = 1.04: the model is, if anything, slightly too optimistic, and the score asks for
+more risk, not less. Across all 48 cells the FZ0 and quantile scores agree on the honest scale within
+0.03 (median), which supports H4.</p>
+<p><img alt="Gaming gap" loading="lazy" src="figures/fig5_gaming_gap.png" /></p>
+<p>The gap is largest for the models that most need upward correction. RiskMetrics' honest scale is 1.18
+(its Gaussian tail is too thin), but its capital-optimal scale is 0.98: a bank running RiskMetrics would
+keep a model that under-reports risk by about 15% and still have no capital reason to fix it. Measured
+against calibrated reporting, the median cell saves 6.0% (RiskMetrics: 8.4%).</p>
+<h3>6.3 Why the empirical room is smaller than the theory, and a null result</h3>
+<p>Theory says t-like tails (ν ≈ 3 to 4, which is what the Hill estimates show) leave room for 14–18%
+savings. The empirical median is 3.7%. Three things close the gap:</p>
+<ol>
+<li><strong>The constraint is stricter.</strong> "No more red quarters than honest reporting over 18 years" is much
+   tighter than "≤ 5% chance of a red year"; honest reporting itself has red quarters in only 17 of 48
+   cells.</li>
+<li><strong>Exceptions cluster.</strong> 2008, March 2020 and 2022 produce runs of breaches for every model
+   (Figure 8). A shaded VaR turns those runs into red quarters, so the crises, not the average year,
+   decide how much a bank can shade.</li>
+<li><strong>The tail is not the whole story.</strong> Across the eight books the Hill tail index does <strong>not</strong> predict
+   the room to shade (Spearman ρ = 0.04, n = 8; Figure 7). High yield (index 2.8) has the most room and
+   long Treasuries (4.3) the second most among the large-saving books. With eight points this is a weak
+   test, but it says the i.i.d. tail index is not a usable rule of thumb on real data.</li>
+</ol>
+<p><img alt="Tails vs saving" loading="lazy" src="figures/fig7_tails_vs_saving.png" /></p>
+<h3>6.4 Without hindsight</h3>
+<p>The ex-post optimum uses the whole sample. A real bank would have to choose λ in advance. The simplest
+rule: at each quarterly reset, pick the smallest λ that would have kept the <em>past</em> 250 days at or below
+a budget of B exceptions.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>budget B</th>
+<th>median charge vs honest</th>
+<th>median red-zone quarters</th>
+<th>extra red quarters vs honest</th>
+<th>cells with more red quarters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4 (stay green)</td>
+<td>−2.7%</td>
+<td>5.6%</td>
+<td>+4.4 pp</td>
+<td>42 / 48</td>
+</tr>
+<tr>
+<td>7 (mid-yellow)</td>
+<td>−7.1%</td>
+<td>28.2%</td>
+<td>+28.2 pp</td>
+<td>48 / 48</td>
+</tr>
+<tr>
+<td>9 (edge of red)</td>
+<td>−10.8%</td>
+<td>52.1%</td>
+<td>+49.3 pp</td>
+<td>48 / 48</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Adaptive shading" loading="lazy" src="figures/fig6_adaptive_shading.png" /></p>
+<p>The rule saves capital but overshoots its own budget (3.3% exception rate when aiming at 2.8%), because
+volatility regimes change faster than the 250-day lookback. Under Basel 2.5 a red zone can mean losing
+the model approval, so a rational bank would not run this rule. That is the honest conclusion of this
+section: <strong>the traffic light leaves money on the table ex post, but harvesting it ex ante requires
+taking red-zone risk.</strong> The incentive problem is real at the margin (B = 4 still saves 2.7% for 4.4 pp
+of extra red quarters), not a free lunch.</p>
+<h3>6.5 Choosing the model by capital</h3>
+<p>A bank does not have to scale its numbers: it can choose among models. Among each series' red-free
+models, the capital-minimising choice is the FZ0-best model in only <strong>3 of 16</strong> series × regime cases
+(Basel 2.5: EEM, HYG; FRTB: HYG). It picks RiskMetrics for gold and Treasuries, and plain GARCH-t for
+crude oil. The capital pick is significantly worse by the FZ0 score (Diebold–Mariano, HAC) in two
+series, gold (p = 0.02) and the multi-asset book (p = 0.02); elsewhere the difference is not
+significant at 5%. In the multi-asset book the FZ0-best model has red quarters, so the bank's red-free
+choice costs it 10% <em>more</em> capital; capital and accuracy pull apart in both directions.</p>
+<h3>6.6 Crises</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>window</th>
+<th>expected exceptions per model</th>
+<th>HS-250</th>
+<th>RiskMetrics</th>
+<th>FHS-EWMA</th>
+<th>GARCH-t</th>
+<th>GJR-skew-t</th>
+<th>GJR-EVT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GFC, Sep 2008–Mar 2009 (6 books)</td>
+<td>8.8</td>
+<td>58</td>
+<td>21</td>
+<td>12</td>
+<td>16</td>
+<td>11</td>
+<td>14</td>
+</tr>
+<tr>
+<td>COVID, 19 Feb–30 Apr 2020 (8 books)</td>
+<td>4.1</td>
+<td>54</td>
+<td>37</td>
+<td>29</td>
+<td>28</td>
+<td>24</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Rates, Jan–Oct 2022 (8 books)</td>
+<td>16.7</td>
+<td>49</td>
+<td>42</td>
+<td>18</td>
+<td>32</td>
+<td>25</td>
+<td>23</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig8_stress_exceptions.png" /></p>
+<p>Every model breaches too often in March 2020, five to thirteen times the nominal rate. Historical
+simulation is the worst in every window. These are exactly the quarters in which a shaded VaR crosses
+into the red zone, which is why the empirical safe shading in 6.1 is modest.</p>
+<h2>7. What this means in practice</h2>
+<ul>
+<li><strong>For supervisors.</strong> A plus-factor table that is break-even for Gaussian losses is too lenient for the
+  tails banks actually face. A steeper table would only fix one distribution. A rule that adds capital in
+  proportion to a strictly consistent score (FZ0 for VaR and ES together) rewards the honest forecast for
+  every distribution. Comparative backtesting in the sense of Nolde &amp; Ziegel (2017) is the natural route.</li>
+<li><strong>For risk managers.</strong> Read exception-count backtests as a lower bound on what could be wrong. A model
+  can sit in the green zone and still need a 10–18% upward rescaling (RiskMetrics, GARCH-t, HS here).</li>
+<li><strong>For anyone building a VaR tool.</strong> Report the score-optimal scale alongside the exception count. It is
+  one line of code (minimise the quantile loss over λ) and it shows the direction and size of the bias.</li>
+</ul>
+<h2>8. Limitations</h2>
+<ul>
+<li><strong>Single-asset books.</strong> A trading book aggregates thousands of positions. The 40/10/35/15 book is a
+  minimal portfolio; diversification thins the tails and should shrink the room to shade.</li>
+<li><strong>Simplified FRTB.</strong> No liquidity horizons, stressed ES, desk-level P&amp;L attribution or the 97.5%
+  backtest; the FRTB result only concerns the plus-factor channel.</li>
+<li><strong>Constant scaling.</strong> Banks do not literally multiply by λ. Model choice, window length, data
+  cleaning and decay factors are softer levers with the same effect; 6.5 covers only the first.</li>
+<li><strong>Supervisory discretion.</strong> The yellow zone is a presumption, not an automatic penalty, and
+  supervisors may waive exceptions. I apply the table mechanically.</li>
+<li><strong>Ex-post optimum.</strong> 6.1 is an upper bound on what a bank could achieve; 6.4 shows that a simple
+  ex-ante rule overshoots. A smarter ex-ante rule (for example, conditioning on implied volatility)
+  might do better.</li>
+<li><strong>Data.</strong> Yahoo adjusted closes rounded to one basis point; USO's April 2020 roll and URA's short
+  history are included as they are.</li>
+<li><strong>H1 and H2 were not pre-registered.</strong> Their thresholds were set after the first theory run.</li>
+<li><strong>H4 is a weak test.</strong> Both scores are strictly consistent by construction; the hypothesis only checks
+  that the two honest scales agree on real data, so the informative number is the gap in 6.1, not H4.</li>
+<li><strong>Bootstrap seams.</strong> Concatenating 250-day blocks breaks the 60-day average and the 250-day exception
+  count at each seam, which adds noise to the CIs for λ_capital.</li>
+<li><strong>Model choice is ex post.</strong> "Red-free" in 6.5 is judged on the whole sample, like the optimum in 6.1.</li>
+</ul>
+<h2>9. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+./run_all.sh          # tests, forecasts, theory, evaluation, figures (about 5 minutes on 4 cores)
+</code></pre>
+<p><code>src/fetch_data.py</code> rebuilds the data file from Yahoo Finance; the committed CSV is the same file as in
+project 01. Every number in this README is in <code>results/</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>file</th>
+<th>contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>forecasts.csv.gz</code></td>
+<td>216,552 daily VaR99, VaR97.5 and ES97.5 forecasts with realised returns</td>
+</tr>
+<tr>
+<td><code>theory_break_even.csv</code>, <code>theory_curves.csv</code>, <code>theory_optimum.csv</code>, <code>theory_mc_garch.csv</code></td>
+<td>Part A</td>
+</tr>
+<tr>
+<td><code>backtests.csv</code>, <code>scores.csv</code></td>
+<td>classical tests (raw, Holm, BH) and FZ0 / quantile scores with DM tests</td>
+</tr>
+<tr>
+<td><code>capital_curves.csv.gz</code>, <code>shading.csv</code></td>
+<td>charge vs λ for every cell and regime; honest vs capital-optimal λ with CIs</td>
+</tr>
+<tr>
+<td><code>adaptive.csv</code>, <code>adaptive_lambda_paths.csv.gz</code></td>
+<td>ex-ante exception-budget rule</td>
+</tr>
+<tr>
+<td><code>model_choice.csv</code>, <code>stress.csv</code>, <code>tail_index.csv</code></td>
+<td>sections 6.3, 6.5, 6.6</td>
+</tr>
+</tbody>
+</table></div>
+<p>Tests (<code>python -m pytest tests -q</code>, 17 tests) cover the backtests against known cases, the capital
+mechanics against a brute-force loop, the strict consistency of both scores, the EVT and skew-t tail
+formulas, the absence of look-ahead in the forecasters, and the headline fact that the Basel table
+matches the Gaussian break-even schedule.</p>
+<h2>10. Repository layout</h2>
+<pre><code>06-var-backtesting-incentives/
+├── README.md            this paper
+├── LINKEDIN_POST.md
+├── run_all.sh  requirements.txt
+├── data/                etf_daily_log_returns.csv (shared with project 01)
+├── src/
+│   ├── models.py        the six VaR/ES forecasters
+│   ├── backtest.py      rolling out-of-sample driver
+│   ├── backtests.py     coverage tests, Z2, quantile and FZ0 scores, DM, Basel/FRTB capital
+│   ├── theory.py        closed form, break-even schedule, GARCH Monte Carlo
+│   ├── evaluate.py      everything in sections 5 and 6
+│   └── figures.py
+├── tests/test_core.py
+├── results/  figures/
+</code></pre>
+<p><strong>Related projects.</strong> <a href="../01-monte-carlo-calibration/">01</a> (calibration of return simulators, same data),
+13 (GARCH forecasting), 23 (deflated Sharpe: another case where a naive statistic rewards the wrong behaviour).</p>
+<h2>References</h2>
+<ul>
+<li>Acerbi, C. &amp; Szekely, B. (2014). Backtesting Expected Shortfall. <em>Risk</em>, December.</li>
+<li>Basel Committee on Banking Supervision (1996). <em>Supervisory framework for the use of "backtesting" in conjunction with the internal models approach to market risk capital requirements.</em></li>
+<li>Basel Committee on Banking Supervision (2019). <em>Minimum capital requirements for market risk</em> (MAR33, MAR99).</li>
+<li>Berkowitz, J., Christoffersen, P. &amp; Pelletier, D. (2011). Evaluating Value-at-Risk models with desk-level data. <em>Management Science</em> 57(12).</li>
+<li>Christoffersen, P. (1998). Evaluating interval forecasts. <em>International Economic Review</em> 39(4).</li>
+<li>Engle, R. &amp; Manganelli, S. (2004). CAViaR. <em>Journal of Business &amp; Economic Statistics</em> 22(4).</li>
+<li>Fissler, T. &amp; Ziegel, J. (2016). Higher order elicitability and Osband's principle. <em>Annals of Statistics</em> 44(4).</li>
+<li>Gneiting, T. (2011). Making and evaluating point forecasts. <em>JASA</em> 106(494).</li>
+<li>Kerkhof, J. &amp; Melenberg, B. (2004). Backtesting for risk-based regulatory capital. <em>Journal of Banking &amp; Finance</em> 28(8).</li>
+<li>Kupiec, P. (1995). Techniques for verifying the accuracy of risk measurement models. <em>Journal of Derivatives</em> 3(2).</li>
+<li>McNeil, A. &amp; Frey, R. (2000). Estimation of tail-related risk measures for heteroscedastic financial time series. <em>Journal of Empirical Finance</em> 7(3–4).</li>
+<li>Nolde, N. &amp; Ziegel, J. (2017). Elicitability and backtesting: perspectives for banking regulation. <em>Annals of Applied Statistics</em> 11(4).</li>
+<li>Patton, A., Ziegel, J. &amp; Chen, R. (2019). Dynamic semiparametric models for expected shortfall (and Value-at-Risk). <em>Journal of Econometrics</em> 211(2).</li>
+<li>Pérignon, C. &amp; Smith, D. (2010). The level and quality of Value-at-Risk disclosure by commercial banks. <em>Journal of Banking &amp; Finance</em> 34(2).</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/06-var-backtesting-incentives">06-var-backtesting-incentives on GitHub</a>.</footer>
+</div>
+</body>
+</html>

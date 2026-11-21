@@ -1,0 +1,3 @@
+results/forecasts_h*.npz
+__pycache__/
+.pytest_cache/

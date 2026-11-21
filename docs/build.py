@@ -26,9 +26,11 @@ PROJECTS = [
     # (number, folder or None, title, one-line question)
     (1, "01-monte-carlo-calibration", "Which Monte Carlo Tells the Truth?",
      "Five return simulators, 112,626 out-of-sample forecasts, seven asset classes: whose probabilities come true in calm and in crisis?"),
-    (2, None, "Returns & volatility dashboard", ""), (3, None, "Moving-average backtest", ""),
+    (2, "02-volatility-dashboard-audit", "What Your Volatility Dashboard Gets Wrong",
+     "120 versions of the textbook volatility number on SPY and nine sector ETFs: which hidden dashboard choice actually matters out of sample?"), (3, None, "Moving-average backtest", ""),
     (4, None, "Black–Scholes pricer", ""), (5, None, "Efficient frontier", ""),
-    (6, None, "Value-at-Risk calculator", ""), (7, "07-kelly-estimation-risk", "The Kelly Fraction You Cannot Know",
+    (6, "06-var-backtesting-incentives", "Is It Cheaper to Be Wrong?",
+     "Does the Basel traffic light reward understating VaR? Closed form, Monte Carlo and 216,552 out-of-sample forecasts: with fat tails, yes."), (7, "07-kelly-estimation-risk", "The Kelly Fraction You Cannot Know",
      "With 20 years of data, can you even know the sign of the Kelly bet, and what should you size by instead?"),
     (8, None, "Correlation structure", ""), (9, None, "Beta & CAPM regression", ""),
     (10, "10-market-terminal", "What on a Market Screen Is Worth Looking At?",
@@ -45,7 +47,7 @@ PROJECTS = [
     (30, None, "Deep hedging", ""),
 ]
 # extra folders inside a project that the site serves as-is (e.g. an interactive page)
-STATIC_DIRS = ("terminal",)
+STATIC_DIRS = ("terminal", "dashboard")
 TIERS = {range(1, 11): "Foundations", range(11, 21): "Intermediate", range(21, 31): "Advanced"}
 
 CSS = """

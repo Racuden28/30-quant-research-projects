@@ -14,11 +14,11 @@ in the write-up as CSV, and a section on what does *not* work.
 | # | Project | Research question | Status |
 |---|---|---|---|
 | 01 | [Which Monte Carlo Tells the Truth?](01-monte-carlo-calibration/) | Do the probabilities from five standard return simulators come true out of sample, in calm and in crisis? | ✅ Published |
-| 02 | Returns & volatility dashboard | | ⏳ Planned |
+| 02 | [What Your Volatility Dashboard Gets Wrong](02-volatility-dashboard-audit/) | Which hidden choice in a volatility dashboard (estimator, window, √t scaling) matters out of sample? | ✅ Published |
 | 03 | Moving-average backtest | | ⏳ Planned |
 | 04 | Black–Scholes pricer | | ⏳ Planned |
 | 05 | Efficient frontier | | ⏳ Planned |
-| 06 | Value-at-Risk calculator | | ⏳ Planned |
+| 06 | [Is It Cheaper to Be Wrong?](06-var-backtesting-incentives/) | Does the Basel VaR traffic light reward banks for understating risk when tails are fat? | ✅ Published |
 | 07 | [The Kelly Fraction You Cannot Know](07-kelly-estimation-risk/) | How many years of data does it take to know the Kelly bet, and what survives out of sample when you don't? | ✅ Published |
 | 08 | Correlation structure | | ⏳ Planned |
 | 09 | Beta & CAPM regression | | ⏳ Planned |

@@ -1,0 +1,17 @@
+series,regime,capital_pick,fz0_best,same,charge_saving_vs_fz0_best,fz0_penalty_of_pick,dm_p_pick_vs_best,n_red_free
+SPY,Basel 2.5,GJR-skew-t,GJR-EVT,False,0.01672,0.00361,0.67709,3
+SPY,FRTB,GJR-skew-t,GJR-EVT,False,0.00145,0.00361,0.67709,3
+EEM,Basel 2.5,GJR-skew-t,GJR-skew-t,True,0.00000,0.00000,1.00000,3
+EEM,FRTB,GJR-EVT,GJR-skew-t,False,0.00411,0.00372,0.44115,3
+TLT,Basel 2.5,RiskMetrics,GARCH-t,False,0.02325,0.01189,0.43238,5
+TLT,FRTB,RiskMetrics,GARCH-t,False,0.02759,0.01189,0.43238,5
+HYG,Basel 2.5,GJR-skew-t,GJR-skew-t,True,0.00000,0.00000,1.00000,4
+HYG,FRTB,GJR-skew-t,GJR-skew-t,True,0.00000,0.00000,1.00000,4
+GLD,Basel 2.5,RiskMetrics,GJR-skew-t,False,0.04662,0.05561,0.02336,6
+GLD,FRTB,RiskMetrics,GJR-skew-t,False,0.08014,0.05561,0.02336,6
+USO,Basel 2.5,GARCH-t,GJR-skew-t,False,0.04504,0.02343,0.21221,4
+USO,FRTB,GARCH-t,GJR-skew-t,False,0.04441,0.02343,0.21221,4
+URA,Basel 2.5,GJR-EVT,GJR-skew-t,False,0.00030,0.01596,0.06463,5
+URA,FRTB,GJR-EVT,GJR-skew-t,False,0.01612,0.01596,0.06463,5
+BOOK,Basel 2.5,FHS-EWMA,GJR-skew-t,False,-0.10177,0.04692,0.01586,1
+BOOK,FRTB,FHS-EWMA,GJR-skew-t,False,-0.10092,0.04692,0.01586,1
