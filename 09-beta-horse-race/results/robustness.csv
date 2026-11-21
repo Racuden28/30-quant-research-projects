@@ -1,0 +1,23 @@
+variant,ratio_next_month_daily,ratio_next_year_monthly
+"OLS-1Y-D (main, 252d)",0.6118,1.1008
+OLS daily 126d,0.6347,1.1604
+OLS daily 504d,0.6455,1.0965
+OLS daily 1260d,0.7234,1.1055
+OLS monthly 36m,1.0290,1.0437
+OLS monthly 120m,1.1493,1.1039
+EWMA hl 63d,0.5866,1.0985
+"EWMA (main, hl 126d)",0.5912,1.0623
+EWMA hl 252d,0.6217,1.0525
+Dimson 1 lag,0.6768,0.9089
+"Dimson (main, 2 lags)",0.6875,0.9085
+Dimson 5 lags,0.8358,0.9272
+Welch-SWA (main),0.5816,1.0572
+Welch: age-weighting only,0.5853,1.0782
+Welch: winsorizing only,0.6696,1.0955
+Welch: neither (OLS 756d),0.6735,1.1084
+"Welch bounds (-1, 3)",0.5802,1.0422
+"Welch bounds (-3, 5)",0.5820,1.0637
+Vasicek (main),0.6037,1.0640
+Blume on monthly 5y beta,0.8756,0.9114
+Vasicek on monthly 5y beta,0.8824,0.9354
+Dimson-adjusted 1y + Vasicek,0.6735,0.8804

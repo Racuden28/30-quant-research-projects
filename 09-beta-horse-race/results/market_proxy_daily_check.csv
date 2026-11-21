@@ -1,0 +1,7 @@
+check,value
+sample_days,400
+corr_with_official_daily_MktRF,0.99963
+slope_on_official,0.99954
+mean_abs_diff_pct,0.0152
+official_daily_sd_pct,1.038
+note,"400 random days (seed 1) compared in-browser against F-F_Research_Data_Factors_daily (CRSP 202609)"

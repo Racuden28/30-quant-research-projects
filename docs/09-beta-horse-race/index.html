@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Beta You Hedge With</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Nine beta estimators, 49 industries, 1929–2026, scored by hedge loss: which beta should you hedge with, and over what horizon?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 09 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 09</p>
+<h1>The Beta You Hedge With</h1>
+<p><strong>A 97-year out-of-sample horse race of nine market-beta estimators, and whether a better beta rescues the CAPM</strong></p>
+<p><em>Project 09 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Same forecasts, two horizons" loading="lazy" src="figures/fig1_horizon_flip.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>The CAPM beta is the most estimated number in finance, and the textbook recipe (OLS on five years of
+monthly returns) is still the default in courses, data terminals and valuation reports. Two questions
+are usually asked separately. Which estimator forecasts beta best? And is the flat security market
+line (high-beta assets do not earn more) just a symptom of noisy betas? This project answers both on
+the same forecasts, with a loss function that a practitioner actually pays: <strong>the variance left over
+after hedging next period's market exposure with the estimated beta.</strong></p>
+<p>Nine estimators (textbook monthly OLS, one-year daily OLS, Blume, Vasicek, EWMA, Dimson, Frazzini–
+Pedersen, Welch's slope-winsorized age-weighted beta, and an equal-weight combination) plus a β = 1
+baseline forecast the beta of each of the 49 Fama–French industry portfolios at every month-end from
+July 1929 to August 2026, using only data available that day. That is <strong>54,245 out-of-sample forecasts
+per estimator over 1,166 months</strong>, scored on the next month of daily returns and on the next twelve
+monthly returns. Inference uses Newey–West Diebold–Mariano tests with Holm correction, a 90% Model
+Confidence Set and stationary-bootstrap confidence intervals.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>Daily data cut the textbook's beta error by about 40% next month.</strong> Measured as the avoidable part
+   of the hedge loss (the part due to β̂ ≠ realised β), Welch's estimator leaves 0.58 of the textbook's
+   error (95% CI 0.53–0.64), EWMA 0.59 and Vasicek 0.60. All eight alternatives beat the textbook after
+   Holm correction (largest adjusted p = 0.0002). The 90% Model Confidence Set is {Welch, Combination,
+   EWMA}. The ranking holds in each of three eras and in all six stress windows from 1929 to 2022.</li>
+<li><strong>The same daily betas lose that edge when the hedge horizon is a year.</strong> Hedging the next twelve
+   <em>monthly</em> returns, one-year daily OLS is 10% <em>worse</em> than the textbook (ratio 1.10, CI 0.97–1.22),
+   and Welch, EWMA and Vasicek are 6% worse. Only estimators that correct for slow price adjustment
+   keep an edge: Dimson 0.91 (CI 0.83–1.01) and the combination 0.91 (CI 0.82–1.00). None of these
+   12-month differences survives Holm correction, so the honest summary is "the advantage disappears",
+   not "it reverses".</li>
+<li><strong>Why: industries of small firms look less risky in daily data.</strong> The gap between monthly and daily
+   betas averages +0.12 to +0.15 before 2000 and is strongly tied to firm size (Spearman −0.83 in
+   1963–1999) and to the lagged response to the market (Spearman +0.90). It shrank to +0.05 after 2000,
+   and in 2000–2026 the daily estimators win at the 12-month horizon too (0.86–0.90).</li>
+<li><strong>Beta error is priced by volatility.</strong> The hedge-loss penalty is (β̂ − β)² × market variance, so the
+   most volatile 10% of months deliver about half of every estimator's total advantage (49–57%), even
+   though the better estimators also win in 86–92% of all months.</li>
+<li><strong>A better beta does not rescue the CAPM.</strong> For every estimator, the post-ranking security market
+   line rises at only 0.17–0.34 of the market premium, and the upper end of every 95% CI is below 1.
+   Fama–MacBeth slopes are significantly below the realised market return for seven of nine
+   estimators after Holm. Better beta <em>forecasts</em> buy more realised beta spread, not more return
+   spread. A beta-neutral low-minus-high-beta industry portfolio earns 3.4–4.1% a year (t = 2.3–3.0).</li>
+</ol>
+<p><strong>Practical rule.</strong> Estimate beta at the frequency you will hedge at. For a one-month hedge, use
+age-weighted daily data with some shrinkage (EWMA, Vasicek or Welch). For a long-horizon hedge or a
+cost of capital, either stay with monthly data or correct daily betas for non-synchronous trading
+(Dimson lags), and shrink toward the cross-sectional mean. Do not expect any of them to make
+high-beta assets earn more.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>The beta estimation literature is mostly a forecasting contest (Blume 1975; Vasicek 1973; Levi &amp; Welch
+2017; Welch 2022), and the asset-pricing literature mostly takes betas as given and finds the security
+market line too flat (Black, Jensen &amp; Scholes 1972; Fama &amp; French 1992; Frazzini &amp; Pedersen 2014). The
+two meet in an old argument: if betas are measured with error, sorting on noisy betas understates the
+true slope, so maybe the CAPM's failure is an estimation failure. This project puts both questions on
+one set of forecasts, adds a third (does the winner depend on the hedge horizon?), and uses a loss that
+has a direct economic meaning.</p>
+<p><strong>Why a hedging loss.</strong> If an investor holds an asset with excess return <em>y</em> and shorts β̂ units of the
+market <em>x</em>, the variance of the hedged position over the next period is</p>
+<p>L(β̂) = mean[(y − β̂x)²] = L(β*) + (β̂ − β*)² · mean[x²],</p>
+<p>where β* is the beta that would have been best in hindsight for that period. The second term is the
+only part an estimator controls. It is a squared beta error <strong>weighted by realised market variance</strong>:
+the same error costs ten times more in a month when the market is ten times more variable. That one
+identity drives finding 4 and explains why rankings are decided in crises.</p>
+<p><strong>Pre-registered design.</strong> Before any result was computed I fixed the universe, the estimator
+parameters (literature defaults, listed in <code>src/estimators.py</code>), the loss function, the
+evaluation sample, the subperiods and stress windows, and the following hypotheses.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Hypothesis</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Daily-data estimators with shrinkage or age-weighting beat the 5-year monthly OLS beta in next-month hedge loss.</td>
+<td><strong>Supported</strong> (all eight alternatives, Holm p &lt; 0.001)</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>More than half of the advantage comes from the most volatile 10% of months.</td>
+<td><strong>Borderline</strong>: 49–57% depending on the estimator</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>No estimator produces a security market line with a slope equal to the market premium.</td>
+<td><strong>Supported</strong> (all CIs below 1)</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>At a 12-month monthly-return horizon, uncorrected daily betas lose to monthly betas, and a lag correction (Dimson) recovers the gap.</td>
+<td><strong>Directionally supported, not significant</strong> after Holm</td>
+</tr>
+</tbody>
+</table></div>
+<h2>2. Data</h2>
+<p><strong>Assets.</strong> The 49 value-weighted industry portfolios of Kenneth French's Data Library, daily returns
+from July 1926 to September 2026 (CRSP vintage 202609). Industry portfolios are deliberately chosen over
+individual stocks: they exist for a century with no survivorship bias, their betas move with real
+economic exposure, and they include industries made of small, thinly traded firms (Coal, Ships,
+Rubber, Real Estate) next to mega-cap ones, which is what makes the horizon question testable. Some
+industries start later (Soda, Health, Fun and others in 1963); the panel is unbalanced and every
+comparison uses the common sample where all estimators are defined.</p>
+<p><strong>Market.</strong> A daily value-weighted market built from the 49 industries, with weights equal to number of
+firms × average firm size at the previous month-end (both reported by French). It is used instead of
+French's daily factor file only for engineering reasons. Its fidelity was checked against the official
+series:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Monthly: correlation with official Mkt (1926–2026, 1,202 months)</td>
+<td>0.9995</td>
+</tr>
+<tr>
+<td>Monthly: tracking error</td>
+<td>0.58% a year</td>
+</tr>
+<tr>
+<td>Daily: correlation with official Mkt-RF (400 random days)</td>
+<td>0.9996</td>
+</tr>
+<tr>
+<td>Daily: slope on official / mean absolute difference</td>
+<td>0.9995 / 1.5 bp</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Risk-free rate.</strong> French's monthly one-month T-bill, converted to the daily rate that compounds to the
+monthly rate over that month's trading days (French's own convention). All returns are excess returns.</p>
+<p><strong>Provenance.</strong> The three zip files used have SHA-256 hashes identical to the files served by the
+Data Library on 21 November 2026 (hashes in <code>src/fetch_data.py</code>). The parsed panel is committed as
+<code>data/panel_daily.csv.gz</code>.</p>
+<h2>3. Estimators</h2>
+<p>All parameters were set before evaluation from the original papers or common practice.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Data</th>
+<th>Recipe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OLS-5Y-M</strong> (textbook)</td>
+<td>60 monthly returns (min 36)</td>
+<td>OLS slope with intercept</td>
+</tr>
+<tr>
+<td>OLS-1Y-D</td>
+<td>252 daily returns (min 200)</td>
+<td>OLS slope with intercept</td>
+</tr>
+<tr>
+<td>Blume</td>
+<td>as OLS-1Y-D</td>
+<td>0.33 + 0.67 β̂ (Blume 1975)</td>
+</tr>
+<tr>
+<td>Vasicek</td>
+<td>as OLS-1Y-D</td>
+<td>Empirical-Bayes shrinkage toward the cross-sectional mean, weight = prior variance / (prior variance + sampling variance)</td>
+</tr>
+<tr>
+<td>EWMA</td>
+<td>all past daily returns</td>
+<td>Exponentially weighted covariance / variance, half-life 126 days</td>
+</tr>
+<tr>
+<td>Dimson</td>
+<td>252 daily returns</td>
+<td>Sum of slopes on the market return and its first two lags (Dimson 1979)</td>
+</tr>
+<tr>
+<td>Frazzini–Pedersen</td>
+<td>5y of overlapping 3-day log returns for correlation, 1y of daily for volatilities</td>
+<td>ρ · σᵢ/σₘ, then 0.6 β̂ + 0.4 (Frazzini &amp; Pedersen 2014)</td>
+</tr>
+<tr>
+<td>Welch-SWA</td>
+<td>last 756 daily returns</td>
+<td>Returns winsorized to [−2x, 4x] around the market's own move, exponential age weights with decay 2/252 per day (Welch 2022)</td>
+</tr>
+<tr>
+<td>Combination</td>
+<td></td>
+<td>Equal-weight average of the eight estimators above</td>
+</tr>
+<tr>
+<td>β = 1</td>
+<td></td>
+<td>The "no information" baseline</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. Backtest protocol</h2>
+<p>At the last trading day of each month <em>t</em>, each estimator computes each industry's beta from data up to
+and including that day. The forecast is scored on</p>
+<ul>
+<li><strong>next month, daily returns</strong>: L = mean over the days of month <em>t</em>+1 of (y − β̂x)²; and</li>
+<li><strong>next 12 months, monthly returns</strong>: L = mean over months <em>t</em>+1…<em>t</em>+12 of (Y − β̂X)², with
+  compounded monthly excess returns.</li>
+</ul>
+<p>Months with fewer than 15 valid daily returns for an industry are skipped. The first evaluation month
+is August 1929 (when Frazzini–Pedersen's five-year correlation window first fills), the last is
+September 2026 (October 2025 for the 12-month horizon). Unit tests (<code>tests/</code>) check every estimator
+against reference implementations and verify that perturbing any future return leaves every past
+forecast unchanged.</p>
+<h2>5. Evaluation</h2>
+<ul>
+<li><strong>Excess-loss ratio.</strong> For each month, the cross-sectional average of L(β̂) − L(β*) across industries,
+  summed over months and divided by the textbook's sum. This is the share of the textbook's avoidable
+  error that remains. Because β* is estimated from the evaluation month itself, its noise adds the
+  same amount to every estimator, so the ratio is biased toward 1 (conservative). Differences in excess
+  loss equal differences in raw loss exactly, so the tests below are on raw loss.</li>
+<li><strong>Diebold–Mariano</strong> tests on the monthly series of loss differences versus the textbook, with
+  Newey–West errors (6 lags at the monthly horizon, 18 lags for the overlapping 12-month horizon) and
+  <strong>Holm</strong> correction across the nine comparisons.</li>
+<li><strong>Model Confidence Set</strong> (Hansen, Lunde &amp; Nason 2011), T_max statistic, 90% level.</li>
+<li><strong>Stationary bootstrap</strong> (Politis &amp; Romano 1994) over months, mean block 12 (24 for the 12-month
+  horizon), 2,000 resamples, for all confidence intervals.</li>
+<li><strong>Mincer–Zarnowitz slope</strong>: a market-variance-weighted regression of realised on forecast beta. A slope
+  below 1 means the forecasts are too dispersed and should be shrunk.</li>
+</ul>
+<h2>6. Results</h2>
+<h3>6.1 Next month: daily data win by a wide margin</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th>Hedge loss (%²/day)</th>
+<th>Variance removed</th>
+<th>Excess-loss ratio [95% CI]</th>
+<th>DM t</th>
+<th>Holm p</th>
+<th>MZ slope</th>
+<th>In 90% MCS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Welch-SWA</td>
+<td>1.301</td>
+<td>47.8%</td>
+<td><strong>0.58</strong> [0.53, 0.64]</td>
+<td>−6.07</td>
+<td>&lt;0.001</td>
+<td>0.93</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Combination</td>
+<td>1.302</td>
+<td>47.8%</td>
+<td>0.59 [0.54, 0.64]</td>
+<td>−5.93</td>
+<td>&lt;0.001</td>
+<td>1.04</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>EWMA</td>
+<td>1.303</td>
+<td>47.7%</td>
+<td>0.59 [0.54, 0.65]</td>
+<td>−6.03</td>
+<td>&lt;0.001</td>
+<td>0.91</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Vasicek</td>
+<td>1.305</td>
+<td>47.6%</td>
+<td>0.60 [0.55, 0.67]</td>
+<td>−5.71</td>
+<td>&lt;0.001</td>
+<td>0.91</td>
+<td></td>
+</tr>
+<tr>
+<td>OLS-1Y-D</td>
+<td>1.307</td>
+<td>47.6%</td>
+<td>0.61 [0.55, 0.68]</td>
+<td>−5.64</td>
+<td>&lt;0.001</td>
+<td>0.86</td>
+<td></td>
+</tr>
+<tr>
+<td>Blume</td>
+<td>1.309</td>
+<td>47.5%</td>
+<td>0.63 [0.56, 0.69]</td>
+<td>−5.44</td>
+<td>&lt;0.001</td>
+<td>1.29</td>
+<td></td>
+</tr>
+<tr>
+<td>Dimson</td>
+<td>1.321</td>
+<td>47.0%</td>
+<td>0.69 [0.62, 0.76]</td>
+<td>−4.60</td>
+<td>&lt;0.001</td>
+<td>0.81</td>
+<td></td>
+</tr>
+<tr>
+<td>Frazzini–Pedersen</td>
+<td>1.331</td>
+<td>46.6%</td>
+<td>0.74 [0.65, 0.83]</td>
+<td>−3.95</td>
+<td>&lt;0.001</td>
+<td>1.32</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>OLS-5Y-M (textbook)</strong></td>
+<td>1.381</td>
+<td>44.6%</td>
+<td>1</td>
+<td></td>
+<td></td>
+<td>0.63</td>
+<td></td>
+</tr>
+<tr>
+<td>β = 1</td>
+<td>1.410</td>
+<td>43.4%</td>
+<td>1.15 [0.99, 1.33]</td>
+<td>+2.38</td>
+<td>0.017</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Hindsight-optimal β* leaves 1.189 %²/day. Common sample: 54,245 industry-months, 1,166 months.</em></p>
+<p>Three things stand out. First, the textbook beta is badly over-dispersed (MZ slope 0.63): its high betas
+are too high and its low betas too low, which is exactly the error Blume and Vasicek were designed to
+fix. Second, the move from monthly to daily data does most of the work: plain one-year daily OLS
+already reaches 0.61, and shrinkage or age-weighting adds a few points. Third, Blume and Frazzini–
+Pedersen over-shrink at this horizon (MZ slopes 1.29 and 1.32), so their fixed weights toward 1 cost
+accuracy for diversified industry portfolios.</p>
+<p>In absolute terms, hedging removes about 45–48% of an industry's daily variance, and the
+best estimator lowers the remaining variance by 5.8% relative to the textbook. The 40% figure refers to
+the part of the loss an estimator can influence.</p>
+<h3>6.2 Next year: the advantage disappears</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th>Excess-loss ratio [95% CI]</th>
+<th>DM t</th>
+<th>Holm p</th>
+<th>Bias of β̂ vs realised monthly β</th>
+<th>In 90% MCS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dimson</td>
+<td><strong>0.91</strong> [0.83, 1.01]</td>
+<td>−1.76</td>
+<td>0.63</td>
+<td>−0.06</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Combination</td>
+<td>0.91 [0.82, 1.00]</td>
+<td>−1.76</td>
+<td>0.63</td>
+<td>−0.09</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Frazzini–Pedersen</td>
+<td>0.94 [0.86, 1.02]</td>
+<td>−1.34</td>
+<td>0.97</td>
+<td>−0.06</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Blume</td>
+<td>0.97 [0.87, 1.07]</td>
+<td>−0.56</td>
+<td>1.00</td>
+<td>−0.10</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>OLS-5Y-M (textbook)</strong></td>
+<td>1</td>
+<td></td>
+<td></td>
+<td>−0.01</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Welch-SWA</td>
+<td>1.06 [0.93, 1.17]</td>
+<td>+0.85</td>
+<td>1.00</td>
+<td>−0.12</td>
+<td></td>
+</tr>
+<tr>
+<td>EWMA</td>
+<td>1.06 [0.93, 1.18]</td>
+<td>+0.88</td>
+<td>1.00</td>
+<td>−0.11</td>
+<td></td>
+</tr>
+<tr>
+<td>Vasicek</td>
+<td>1.06 [0.94, 1.18]</td>
+<td>+0.94</td>
+<td>1.00</td>
+<td>−0.11</td>
+<td></td>
+</tr>
+<tr>
+<td>OLS-1Y-D</td>
+<td>1.10 [0.97, 1.22]</td>
+<td>+1.40</td>
+<td>0.97</td>
+<td>−0.11</td>
+<td></td>
+</tr>
+<tr>
+<td>β = 1</td>
+<td>1.27 [1.15, 1.40]</td>
+<td>+3.79</td>
+<td>0.001</td>
+<td>−0.07</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>The winners of 6.1 are now the losers. The bias column shows why: every estimator built on
+contemporaneous daily returns under-predicts the beta that shows up in monthly returns by about 0.11.
+The estimators that keep (or slightly improve) their rank are those that either use monthly data, add
+lagged market returns (Dimson), use multi-day returns for correlation (Frazzini–Pedersen) or shrink
+toward 1 (Blume). Nothing is significant after Holm: twelve-month windows overlap, so a century gives
+fewer than 100 independent observations.</p>
+<h3>6.3 Why the horizon matters: non-synchronous trading</h3>
+<p><img alt="Horizon gap" loading="lazy" src="figures/fig3_horizon_gap.png" /></p>
+<p>For each industry and era I estimate beta on the same days twice, from daily and from monthly returns.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Era</th>
+<th>Mean daily β</th>
+<th>Mean monthly β</th>
+<th>Mean gap</th>
+<th>Gap &gt; 0</th>
+<th>Spearman(gap, size)</th>
+<th>Spearman(gap, lag β)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–1962</td>
+<td>0.96</td>
+<td>1.11</td>
+<td>+0.15</td>
+<td>79%</td>
+<td>−0.66</td>
+<td>+0.89</td>
+</tr>
+<tr>
+<td>1963–1999</td>
+<td>0.97</td>
+<td>1.09</td>
+<td>+0.12</td>
+<td>82%</td>
+<td>−0.83</td>
+<td>+0.90</td>
+</tr>
+<tr>
+<td>2000–2026</td>
+<td>0.95</td>
+<td>1.00</td>
+<td>+0.05</td>
+<td>69%</td>
+<td>−0.40</td>
+<td>+0.47</td>
+</tr>
+</tbody>
+</table></div>
+<p>The gap is largest for industries of small firms and is almost perfectly ranked by how much the
+industry reacts to <em>yesterday's</em> market (all p &lt; 0.005). That is the signature of stale prices
+(Scholes &amp; Williams 1977; Dimson 1979): small firms' prices catch up with market moves over several
+days, so a daily regression misses part of their exposure, while a monthly regression captures it. The
+gap has fallen by two thirds since 2000, consistent with decimalisation and electronic trading, and
+the subperiod table confirms that daily estimators beat the textbook at the 12-month horizon in
+2000–2026 (ratios 0.86–0.90) but not before.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>12-month horizon</th>
+<th>OLS-1Y-D</th>
+<th>Vasicek</th>
+<th>EWMA</th>
+<th>Welch</th>
+<th>Dimson</th>
+<th>FP</th>
+<th>Combination</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–1962</td>
+<td>1.16</td>
+<td>1.12</td>
+<td>1.12</td>
+<td>1.12</td>
+<td>0.88</td>
+<td>0.88</td>
+<td>0.92</td>
+</tr>
+<tr>
+<td>1963–1999</td>
+<td>1.16</td>
+<td>1.11</td>
+<td>1.10</td>
+<td>1.10</td>
+<td>0.96</td>
+<td>0.96</td>
+<td>0.95</td>
+</tr>
+<tr>
+<td>2000–2026</td>
+<td>0.91</td>
+<td>0.91</td>
+<td>0.90</td>
+<td>0.89</td>
+<td>0.92</td>
+<td>1.03</td>
+<td>0.86</td>
+</tr>
+</tbody>
+</table></div>
+<h3>6.4 Beta error is priced by volatility</h3>
+<p><img alt="Concentration" loading="lazy" src="figures/fig2_concentration.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th>Advantage from top 5% vol months</th>
+<th>Top 10%</th>
+<th>Bottom 50%</th>
+<th>Months won</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Welch-SWA</td>
+<td>34%</td>
+<td>49%</td>
+<td>13%</td>
+<td>89%</td>
+</tr>
+<tr>
+<td>EWMA</td>
+<td>34%</td>
+<td>49%</td>
+<td>13%</td>
+<td>90%</td>
+</tr>
+<tr>
+<td>Combination</td>
+<td>38%</td>
+<td>52%</td>
+<td>12%</td>
+<td>92%</td>
+</tr>
+<tr>
+<td>Vasicek</td>
+<td>35%</td>
+<td>49%</td>
+<td>13%</td>
+<td>88%</td>
+</tr>
+<tr>
+<td>Frazzini–Pedersen</td>
+<td>46%</td>
+<td>57%</td>
+<td>12%</td>
+<td>75%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The better estimators win most months, but by tiny amounts; the bulk of the accumulated gain arrives
+in a handful of violent episodes (1929–33, 1937–38, 1974, 2000–02, 2008–09). A beta
+estimator evaluated only on a calm sample would look almost indistinguishable from the textbook.</p>
+<h3>6.5 Every era, every crash</h3>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig5_stress_heatmap.png" /></p>
+<p>At the one-month horizon, every alternative beats the textbook in every subperiod and in each of the
+six stress windows: the 1929–32 crash and depression, October 1987, the dot-com bust, the 2008–09
+financial crisis, the COVID crash and the 2022 inflation bear market. β = 1 is the only estimator that
+is worse than the textbook in most windows.</p>
+<h3>6.6 Ablations and sensitivity</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Next month</th>
+<th>Next 12 months</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OLS daily 126 / <strong>252</strong> / 504 / 1260 days</td>
+<td>0.64 / <strong>0.61</strong> / 0.65 / 0.72</td>
+<td>1.16 / <strong>1.10</strong> / 1.10 / 1.11</td>
+</tr>
+<tr>
+<td>OLS monthly <strong>60</strong> / 36 / 120 months</td>
+<td><strong>1</strong> / 1.03 / 1.15</td>
+<td><strong>1</strong> / 1.04 / 1.10</td>
+</tr>
+<tr>
+<td>EWMA half-life 63 / <strong>126</strong> / 252 days</td>
+<td>0.59 / <strong>0.59</strong> / 0.62</td>
+<td>1.10 / <strong>1.06</strong> / 1.05</td>
+</tr>
+<tr>
+<td>Dimson 1 / <strong>2</strong> / 5 lags</td>
+<td>0.68 / <strong>0.69</strong> / 0.84</td>
+<td>0.91 / <strong>0.91</strong> / 0.93</td>
+</tr>
+<tr>
+<td>Welch: <strong>full</strong> / age-weighting only / winsorizing only / neither</td>
+<td><strong>0.58</strong> / 0.59 / 0.67 / 0.67</td>
+<td><strong>1.06</strong> / 1.08 / 1.10 / 1.11</td>
+</tr>
+<tr>
+<td>Welch bounds (−1, 3) / <strong>(−2, 4)</strong> / (−3, 5)</td>
+<td>0.58 / <strong>0.58</strong> / 0.58</td>
+<td>1.04 / <strong>1.06</strong> / 1.06</td>
+</tr>
+<tr>
+<td>Blume / Vasicek applied to the 5-year <em>monthly</em> beta</td>
+<td>0.88 / 0.88</td>
+<td>0.91 / 0.94</td>
+</tr>
+<tr>
+<td>Dimson-adjusted daily beta + Vasicek shrinkage (not pre-registered)</td>
+<td>0.67</td>
+<td><strong>0.88</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Bold = main specification. Two lessons. On industry portfolios, <strong>Welch's gain comes from age-weighting,
+not winsorizing</strong>: winsorizing alone is no better than plain OLS on the same window, which makes sense
+because diversified portfolios have few idiosyncratic outliers to clip (on single stocks the
+winsorizing would likely matter more). And the conclusions are not knife-edge: no reasonable parameter
+choice makes the monthly textbook competitive at one month, and no variant of an uncorrected daily
+beta beats the textbook at twelve months over the full sample. The last row, a post-hoc combination of the two fixes that work at
+long horizons, gives the best 12-month ratio (0.88); it is reported as a lead for future work, not as
+a result.</p>
+<h3>6.7 Does a better beta rescue the security market line?</h3>
+<p><img alt="SML" loading="lazy" src="figures/fig4_sml.png" /></p>
+<p>Each month, the 49 industries are sorted into quintiles by each estimator's beta; portfolios are held
+one month. Post-ranking betas come from regressing each quintile's realised returns on the market.
+Under the CAPM, the line through the quintiles should rise at the market premium (7.8% a year).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Sorting beta</th>
+<th>Post-ranking β spread (Q5−Q1)</th>
+<th>SML slope / market premium [95% CI]</th>
+<th>Beta-neutral low-minus-high alpha</th>
+<th>Fama–MacBeth γ₁ − market, Holm p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OLS-5Y-M (textbook)</td>
+<td>0.62</td>
+<td>0.17 [−0.81, 0.78]</td>
+<td>4.1% (t 3.0)</td>
+<td>0.023</td>
+</tr>
+<tr>
+<td>OLS-1Y-D</td>
+<td>0.61</td>
+<td>0.20 [−0.78, 0.84]</td>
+<td>3.8% (t 2.5)</td>
+<td>0.010</td>
+</tr>
+<tr>
+<td>Blume</td>
+<td>0.61</td>
+<td>0.20 [−0.78, 0.84]</td>
+<td>3.8% (t 2.5)</td>
+<td>0.090</td>
+</tr>
+<tr>
+<td>Vasicek</td>
+<td>0.64</td>
+<td>0.28 [−0.64, 0.89]</td>
+<td>3.6% (t 2.5)</td>
+<td>0.014</td>
+</tr>
+<tr>
+<td>EWMA</td>
+<td>0.62</td>
+<td>0.29 [−0.61, 0.93]</td>
+<td>3.4% (t 2.3)</td>
+<td>0.008</td>
+</tr>
+<tr>
+<td>Dimson</td>
+<td><strong>0.69</strong></td>
+<td>0.31 [−0.61, 0.90]</td>
+<td>3.7% (t 2.5)</td>
+<td>0.014</td>
+</tr>
+<tr>
+<td>Frazzini–Pedersen</td>
+<td>0.66</td>
+<td><strong>0.34</strong> [−0.56, 0.96]</td>
+<td>3.4% (t 2.4)</td>
+<td>0.159</td>
+</tr>
+<tr>
+<td>Welch-SWA</td>
+<td>0.62</td>
+<td>0.24 [−0.65, 0.86]</td>
+<td>3.7% (t 2.5)</td>
+<td>0.014</td>
+</tr>
+<tr>
+<td>Combination</td>
+<td>0.66</td>
+<td>0.22 [−0.72, 0.84]</td>
+<td>4.0% (t 2.7)</td>
+<td>0.031</td>
+</tr>
+</tbody>
+</table></div>
+<p>The answer is no. Whatever beta is used to sort, high-beta industries earn about one fifth to one third
+of what the CAPM says they should, and the upper end of every confidence interval is below the full
+premium. Better beta forecasting does do one thing: it widens the realised beta spread between the
+quintiles (0.62 for the textbook, up to 0.69 for Dimson), which is what better sorting should do. But
+the return spread does not grow with it. The estimators that steepen the line slightly (Dimson,
+Frazzini–Pedersen) are the ones that forecast better at long horizons, not at short ones, which fits:
+the return premium is earned over months, so the relevant beta is the long-horizon one. The
+low-minus-high-beta industry portfolio, levered to be market-neutral, earns 3.4–4.1% a year; the raw
+t-statistics are 2.3–3.0, but after Holm across the nine sorts only the textbook sort stays below 5%
+(adjusted p = 0.024), so this is a "betting-against-beta in industries" effect of modest strength.</p>
+<h2>7. What this means in practice</h2>
+<ul>
+<li><strong>Hedging a book for the next month:</strong> use daily data, age-weighted (EWMA with a six-month half-life
+  or Welch), and shrink toward the cross-sectional mean. Expect to remove roughly 40% of the beta
+  error you would carry with a five-year monthly beta, most of it in the months that matter.</li>
+<li><strong>Cost of capital, long-horizon hedges, small or illiquid assets:</strong> daily betas understate exposure.
+  Either use monthly data or add lagged market returns (Dimson) and then shrink. On data before 2000,
+  uncorrected daily betas are 0.1–0.15 too low for the average industry.</li>
+<li><strong>Never use the raw five-year monthly beta without shrinkage:</strong> its Mincer–Zarnowitz slope of 0.63
+  says the cross-section of textbook betas is about 60% too dispersed.</li>
+<li><strong>Do not use a better beta to argue for the CAPM.</strong> The flat SML is not a measurement artefact.</li>
+</ul>
+<h2>8. Limitations</h2>
+<ul>
+<li><strong>Portfolios, not stocks.</strong> Industries are diversified, so idiosyncratic noise is small and
+  winsorizing has little to do. On individual stocks, estimation noise is much larger and the gains from
+  shrinkage and winsorizing would likely be bigger; the horizon gap would also be larger for small
+  caps. Testing this needs CRSP-quality stock data, which is not freely available.</li>
+<li><strong>The market is built from the same 49 industries</strong>, as the CRSP value-weighted market is built from
+  the same stocks. Its daily correlation with the official factor is 0.9996.</li>
+<li><strong>Realised β* is noisy</strong> (about 21 daily observations), which biases every excess-loss ratio toward
+  1. The true improvements are therefore at least as large as reported.</li>
+<li><strong>Twelve-month horizon power.</strong> With overlapping windows, the 12-month tests have little power; the
+  direction is consistent across eras and robustness variants, but no single 12-month comparison is
+  significant after multiple-testing correction.</li>
+<li><strong>Forty-nine assets for the SML.</strong> Quintiles hold about ten industries, so the SML slope is estimated
+  with wide intervals. The conclusion (slope well below the premium) is robust; the exact slope is not.</li>
+<li><strong>Data revisions.</strong> French revises history every month. The committed panel is frozen at the 202609
+  vintage; re-downloading will move numbers in the third decimal.</li>
+<li><strong>Not tested:</strong> conditional or regime-switching betas, betas from options (implied correlations),
+  Kalman-filter betas (that is project 25), and factor models beyond the market (project 17).</li>
+</ul>
+<h2>9. Connections to other projects</h2>
+<ul>
+<li><strong>#01 Monte Carlo calibration</strong> found that what fixes risk forecasts in crises is <em>time-varying
+  volatility</em>, not fat tails. This project finds the same pattern for betas: the age-weighted
+  estimators (EWMA, Welch) win, and their advantage is earned in high-volatility months.</li>
+<li><strong>#13 GARCH</strong> and <strong>#25 Kalman hedge ratio</strong> are the natural next steps for a dynamic beta; this
+  project provides the benchmark they have to beat (Welch, excess-loss ratio 0.58).</li>
+<li><strong>#17 Fama–French factors</strong> extends the SML question to multi-factor models.</li>
+</ul>
+<h2>10. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+./run_all.sh            # ~1 minute: backtest, statistics, robustness, figures, tests
+python src/fetch_data.py   # optional: re-download the raw Ken French files and rebuild the panel
+</code></pre>
+<p>Every number above is in <code>results/*.csv</code>; every figure is produced by <code>src/figures.py</code>.</p>
+<h2>11. Repository layout</h2>
+<pre><code>09-beta-horse-race/
+├── README.md                 this paper
+├── data/panel_daily.csv.gz   49 industry + market excess returns, daily, 1926-2026 (French, CRSP 202609)
+│   industry_avg_firm_size_monthly.csv   French's average firm size per industry (for section 6.3)
+├── src/
+│   ├── fetch_data.py         download the raw files, check hashes, rebuild the panel
+│   ├── data.py               parsing, market proxy, daily risk-free rate, validation
+│   ├── estimators.py         the nine estimators (all parameters at the top)
+│   ├── backtest.py           walk-forward forecasts and next-period sums of squares
+│   ├── evaluate.py           loss tables, DM/Holm, MCS, bootstrap, stress, SML tests
+│   ├── horizon_gap.py        daily vs monthly beta by industry and era
+│   ├── robustness.py         sensitivity and ablations
+│   └── figures.py
+├── tests/test_estimators.py  correctness, no look-ahead, loss identity
+├── results/   figures/
+├── study/ESTUDIO_09.pdf     Spanish study guide (not part of the paper)
+└── run_all.sh  requirements.txt  LINKEDIN_POST.md
+</code></pre>
+<h2>References</h2>
+<p>Black, F., Jensen, M. C. &amp; Scholes, M. (1972). The capital asset pricing model: some empirical tests.
+Blume, M. E. (1975). Betas and their regression tendencies. <em>Journal of Finance</em> 30(3).
+Diebold, F. X. &amp; Mariano, R. S. (1995). Comparing predictive accuracy. <em>JBES</em> 13(3).
+Dimson, E. (1979). Risk measurement when shares are subject to infrequent trading. <em>JFE</em> 7(2).
+Fama, E. F. &amp; French, K. R. (1992). The cross-section of expected stock returns. <em>Journal of Finance</em> 47(2).
+Fama, E. F. &amp; MacBeth, J. D. (1973). Risk, return, and equilibrium: empirical tests. <em>JPE</em> 81(3).
+Frazzini, A. &amp; Pedersen, L. H. (2014). Betting against beta. <em>JFE</em> 111(1).
+Hansen, P. R., Lunde, A. &amp; Nason, J. M. (2011). The model confidence set. <em>Econometrica</em> 79(2).
+Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scand. J. Statistics</em> 6(2).
+Levi, Y. &amp; Welch, I. (2017). Best practice for cost-of-capital estimates. <em>JFQA</em> 52(2).
+Newey, W. K. &amp; West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em> 55(3).
+Politis, D. N. &amp; Romano, J. P. (1994). The stationary bootstrap. <em>JASA</em> 89(428).
+Scholes, M. &amp; Williams, J. (1977). Estimating betas from nonsynchronous data. <em>JFE</em> 5(3).
+Vasicek, O. A. (1973). A note on using cross-sectional information in Bayesian estimation of security betas. <em>Journal of Finance</em> 28(5).
+Welch, I. (2022). Simply better market betas. <em>Critical Finance Review</em> 11(1).</p>
+<p>Data: Kenneth R. French Data Library, Tuck School of Business, Dartmouth College.</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/09-beta-horse-race">09-beta-horse-race on GitHub</a>.</footer>
+</div>
+</body>
+</html>
