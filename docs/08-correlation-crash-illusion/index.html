@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Do Correlations Really Go to One in a Crash?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Once the bias from how crash days are picked is removed, do correlations really rise in crises, and is it crash-specific?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 08 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 08</p>
+<h1>Do Correlations Really Go to One in a Crash?</h1>
+<p><strong>Separating how the days were chosen from what the market did, in 33 years of correlation heatmaps</strong></p>
+<p><em>Project 08 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Gap decomposition" loading="lazy" src="figures/fig2_gap_decomposition.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>"In a crisis, all correlations go to one" is one of the most repeated sentences in risk management.
+The usual evidence is a correlation heatmap drawn on crash days next to one drawn on normal days.
+That comparison is biased. Correlation measured on a subset of days depends on how the subset was picked,
+even if nothing about the market's dependence structure changes (Boyer, Gibson &amp; Loretan, 1999;
+Forbes &amp; Rigobon, 2002). This project asks: <strong>once the mechanical effects of conditioning are removed,
+how much of the crisis rise in correlation is real, and is it specific to crashes?</strong></p>
+<p>I build three counterfactual worlds that keep each asset's <em>actual</em> volatility path and change only
+the dependence: constant correlation with Gaussian shocks, constant correlation with Student-t shocks
+(symmetric tail dependence), and correlation that follows its fitted DCC path (slow regimes). Every
+conditioning rule is re-applied inside 1,000 simulated histories per world (500 for the DCC world).
+The observed change in correlation then splits into four additive parts: <strong>selection artefact,
+fat-tail dependence, slow regime shifts, and a remainder specific to the chosen days</strong>. Universes:
+19 US large caps (1990–2022, 8,249 days) and six cross-asset ETFs (2007–2026, 4,873 days). A second
+part asks the practical question: which correlation estimate should you use for next month?</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The crash-day heatmap shows <em>less</em> correlation than an average day.</strong> Average pairwise correlation
+   among the 19 stocks is 0.32 on all days and 0.20 on the 5% worst market days (95% CI of the change
+   −0.19 to −0.05). 92% of pairs look <em>less</em> correlated on crash days.</li>
+<li><strong>That drop is a conditioning artefact, and it hides a real rise.</strong> Restricting to one tail of the
+   market mechanically removes 0.21 of correlation even when latent correlation is constant. Net of
+   that, crash days carry <strong>+0.07</strong> more correlation than a constant-correlation world (t-null p = 0.003).</li>
+<li><strong>But crashes are not special: rallies show the same +0.07</strong> (p = 0.009). Down-tail minus up-tail
+   exceedance correlation is +0.008 for stocks (null p = 0.37) and +0.024 for ETFs (p = 0.30). Over
+   1990–2022 I find no downside asymmetry once the conditioning bias is removed.</li>
+<li><strong>The real effect is a volatility <em>regime</em>, which you can see coming.</strong> Conditioning on the
+   market's <em>ex-ante</em> volatility (top decile, known the evening before) creates no selection artefact.
+   In that regime correlation is <strong>+0.17</strong> higher (CI 0.10 to 0.22). In named crises the
+   devolatised correlation of the stocks rose by +0.23 (GFC), +0.37 (2011) and +0.51 (COVID).</li>
+<li><strong>For a portfolio hedged with Treasuries, the crash-day heatmap gets the direction wrong.</strong> On crash
+   days SPY–TLT looks <em>less</em> negative (−0.24 vs −0.31). A constant-correlation world predicts +0.14 of
+   that shift, so the raw sign is pure artefact. In high-volatility regimes the hedge genuinely
+   <em>strengthens</em> (−0.12 vs all days). 2022 is the exception: the stock–bond correlation turned positive
+   (+0.02 in Jan–Oct 2022, from −0.13 the year before).</li>
+<li><strong>For next month, use a slow, shrunk heatmap, not a fast one.</strong> Out of sample, with identical
+   volatility forecasts, a DCC(1,1) correlation lowers realised minimum-variance volatility by 3.4% and
+   Ledoit–Wolf shrinkage by 3.0% relative to the standard 1-year heatmap (Holm-adjusted DM p &lt; 0.01).
+   "Fast" heatmaps (3-month window, EWMA 0.97) are 6–10% worse, and worse still in stressed months
+   (+9 to +13%). On the six ETFs, nothing beats the 1-year sample.</li>
+</ol>
+<hr />
+<h2>1. Why this question</h2>
+<p>Correlation heatmaps are the most common first picture in a quant notebook, and conditional heatmaps
+("what does it look like in a sell-off?") are the most common second one. The answer drives real
+decisions: diversification assumptions, stress tests, the amount of capital set aside for crises, and
+whether bonds will hedge equities when they are needed.</p>
+<p>The statistical problem is old but rarely respected in practice. Correlation is a ratio of covariance
+to the product of standard deviations, and the <em>selection</em> of observations changes both. Select on a
+large absolute market move and you inflate the variance of the common factor, so correlation rises
+mechanically. Select on one tail of the market and you truncate it, so correlation falls mechanically.
+Forbes &amp; Rigobon (2002) showed the first effect for international stock-market contagion. Boyer, Gibson &amp;
+Loretan (1999) and Longin &amp; Solnik (2001) showed that even the Gaussian distribution produces exceedance
+correlations that fall towards zero in the tails. Ang &amp; Chen (2002) and Hong, Tu &amp; Zhou (2007) report
+that the drop is smaller on the downside, which became the "asymmetric correlation" stylised fact.</p>
+<p>What I have not seen is a decomposition that (i) keeps each asset's real volatility path instead of
+assuming i.i.d. returns, (ii) separates fat-tail dependence from slow correlation regimes, and
+(iii) reports the result as the four pieces a practitioner actually needs: <em>how much of my conditional
+heatmap is the way I picked the days, how much is fat tails, how much is a regime I could have seen
+coming, and how much is specific to these days?</em> That is the contribution here, together with an
+out-of-sample test of which heatmap to use going forward.</p>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Universe</th>
+<th>Assets</th>
+<th>Period</th>
+<th>Days</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>US large caps</td>
+<td>AAPL, AMD, BAC, BBY, CVX, GE, HD, JNJ, JPM, KO, LLY, MRK, MSFT, PEP, PFE, PG, UNH, WMT, XOM (9 sectors)</td>
+<td>Apr 1990 – Dec 2022</td>
+<td>8,249</td>
+<td>Adjusted closes shipped with <code>skfolio</code></td>
+</tr>
+<tr>
+<td>Cross-asset ETFs</td>
+<td>SPY, EEM, TLT, HYG, GLD, USO</td>
+<td>Jul 2007 – Nov 2026</td>
+<td>4,873</td>
+<td>Yahoo Finance adjusted closes (project 01)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Daily log returns. The first 63 days of each universe are a volatility warm-up and are never evaluated.</p>
+<ul>
+<li><strong>Range Resources (RRC) is removed.</strong> Its 1990–92 quotes are unchanged on 70–92% of days (no other
+  stock exceeds 27% in any year), with a spurious +110% one-day return on 10 Apr 1990. Stale prices bias
+  correlations towards zero, which is the quantity under study. Found in the referee pass (§8).</li>
+<li>The stock panel ends in Dec 2022 because that is where the published dataset ends. The ETF panel runs
+  to Nov 2026 and covers 2008, 2020 and 2022. The stock panel covers 1998, 2008, 2011, 2020 and 2022.</li>
+<li>The ETF universe overlaps project 01 on purpose: it reuses the same data so that the two papers can be
+  read together (01: marginal distributions; 08: dependence). URA is dropped because it starts in Nov 2010.</li>
+</ul>
+<h2>3. Method</h2>
+<h3>3.1 Volatility and the market</h3>
+<p>Each asset's ex-ante volatility σ<sub>i,t</sub> is a RiskMetrics EWMA (λ = 0.94) using returns up to
+t−1, floored at 0.2% a day. Devolatised returns are z<sub>i,t</sub> = r<sub>i,t</sub> / σ<sub>i,t</sub>.
+The "market" is the equal-weight portfolio of the 19 stocks, and SPY for the ETFs.</p>
+<h3>3.2 Conditioning rules (pre-registered)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Days selected</th>
+<th>What it imitates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Crash days</td>
+<td>market return in its bottom 5%</td>
+<td>"the heatmap in a sell-off"</td>
+</tr>
+<tr>
+<td>Rally days</td>
+<td>market return in its top 5%</td>
+<td>the mirror image, rarely drawn</td>
+</tr>
+<tr>
+<td>Big-move days</td>
+<td>|market return| in its top 10%</td>
+<td>"volatile days" chosen ex post</td>
+</tr>
+<tr>
+<td>High-vol regime</td>
+<td>market's ex-ante EWMA vol in its top 10%</td>
+<td>a regime known the evening before</td>
+</tr>
+<tr>
+<td>Calm regime</td>
+<td>market's ex-ante vol below its median</td>
+<td>the comparison regime</td>
+</tr>
+</tbody>
+</table></div>
+<p>The statistic is the change in average pairwise correlation (Fisher-z averaged) between the selected
+days and all days, computed on raw returns, exactly as a heatmap would be. For the ETFs, the
+six-asset average mixes risk assets and hedges whose correlations move in opposite directions, so I
+also test the <strong>risk block</strong> (SPY, EEM, HYG, USO) and the <strong>SPY–TLT</strong> and SPY–GLD pairs.</p>
+<h3>3.3 Four worlds and an additive decomposition</h3>
+<p>All three null worlds generate r<sub>t</sub> = σ<sub>t</sub> ⊙ z<sub>t</sub> with the <em>real</em>
+σ<sub>t</sub> path, then recompute the market, re-apply every rule and recompute the statistic.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>World</th>
+<th>z<sub>t</sub></th>
+<th>B</th>
+<th>Removes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gaussian null</td>
+<td>N(0, R̄), R̄ = full-sample correlation of z</td>
+<td>1,000</td>
+<td>pure selection effect</td>
+</tr>
+<tr>
+<td>Student-t null</td>
+<td>multivariate t<sub>ν</sub>(0, R̄), ν by profile MLE (6.75 stocks, 7.25 ETFs)</td>
+<td>1,000</td>
+<td>+ symmetric tail dependence</td>
+</tr>
+<tr>
+<td>DCC-path null</td>
+<td>t<sub>ν</sub>(0, R<sub>t</sub>), R<sub>t</sub> the fitted DCC(1,1) path</td>
+<td>500</td>
+<td>+ slow regime shifts</td>
+</tr>
+<tr>
+<td>Observed</td>
+<td>the data</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Observed gap G = <strong>selection</strong> E[G│Gauss] + <strong>tail dependence</strong> (E[G│t] − E[G│Gauss]) +
+<strong>regime</strong> (E[G│DCC] − E[G│t]) + <strong>day-specific remainder</strong> (G − E[G│DCC]).</p>
+<p>Inference: one-sided Monte Carlo p-values of the observed gap against each null; 95% confidence
+intervals for G from a stationary bootstrap of days (mean block 21, 1,000 replications, rules
+recomputed in each replication). Pair-level tests (171 stock pairs, 15 ETF pairs) use
+Benjamini–Hochberg. The asymmetry test compares down-tail and up-tail exceedance correlation at the
+10% threshold against the t-null.</p>
+<h3>3.4 Out-of-sample horse race (part B)</h3>
+<p>Every 21 trading days after a five-year burn-in (332 origins for stocks from 1995, 172 for ETFs from
+2012), nine estimators forecast the correlation of the next 21 devolatised returns: rolling samples
+(3 months, 1 year, 5 years, expanding), EWMA (λ = 0.97), Ledoit–Wolf (2004) shrinkage to constant
+correlation on 1 year, random-matrix eigenvalue clipping (Laloux et al., 1999) on 1 year, DCC(1,1)
+(Engle, 2002; re-estimated every year on an expanding window, mean-reverting 21-day forecast) and the
+identity. All share the same ex-ante volatilities, so only the correlation differs. Losses: realised
+variance of the global minimum-variance portfolio (economic) and the Gaussian log score of the next
+month's z (statistical, proper). Diebold–Mariano tests against the 1-year sample with Newey–West
+errors, Holm-adjusted across the eight comparisons.</p>
+<h2>4. Results, part A: what a conditional heatmap shows</h2>
+<h3>4.1 Three heatmaps of the same 19 stocks</h3>
+<p><img alt="Three heatmaps" loading="lazy" src="figures/fig1_three_heatmaps.png" /></p>
+<p>Panel B is the picture people draw to show that "correlations go to one". It shows the opposite:
+correlations are <em>lower</em> on crash days for 157 of 171 pairs. Panel C removes what a constant-correlation
+world shows on the same days. 145 of 171 pairs are then positive, with a median excess of +0.07.
+<strong>No single pair survives Benjamini–Hochberg at 5%</strong> (smallest q = 0.085, LLY–WMT). The evidence is in
+the cross-section, not in any one cell. A heatmap that colours individual cells as "contagion" is
+over-reading noise.</p>
+<h3>4.2 The decomposition</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Universe · block</th>
+<th>Rule</th>
+<th style="text-align: right;">Observed</th>
+<th style="text-align: right;">Selection</th>
+<th style="text-align: right;">Fat tails</th>
+<th style="text-align: right;">Regime</th>
+<th style="text-align: right;">Day-specific</th>
+<th style="text-align: right;">p vs DCC null</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stocks · average</td>
+<td>Crash days</td>
+<td style="text-align: right;">−0.122</td>
+<td style="text-align: right;">−0.213</td>
+<td style="text-align: right;">+0.020</td>
+<td style="text-align: right;">+0.014</td>
+<td style="text-align: right;"><strong>+0.057</strong></td>
+<td style="text-align: right;">0.022</td>
+</tr>
+<tr>
+<td>Stocks · average</td>
+<td>Rally days</td>
+<td style="text-align: right;">−0.123</td>
+<td style="text-align: right;">−0.212</td>
+<td style="text-align: right;">+0.019</td>
+<td style="text-align: right;">+0.013</td>
+<td style="text-align: right;"><strong>+0.056</strong></td>
+<td style="text-align: right;">0.024</td>
+</tr>
+<tr>
+<td>Stocks · average</td>
+<td>Big-move days</td>
+<td style="text-align: right;">+0.275</td>
+<td style="text-align: right;">+0.227</td>
+<td style="text-align: right;">−0.036</td>
+<td style="text-align: right;">+0.013</td>
+<td style="text-align: right;"><strong>+0.071</strong></td>
+<td style="text-align: right;">0.002</td>
+</tr>
+<tr>
+<td>Stocks · average</td>
+<td>High-vol regime</td>
+<td style="text-align: right;">+0.170</td>
+<td style="text-align: right;">+0.000</td>
+<td style="text-align: right;">+0.001</td>
+<td style="text-align: right;">+0.039</td>
+<td style="text-align: right;"><strong>+0.129</strong></td>
+<td style="text-align: right;">0.002</td>
+</tr>
+<tr>
+<td>Stocks · average</td>
+<td>Calm regime</td>
+<td style="text-align: right;">−0.091</td>
+<td style="text-align: right;">+0.002</td>
+<td style="text-align: right;">−0.000</td>
+<td style="text-align: right;">−0.024</td>
+<td style="text-align: right;"><strong>−0.068</strong></td>
+<td style="text-align: right;">0.002 (lower)</td>
+</tr>
+<tr>
+<td>ETFs · risk block</td>
+<td>Crash days</td>
+<td style="text-align: right;">−0.037</td>
+<td style="text-align: right;">−0.146</td>
+<td style="text-align: right;">+0.005</td>
+<td style="text-align: right;">+0.020</td>
+<td style="text-align: right;">+0.085</td>
+<td style="text-align: right;">0.068</td>
+</tr>
+<tr>
+<td>ETFs · risk block</td>
+<td>High-vol regime</td>
+<td style="text-align: right;">+0.082</td>
+<td style="text-align: right;">+0.009</td>
+<td style="text-align: right;">−0.000</td>
+<td style="text-align: right;">+0.044</td>
+<td style="text-align: right;">+0.030</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr>
+<td>ETFs · SPY–TLT</td>
+<td>Crash days</td>
+<td style="text-align: right;">+0.071</td>
+<td style="text-align: right;">+0.141</td>
+<td style="text-align: right;">−0.017</td>
+<td style="text-align: right;">−0.052</td>
+<td style="text-align: right;">−0.001</td>
+<td style="text-align: right;">0.50</td>
+</tr>
+<tr>
+<td>ETFs · SPY–TLT</td>
+<td>High-vol regime</td>
+<td style="text-align: right;">−0.123</td>
+<td style="text-align: right;">−0.006</td>
+<td style="text-align: right;">−0.001</td>
+<td style="text-align: right;">−0.100</td>
+<td style="text-align: right;">−0.016</td>
+<td style="text-align: right;">0.37 (lower)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Full table with bootstrap intervals for every block and rule: <code>results/gap_decomposition.csv</code>.</p>
+<p>Four things stand out.</p>
+<ul>
+<li><strong>Selection dominates the rules that are chosen ex post.</strong> For crash, rally and big-move days, the
+  selection artefact is two to four times the size of everything else, with the sign set by the rule:
+  one tail lowers correlation, both tails raise it.</li>
+<li><strong>Fat tails barely matter.</strong> A Student-t world with ν ≈ 7 adds only 0.02–0.04. Symmetric tail
+  dependence is not what makes crisis heatmaps look the way they do.</li>
+<li><strong>For stocks the day-specific remainder is real but symmetric.</strong> About +0.06 on crash days and the same
+  on rally days, both outside the DCC-null 95% band. In this universe, extreme days of <em>either</em> sign
+  couple stocks more than the slow regime predicts.</li>
+<li><strong>The ex-ante regime is the clean effect.</strong> A rule that uses only yesterday's volatility has no
+  selection artefact, and correlation in the top-decile regime is +0.17 higher. The DCC path explains
+  about a quarter of it (+0.04), because a model whose correlation half-life is about 150 days cannot
+  move as fast as the regime does.</li>
+</ul>
+<p><img alt="Null distributions" loading="lazy" src="figures/fig3_null_distributions.png" /></p>
+<h3>4.3 No downside asymmetry once conditioning is accounted for</h3>
+<p><img alt="Exceedance curves" loading="lazy" src="figures/fig4_exceedance_curves.png" /></p>
+<p>In a constant-correlation world, exceedance correlation falls the deeper into either tail you condition
+(yellow and grey). The stocks stay flat at about 0.18–0.20 in both directions. They are clearly above
+the null on both sides, and the down-tail minus up-tail difference at 10% is +0.008 (t-null 95th
+percentile 0.038, p = 0.37). The ETFs sit inside the null band throughout (asymmetry p = 0.30). Over
+1990–2026, what earlier studies called "asymmetric correlation" looks like symmetric excess correlation
+in extreme markets on top of a large mechanical effect, and not like a downside-only phenomenon.
+Section 7 discusses why this differs from Ang &amp; Chen (2002).</p>
+<h3>4.4 Latent correlation moves slowly, and with the regime</h3>
+<p><img alt="DCC paths" loading="lazy" src="figures/fig5_dcc_paths.png" /></p>
+<p>The fitted DCC parameters are a = 0.005, b = 0.991 for stocks (half-life about 155 days) and
+a = 0.017, b = 0.977 for the ETFs (about 123 days). Average devolatised stock correlation ranges from
+0.19 (1996, 2000, 2017) to 0.42 (late 2008, 2011, March 2020). The stock–bond correlation was negative
+for almost the whole sample, reached −0.6 in 2008–2012, and crossed into positive territory in 2022–23.</p>
+<h3>4.5 Stress windows</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Universe · block</th>
+<th style="text-align: right;">Pre-window year</th>
+<th style="text-align: right;">Window (raw)</th>
+<th style="text-align: right;">Window (devolatised)</th>
+<th style="text-align: right;">Devolatised change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LTCM/Russia, Aug–Oct 1998</td>
+<td>Stocks</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">0.46</td>
+<td style="text-align: right;">+0.14</td>
+</tr>
+<tr>
+<td>GFC, Sep 2008 – Mar 2009</td>
+<td>Stocks</td>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">0.62</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">+0.23</td>
+</tr>
+<tr>
+<td>GFC</td>
+<td>ETF risk block</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">0.65</td>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">+0.32</td>
+</tr>
+<tr>
+<td>GFC</td>
+<td>SPY–TLT</td>
+<td style="text-align: right;">−0.51</td>
+<td style="text-align: right;">−0.44</td>
+<td style="text-align: right;">−0.51</td>
+<td style="text-align: right;">+0.01</td>
+</tr>
+<tr>
+<td>Euro/US downgrade, Aug–Oct 2011</td>
+<td>Stocks</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">+0.37</td>
+</tr>
+<tr>
+<td>COVID, 20 Feb – 30 Apr 2020</td>
+<td>Stocks</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">+0.51</td>
+</tr>
+<tr>
+<td>COVID</td>
+<td>ETF risk block</td>
+<td style="text-align: right;">0.56</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">0.78</td>
+<td style="text-align: right;">+0.22</td>
+</tr>
+<tr>
+<td>2022 rate shock, Jan–Oct 2022</td>
+<td>Stocks</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">+0.16</td>
+</tr>
+<tr>
+<td>2022 rate shock</td>
+<td>SPY–TLT</td>
+<td style="text-align: right;">−0.13</td>
+<td style="text-align: right;">+0.03</td>
+<td style="text-align: right;">+0.02</td>
+<td style="text-align: right;">+0.16</td>
+</tr>
+</tbody>
+</table></div>
+<p>Calendar windows are not selected on the returns inside them, so raw and devolatised numbers agree and
+the selection artefact is not an issue. In these windows correlations really do rise, by a lot. The
+point of this paper is not that crisis correlation is a myth. It is that <strong>the crash-day heatmap is the
+wrong instrument to see it</strong>, and that the rise belongs to the crisis <em>period</em>, not to the down days.</p>
+<h3>4.6 Sub-periods</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Period</th>
+<th style="text-align: right;">Crash-day excess vs t-null</th>
+<th style="text-align: right;">p</th>
+<th style="text-align: right;">High-vol regime excess</th>
+<th style="text-align: right;">p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1990–2006</td>
+<td style="text-align: right;">+0.008</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">+0.089</td>
+<td style="text-align: right;">0.003</td>
+</tr>
+<tr>
+<td>2007–2022</td>
+<td style="text-align: right;">+0.124</td>
+<td style="text-align: right;">0.007</td>
+<td style="text-align: right;">+0.167</td>
+<td style="text-align: right;">0.003</td>
+</tr>
+</tbody>
+</table></div>
+<p>The crash-day excess is entirely a post-2007 phenomenon in this sample. The regime effect is present in
+both halves and doubles in the second. (<code>results/subperiod_decomposition.csv</code>; 300 draws per null.)</p>
+<h2>5. Results, part B: which heatmap to use next month</h2>
+<p><img alt="Horse race" loading="lazy" src="figures/fig6_forecast_horse_race.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th style="text-align: right;">Stocks: GMV vol vs 1y sample</th>
+<th style="text-align: right;">Holm p</th>
+<th style="text-align: right;">Stocks, stressed months</th>
+<th style="text-align: right;">ETFs: GMV vol vs 1y</th>
+<th style="text-align: right;">Holm p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sample 3 months</td>
+<td style="text-align: right;">+10.4%</td>
+<td style="text-align: right;">&lt;0.001</td>
+<td style="text-align: right;">+12.6%</td>
+<td style="text-align: right;">+3.0%</td>
+<td style="text-align: right;">0.71</td>
+</tr>
+<tr>
+<td><strong>Sample 1 year (baseline)</strong></td>
+<td style="text-align: right;">16.5% p.a.</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">25.5% p.a.</td>
+<td style="text-align: right;">6.0% p.a.</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td>Sample 5 years</td>
+<td style="text-align: right;">−2.5%</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">−2.6%</td>
+<td style="text-align: right;">+1.8%</td>
+<td style="text-align: right;">0.34</td>
+</tr>
+<tr>
+<td>Expanding</td>
+<td style="text-align: right;">−2.3%</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">−2.1%</td>
+<td style="text-align: right;">+4.8%</td>
+<td style="text-align: right;">0.002</td>
+</tr>
+<tr>
+<td>EWMA 0.97</td>
+<td style="text-align: right;">+6.1%</td>
+<td style="text-align: right;">0.006</td>
+<td style="text-align: right;">+9.2%</td>
+<td style="text-align: right;">+2.5%</td>
+<td style="text-align: right;">0.82</td>
+</tr>
+<tr>
+<td>Shrink 1y (Ledoit–Wolf CC)</td>
+<td style="text-align: right;">−3.0%</td>
+<td style="text-align: right;">0.004</td>
+<td style="text-align: right;"><strong>−3.7%</strong></td>
+<td style="text-align: right;">+0.4%</td>
+<td style="text-align: right;">0.66</td>
+</tr>
+<tr>
+<td>RMT clip 1y</td>
+<td style="text-align: right;">−2.6%</td>
+<td style="text-align: right;">0.028</td>
+<td style="text-align: right;">−3.1%</td>
+<td style="text-align: right;">+6.5%</td>
+<td style="text-align: right;">&lt;0.001</td>
+</tr>
+<tr>
+<td><strong>DCC(1,1)</strong></td>
+<td style="text-align: right;"><strong>−3.4%</strong></td>
+<td style="text-align: right;">&lt;0.001</td>
+<td style="text-align: right;">−3.0%</td>
+<td style="text-align: right;">+1.1%</td>
+<td style="text-align: right;">0.82</td>
+</tr>
+<tr>
+<td>Identity</td>
+<td style="text-align: right;">+1.0%</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">+2.3%</td>
+<td style="text-align: right;">+22.5%</td>
+<td style="text-align: right;">&lt;0.001</td>
+</tr>
+</tbody>
+</table></div>
+<p>The log score gives the same ranking for stocks (DCC best, then 5-year sample and shrinkage; 3-month
+sample and EWMA far worse; all Holm p &lt; 0.03). In the crisis windows of §4.5 (<code>results/stress_forecast.csv</code>),
+shrinkage and DCC beat the 1-year sample in every stock episode (by 2–6% and 0.5–4.5%), while the 3-month
+sample loses in every one (by 4–21%).</p>
+<p>The intuition follows directly from part A. Latent correlation moves on a half-life of months, so a
+3-month window mostly adds estimation noise. 19 assets and 252 days leave a lot of noise in a 1-year
+sample, and shrinkage or a slow DCC removes it. Reacting fast to "crisis correlation" means reacting to
+the noisiest estimate at the worst time. With six assets, the noise problem is small and the 1-year
+sample is already hard to beat.</p>
+<h2>6. What this changes in practice</h2>
+<ol>
+<li><strong>Do not draw crash-day heatmaps without a null.</strong> The picture is dominated by the conditioning, and
+   for stock–bond hedges it can show the wrong direction. If you must, show panel C, not panel B.</li>
+<li><strong>Condition on information you have, not on the outcome.</strong> A heatmap for "high ex-ante volatility"
+   is free of selection bias and shows the effect that matters: +0.17 correlation among stocks.</li>
+<li><strong>Stress tests should raise correlations by regime, not by sign.</strong> The excess on extreme days is as
+   large in rallies as in crashes. A stress test that only correlates the down-moves misses half of it.</li>
+<li><strong>For allocation, shrink and go slow.</strong> DCC or Ledoit–Wolf shrinkage on a year of devolatised data
+   beat the default heatmap out of sample, in calm and stressed months alike.</li>
+</ol>
+<h2>7. Limitations and what would change the conclusion</h2>
+<ul>
+<li><strong>Survivorship.</strong> The 19 stocks are large companies that existed through 2022. Firms that failed in a
+  crisis (Lehman, Bear Stearns, Enron) are missing, and their correlations in the crises were probably
+  higher. This biases the <em>level</em> of crisis correlation down. It should affect the selection artefact
+  much less, because that depends on the conditioning rule and the volatility path.</li>
+<li><strong>Price rounding.</strong> Early quotes are rounded to $0.001 on split-adjusted prices; 2.5% of daily returns
+  are exactly zero (mostly before 1997). This attenuates early correlations slightly. RRC, the extreme
+  case, was removed.</li>
+<li><strong>The nulls use ex-ante volatility.</strong> Days whose realised volatility jumps beyond the EWMA forecast are
+  modelled through the Student-t shocks only. A world with intraday volatility jumps common to all assets
+  could create more crash-day dependence than the t-null does, which would shrink the day-specific
+  remainder. My excess numbers are therefore upper bounds on genuine day-specific coupling.</li>
+<li><strong>Single-factor market definition.</strong> An equal-weight market for stocks and SPY for ETFs. A
+  cap-weighted market would select slightly different days.</li>
+<li><strong>Asymmetry versus earlier work.</strong> Ang &amp; Chen (2002) used monthly US portfolios from 1963–1998 and a
+  Gaussian benchmark. My benchmark keeps the volatility path, which absorbs the leverage effect (down
+  moves raise future volatility, and high volatility raises correlation). This is the most likely reason
+  for the difference, and it is a claim about where asymmetry comes from, not that it does not exist.</li>
+<li><strong>Power.</strong> 413 crash days and 171 pairs make pair-level inference weak. No individual pair is
+  significant after FDR control, so I make no pair-level contagion claims.</li>
+<li><strong>ETF forecasting sample.</strong> The ETF horse race starts in 2012 (5-year burn-in) and so excludes the GFC.</li>
+</ul>
+<h2>8. Referee-style self-review: what it changed</h2>
+<p>I reviewed the first complete draft as a hostile referee would. Changes made:</p>
+<ol>
+<li><strong>Bad data found and removed.</strong> The first draft produced a DCC estimate of a = 0.79, an absurd value.
+   The cause was RRC's stale 1990–92 quotes. A flat price for weeks drives EWMA volatility to zero, and
+   then the first move produces a standardised return of 549. RRC was removed and a volatility floor added.</li>
+<li><strong>A third null added.</strong> The first draft compared the data against constant-correlation worlds only, so
+   any slow drift in correlation would have shown up as "crash contagion". The DCC-path null separates the
+   regime from the day-specific effect.</li>
+<li><strong>ETF average split into blocks.</strong> The six-ETF average showed nothing, because the risk-asset rise
+   and the stronger stock–bond hedge cancel out. The risk block and SPY–TLT now carry the ETF results.</li>
+<li><strong>Over-claiming titles corrected.</strong> An early figure title said the exceedance "V shape" was "mostly
+   conditioning". The data show flat curves against a Λ-shaped null, and the title now says that.</li>
+<li><strong>Pair-level claims withdrawn.</strong> The first draft highlighted the strongest pairs (WMT–PFE, WMT–LLY)
+   as contagion. They do not survive FDR control, so they are reported as cross-sectional evidence only.</li>
+<li><strong>Stress windows and sub-periods added</strong>, so that the headline does not rest on one pooled sample.</li>
+</ol>
+<h2>9. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+./run_all.sh          # data, 10 unit tests, both studies, stress windows, figures (~20 min on 4 cores)
+</code></pre>
+<p>Seeds are fixed. Every number above is in <code>results/</code>. Unit tests (<code>tests/test_core.py</code>) check that the
+volatility filter never looks ahead, that the simulators reproduce their target correlation and
+degrees of freedom, that one-tail conditioning lowers and two-tail conditioning raises Gaussian
+correlation, that shrinkage and clipping return valid correlation matrices, that DCC recovers known
+parameters, and the multiple-testing adjustments.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/core.py</code></td>
+<td>EWMA vol, null simulators, ν MLE, DCC, Ledoit–Wolf CC, RMT clipping, HAC/DM, Holm, BH</td>
+</tr>
+<tr>
+<td><code>src/conditioning.py</code></td>
+<td>part A: rules, three nulls, bootstrap, decomposition, exceedance curves, pairs</td>
+</tr>
+<tr>
+<td><code>src/forecast.py</code></td>
+<td>part B: nine estimators, GMV and log-score losses, DM tests</td>
+</tr>
+<tr>
+<td><code>src/stress.py</code></td>
+<td>named stress windows</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>all figures</td>
+</tr>
+</tbody>
+</table></div>
+<h2>Connections to other projects</h2>
+<ul>
+<li><strong>01 · Monte Carlo calibration:</strong> same ETF data. 01 found that volatility dynamics, not fat tails, fix
+  marginal forecasts. 08 finds the same for dependence: the volatility regime matters, the t-tails barely do.</li>
+<li><strong>05 · Efficient frontier</strong> and <strong>20 · Risk parity:</strong> both consume a correlation matrix. Part B says
+  which one to feed them.</li>
+<li><strong>13 · GARCH:</strong> the volatility filter here is EWMA; GARCH devolatisation is a natural robustness check.</li>
+<li><strong>19 · Regime detection:</strong> the high-volatility regime is the clean conditioning variable; an HMM is a
+  better way to define it.</li>
+<li><strong>24 · PCA statistical arbitrage:</strong> the eigenvalue clipping used here is the noise filter behind PCA
+  factors.</li>
+</ul>
+<h2>References</h2>
+<p>Ang, A. &amp; Chen, J. (2002). Asymmetric correlations of equity portfolios. <em>Journal of Financial Economics</em> 63, 443–494.
+Boyer, B., Gibson, M. &amp; Loretan, M. (1999). Pitfalls in tests for changes in correlations. Federal Reserve IFDP 597.
+Engle, R. (2002). Dynamic conditional correlation. <em>Journal of Business &amp; Economic Statistics</em> 20, 339–350.
+Forbes, K. &amp; Rigobon, R. (2002). No contagion, only interdependence. <em>Journal of Finance</em> 57, 2223–2261.
+Hong, Y., Tu, J. &amp; Zhou, G. (2007). Asymmetries in stock returns: statistical tests and economic evaluation. <em>Review of Financial Studies</em> 20, 1547–1581.
+Laloux, L., Cizeau, P., Bouchaud, J.-P. &amp; Potters, M. (1999). Noise dressing of financial correlation matrices. <em>Physical Review Letters</em> 83, 1467.
+Ledoit, O. &amp; Wolf, M. (2004). Honey, I shrunk the sample covariance matrix. <em>Journal of Portfolio Management</em> 30, 110–119.
+Longin, F. &amp; Solnik, B. (2001). Extreme correlation of international equity markets. <em>Journal of Finance</em> 56, 649–676.
+Politis, D. &amp; Romano, J. (1994). The stationary bootstrap. <em>JASA</em> 89, 1303–1313.</p>
+<hr />
+<p><em>Figure notes.</em> Colours follow the shared palette of this series: grey for the selection artefact, yellow
+for fat-tail dependence, green for regimes, blue for what is left, orange for observed values.
+Diverging maps are centred at zero.</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/08-correlation-crash-illusion">08-correlation-crash-illusion on GitHub</a>.</footer>
+</div>
+</body>
+</html>

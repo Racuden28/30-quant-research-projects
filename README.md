@@ -20,7 +20,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 05 | [Where Does the Efficient Frontier Break?](05-efficient-frontier/) | When mean-variance fails out of sample, is it the expected returns or the covariances? | ✅ Published |
 | 06 | [Is It Cheaper to Be Wrong?](06-var-backtesting-incentives/) | Does the Basel VaR traffic light reward banks for understating risk when tails are fat? | ✅ Published |
 | 07 | [The Kelly Fraction You Cannot Know](07-kelly-estimation-risk/) | How many years of data does it take to know the Kelly bet, and what survives out of sample when you don't? | ✅ Published |
-| 08 | Correlation structure | | ⏳ Planned |
+| 08 | [Do Correlations Really Go to One in a Crash?](08-correlation-crash-illusion/) | Once the bias from how crash days are picked is removed, do correlations really rise in crises, and is it crash-specific? | ✅ Published |
 | 09 | [The Beta You Hedge With](09-beta-horse-race/) | Which of nine beta estimators hedges best out of sample, and does any of them rescue the CAPM security market line? | ✅ Published |
 | 10 | [What on a Market Screen Is Worth Looking At?](10-market-terminal/) | Which of fourteen terminal widgets forecast returns, volatility or drawdowns out of sample, beyond realised volatility? | ✅ Published |
 | 11 | Pairs trading | | ⏳ Planned |

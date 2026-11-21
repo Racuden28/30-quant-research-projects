@@ -1,0 +1,64 @@
+universe,window,estimator,n_origins,gmv_vol_ann,gmv_rel
+stocks,LTCM / Russia 1998,"DCC(1,1)",4,0.2943,-0.0448
+stocks,LTCM / Russia 1998,EWMA 0.97,4,0.3373,0.0945
+stocks,LTCM / Russia 1998,Expanding,4,0.2938,-0.0464
+stocks,LTCM / Russia 1998,Identity,4,0.2937,-0.0470
+stocks,LTCM / Russia 1998,RMT clip 1y,4,0.2843,-0.0775
+stocks,LTCM / Russia 1998,Sample 1y,4,0.3081,0.0000
+stocks,LTCM / Russia 1998,Sample 3m,4,0.3399,0.1029
+stocks,LTCM / Russia 1998,Sample 5y,4,0.2990,-0.0295
+stocks,LTCM / Russia 1998,Shrink 1y (LW-CC),4,0.2911,-0.0554
+stocks,Global Financial Crisis,"DCC(1,1)",7,0.3780,-0.0347
+stocks,Global Financial Crisis,EWMA 0.97,7,0.4358,0.1130
+stocks,Global Financial Crisis,Expanding,7,0.3825,-0.0231
+stocks,Global Financial Crisis,Identity,7,0.4487,0.1461
+stocks,Global Financial Crisis,RMT clip 1y,7,0.3619,-0.0756
+stocks,Global Financial Crisis,Sample 1y,7,0.3915,0.0000
+stocks,Global Financial Crisis,Sample 3m,7,0.4718,0.2049
+stocks,Global Financial Crisis,Sample 5y,7,0.3764,-0.0386
+stocks,Global Financial Crisis,Shrink 1y (LW-CC),7,0.3720,-0.0498
+stocks,Euro crisis / US downgrade 2011,"DCC(1,1)",4,0.1743,-0.0053
+stocks,Euro crisis / US downgrade 2011,EWMA 0.97,4,0.1723,-0.0168
+stocks,Euro crisis / US downgrade 2011,Expanding,4,0.1823,0.0406
+stocks,Euro crisis / US downgrade 2011,Identity,4,0.2502,0.4279
+stocks,Euro crisis / US downgrade 2011,RMT clip 1y,4,0.1607,-0.0827
+stocks,Euro crisis / US downgrade 2011,Sample 1y,4,0.1752,0.0000
+stocks,Euro crisis / US downgrade 2011,Sample 3m,4,0.1844,0.0524
+stocks,Euro crisis / US downgrade 2011,Sample 5y,4,0.1769,0.0097
+stocks,Euro crisis / US downgrade 2011,Shrink 1y (LW-CC),4,0.1702,-0.0285
+etfs,COVID crash,"DCC(1,1)",3,0.2172,0.0618
+etfs,COVID crash,EWMA 0.97,3,0.2333,0.1407
+etfs,COVID crash,Expanding,3,0.2079,0.0167
+etfs,COVID crash,Identity,3,0.2433,0.1894
+etfs,COVID crash,RMT clip 1y,3,0.2099,0.0264
+etfs,COVID crash,Sample 1y,3,0.2045,0.0000
+etfs,COVID crash,Sample 3m,3,0.2293,0.1211
+etfs,COVID crash,Sample 5y,3,0.2099,0.0262
+etfs,COVID crash,Shrink 1y (LW-CC),3,0.2047,0.0009
+stocks,COVID crash,"DCC(1,1)",3,0.5936,-0.0239
+stocks,COVID crash,EWMA 0.97,3,0.6783,0.1155
+stocks,COVID crash,Expanding,3,0.5992,-0.0147
+stocks,COVID crash,Identity,3,0.5941,-0.0231
+stocks,COVID crash,RMT clip 1y,3,0.5834,-0.0407
+stocks,COVID crash,Sample 1y,3,0.6081,0.0000
+stocks,COVID crash,Sample 3m,3,0.6343,0.0430
+stocks,COVID crash,Sample 5y,3,0.5891,-0.0313
+stocks,COVID crash,Shrink 1y (LW-CC),3,0.5736,-0.0568
+etfs,2022 rate shock,"DCC(1,1)",11,0.1104,-0.0164
+etfs,2022 rate shock,EWMA 0.97,11,0.1092,-0.0268
+etfs,2022 rate shock,Expanding,11,0.1157,0.0307
+etfs,2022 rate shock,Identity,11,0.1220,0.0865
+etfs,2022 rate shock,RMT clip 1y,11,0.1177,0.0487
+etfs,2022 rate shock,Sample 1y,11,0.1122,0.0000
+etfs,2022 rate shock,Sample 3m,11,0.1116,-0.0055
+etfs,2022 rate shock,Sample 5y,11,0.1121,-0.0017
+etfs,2022 rate shock,Shrink 1y (LW-CC),11,0.1128,0.0050
+stocks,2022 rate shock,"DCC(1,1)",11,0.1724,-0.0082
+stocks,2022 rate shock,EWMA 0.97,11,0.1776,0.0217
+stocks,2022 rate shock,Expanding,11,0.1783,0.0258
+stocks,2022 rate shock,Identity,11,0.1721,-0.0100
+stocks,2022 rate shock,RMT clip 1y,11,0.1702,-0.0207
+stocks,2022 rate shock,Sample 1y,11,0.1738,0.0000
+stocks,2022 rate shock,Sample 3m,11,0.1813,0.0431
+stocks,2022 rate shock,Sample 5y,11,0.1758,0.0113
+stocks,2022 rate shock,Shrink 1y (LW-CC),11,0.1700,-0.0216
