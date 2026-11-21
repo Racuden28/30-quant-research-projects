@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Where Does the Efficient Frontier Break?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="When mean-variance fails out of sample, is it the expected returns or the covariances? A clairvoyance experiment on 12 and 49 industries and 19 stocks.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 05 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 05</p>
+<h1>Where Does the Efficient Frontier Break?</h1>
+<p><strong>An oracle experiment that splits mean-variance's out-of-sample failure between expected returns and covariances, across 12 and 49 US industries (1949–2026) and three decades of large-cap stocks</strong></p>
+<p><em>Project 05 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Information factorial" loading="lazy" src="figures/fig1_information_factorial.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Everyone who has drawn an efficient frontier has heard that it "does not work out of sample". The usual
+explanation is error maximisation: the optimiser takes its most extreme positions exactly where the
+inputs are most wrong. That explanation leaves out which inputs are to blame. Expected returns and
+covariances get blamed together, and the literature then fixes both at once (shrink the means, shrink the
+covariance, resample everything).</p>
+<p>I separate them with a <strong>clairvoyance experiment</strong>. At every rebalance of a walk-forward backtest, a
+long-only max-Sharpe optimiser gets one of five expected-return inputs (none, sample, Bayes–Stein,
+the full-sample average, or the <em>true</em> future average) crossed with one of three covariance inputs (sample,
+Ledoit–Wolf, or the <em>true</em> future covariance). That makes 15 portfolios per date, and the gaps between them
+put a price on each kind of perfect information. I run it on three universes that share no assets with
+project 01: <strong>12 US industries (monthly, 1949–2026)</strong>, <strong>49 US industries (monthly, 1969–2026)</strong> and
+<strong>19 S&amp;P 500 stocks (daily, 1990–2022)</strong>. A sweep over the estimation window moves the ratio of assets to
+observations (N/T) from 0.03 to 0.82, and a stationary Gaussian counterfactual (100–200 simulated worlds per
+universe, same code) separates estimation error from non-stationarity.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The frontier breaks in the means, in every universe and at every N/T tested.</strong> In a Shapley split of
+   what perfect information is worth, expected returns account for <strong>105% of it for 12 industries
+   (95% CI 89–130%), 98% for stocks (78–131%) and 86% for 49 industries (64–106%)</strong>. Perfect means add
+   +0.55 to +0.75 of Sharpe; perfect covariances add −0.02 to +0.09, never significantly.</li>
+<li><strong>Covariance information only pays once the means are good.</strong> The value of a perfect covariance rises with
+   the quality of the mean input in all three universes. With 49 industries the interaction is large and
+   significant: a perfect covariance adds <strong>+0.27 (p = 0.008) when the means are also perfect</strong>, but −0.08
+   with sample means. The interaction term is +0.35 [0.15, 0.55], p = 0.0005. With 12 assets it is +0.09 (p = 0.18).</li>
+<li><strong>What drives the value of covariance information is the number of assets, not N/T.</strong> Across the window sweep,
+   the covariance Shapley value stays around zero at every N/T for 12 industries and 19 stocks (N/T up to 0.5) and stays
+   positive at every N/T for 49 industries (+0.07 to +0.29). A richer cross-section gives the risk model
+   more to work with. A shorter window does not.</li>
+<li><strong>Ledoit–Wolf shrinkage is close to irrelevant for long-only portfolios.</strong> For minimum variance it never
+   changes the Sharpe ratio significantly (largest effect +0.04 across 16 window settings). It helps only for
+   max-Sharpe on stocks with very short windows (+0.09 at N/T = 0.45). The long-only constraint already acts
+   as shrinkage (Jagannathan &amp; Ma 2003).</li>
+<li><strong>No investable estimator beats 1/N after Holm correction</strong>, in any universe, net of 10 bp costs. Minimum
+   variance with Ledoit–Wolf is the best point estimate on both industry sets (+0.05 and +0.06 Sharpe) and loses
+   7 to 15 percentage points less than 1/N in the 1987, 2008 and 2022 crashes.</li>
+<li><strong>Theory says Markowitz should win on 49 industries. It does not.</strong> In a stationary world with the same
+   moments, sample max-Sharpe beats 1/N with 92% probability on 10 years of data and should be +0.10 Sharpe ahead.
+   On real data it is −0.05 behind (p = 0.06 against the simulation). For 12 industries the broken promise
+   is also larger than estimation error alone explains (p = 0.025; about 22% of the gap is non-stationarity).
+   For stocks, estimation error explains all of it.</li>
+</ol>
+<p><strong>The practical message.</strong> For a long-only investor, effort spent on the covariance matrix is mostly wasted
+until there is a defensible view on expected returns. Better covariances become valuable as the cross-section
+grows <em>and</em> the means improve, not before. Without such a view, "no view" (minimum variance or 1/N) is the
+benchmark to beat, and nothing here beats it with confidence.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>The out-of-sample failure of mean-variance is one of the best documented results in finance (Michaud 1989;
+Chopra &amp; Ziemba 1993; Kan &amp; Zhou 2007; DeMiguel, Garlappi &amp; Uppal 2009). Chopra &amp; Ziemba made the first
+attempt at attribution: they perturbed means, variances and covariances around a fixed "true" input and found
+that errors in means cost roughly ten times as much as errors in variances. That was a sensitivity analysis
+on a hypothetical. It did not answer the question an investor actually faces: <strong>if I could buy perfect
+foresight on one input, which one should I buy, and how much is it worth out of sample, on real data where
+the "truth" changes over time?</strong></p>
+<p>The clairvoyance design answers that directly and makes three less obvious comparisons possible:</p>
+<ul>
+<li><strong>Are means unknowable, or just badly estimated?</strong> The <em>full-sample</em> mean is what an investor would know if
+  expected returns were constant and 60+ years of data were available. If it helps, the problem is sample size.</li>
+<li><strong>Does better covariance information interact with bad means?</strong> If the errors come from the means, a sharper
+  covariance might make things worse by letting the optimiser act on them more aggressively.</li>
+<li><strong>Does the answer flip in high dimensions?</strong> Random-matrix theory says the sample covariance degrades as N/T
+  grows. If the covariance ever becomes the bottleneck, a window sweep should show it.</li>
+</ul>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>A · 12 industries</th>
+<th>B · 19 stocks</th>
+<th>C · 49 industries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Assets</td>
+<td>Fama–French 12 industry portfolios (value-weighted)</td>
+<td>19 S&amp;P 500 constituents</td>
+<td>Fama–French 49 industry portfolios (value-weighted)</td>
+</tr>
+<tr>
+<td>Frequency</td>
+<td>monthly excess returns</td>
+<td>daily simple returns</td>
+<td>monthly excess returns</td>
+</tr>
+<tr>
+<td>Sample</td>
+<td>1949-01 to 2026-09 (933 months)</td>
+<td>1990-01 to 2022-12 (8,312 days)</td>
+<td>1969-07 to 2026-09 (687 months)</td>
+</tr>
+<tr>
+<td>Out-of-sample (horse race)</td>
+<td>1959-01 to 2026-09 (813 months)</td>
+<td>1992-12 to 2022-12</td>
+<td>1979-07 to 2026-09 (567 months)</td>
+</tr>
+<tr>
+<td>Factorial sample (needs future data)</td>
+<td>1959-01 to 2023-10 (778 months)</td>
+<td>1992-12 to 2020-01 (6,804 days)</td>
+<td>1979-07 to 2016-10 (448 months)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>Ken French data library, CRSP vintage 2026-09</td>
+<td><code>skfolio.datasets.load_sp500_dataset</code></td>
+<td>Ken French data library, CRSP vintage 2026-09</td>
+</tr>
+</tbody>
+</table></div>
+<p>Industry returns are in excess of the one-month T-bill from the same library. C starts in 1969-07 because
+several of the 49 industries have missing data before then. The raw library files are kept in <code>data/raw/</code>
+and <code>src/data.py</code> rebuilds the panels from them.</p>
+<p><strong>Data vintage.</strong> An earlier version of this study used the 2017 vintage of the same library (as shipped in
+<code>linearmodels</code>). On the overlapping months the two vintages correlate at 0.997, with a mean absolute difference of 0.1% a month,
+which comes from CRSP revisions. Every headline result held in both vintages. The numbers here are from the 2026 vintage.</p>
+<p><strong>Data decisions fixed before any backtest.</strong> In B, an asset is excluded if more than 30% of its daily returns
+are exactly zero in any calendar year (stale prices). This removes only RRC (92% zeros in 1990). B has no risk-free
+series, so its Sharpe ratios use raw returns. That changes levels, not comparisons between portfolios.</p>
+<p><strong>Known flaw: survivorship.</strong> The 19 stocks are large caps <em>as of 2022</em>, so their full-sample means are inflated
+by hindsight. That flatters the "full-sample mean" row in B. The industry universes are built from all listed
+firms and have no such bias, which is why they carry the main conclusions.</p>
+<h2>3. Design</h2>
+<p><strong>Walk-forward.</strong> At each rebalance the estimation window is the previous <em>W</em> observations (A and C: 120 months;
+B: 756 days ≈ 3 years). Portfolios are held until the next rebalance (A and C: 1 month; B: 21 trading days),
+with weights drifting with prices in between. Turnover is measured against drifted weights and charged 10 bp
+one way. All portfolios are long-only and fully invested. The long-only max-Sharpe problem is solved exactly
+as a quadratic program (minimise y′Σy subject to μ′y = 1, y ≥ 0, then normalise).</p>
+<p><strong>The 5 × 3 information factorial.</strong> The long-only max-Sharpe portfolio is computed for every pair of</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Expected-return input</th>
+<th>Covariance input</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>None</strong>: equal means, which makes max-Sharpe identical to minimum variance</td>
+<td><strong>Sample</strong></td>
+</tr>
+<tr>
+<td><strong>Sample</strong> mean of the window</td>
+<td><strong>Ledoit–Wolf</strong> (2004), shrunk towards a scaled identity</td>
+</tr>
+<tr>
+<td><strong>Bayes–Stein</strong> (Jorion 1986), shrunk towards the minimum-variance portfolio's mean</td>
+<td><strong>Clairvoyant</strong>: realised covariance over the next <em>H</em> observations</td>
+</tr>
+<tr>
+<td><strong>Full-sample</strong>: average over the whole dataset (the "stationary oracle")</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Clairvoyant</strong>: realised mean over the next <em>H</em> observations</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>The clairvoyance horizon <em>H</em> is 36 months in A, 756 days in B and 120 months in C. C needs a longer horizon
+because a covariance of 49 assets estimated on fewer than 49 months is singular. The clairvoyant cells are
+the only place where look-ahead is used, on purpose. Because each clairvoyant cell needs <em>H</em> observations of future data, the factorial sample ends <em>H</em> before the data do: in 2023-10 for A, but in 2016-10 for C (2026-09 minus 10 years). It starts in 1979-07 for C because the 49-industry data begin in 1969-07 and the first estimation window takes 10 years. The horse race, which needs no future data, runs to 2026-09 in both. Sample × Sample is classic Markowitz.</p>
+<p><strong>Shapley split.</strong> On the 2 × 2 corner {Sample, Clairvoyant} × {Sample, Clairvoyant}, the value of perfect mean
+information is the average of its two marginal contributions, and likewise for the covariance. The two values
+add up to the total gain. The <strong>interaction</strong> (CC − CS − SC + SS) measures how much one kind of information is
+worth more when the other is present.</p>
+<p><strong>The horse race</strong> uses only investable strategies: 1/N, inverse volatility, minimum variance (sample and LW),
+max-Sharpe (sample), max-Sharpe (Bayes–Stein means + LW covariance) and Michaud (1998) resampled max-Sharpe
+(100 draws per rebalance, Wishart for the covariance).</p>
+<p><strong>N/T sweep.</strong> The same code with estimation windows of 24–240 months (A), 60–240 months (C) and 42–756 days (B),
+which moves N/T from 0.025 to 0.82.</p>
+<p><strong>Stationary counterfactual.</strong> For each universe I simulate i.i.d. Gaussian paths (200 for A and B, 100 for C)
+with the full-sample mean and covariance and the real length, then run <em>the same code</em> on them. What
+survives there is pure estimation error. The residual on real data is non-stationarity. A separate exact
+calculation draws inputs from their Gaussian sampling distribution (2,000 draws per point) to ask how many
+years of data each estimator needs.</p>
+<p><strong>Statistics.</strong> Sharpe ratios and their differences use a paired stationary bootstrap (Politis &amp; Romano 1994;
+mean block 12 months for A and C, 63 days for B; 2,000 replications), so all strategies are resampled on the
+same dates. P-values come from the centred bootstrap distribution. Families are Holm-corrected: the 6
+comparisons with 1/N per universe, and the 22 factorial effects per universe.</p>
+<p><strong>Pre-registration, honestly stated.</strong> The A and B universes, windows, cost level, estimators, factorial levels,
+bootstrap settings, robustness grid and hypotheses H1, H2 and H4 were fixed in <code>src/config.py</code> before the first
+run. Universe C, the N/T sweep and the shorts variant were added afterwards in response to an internal review that asked whether
+the result would flip in higher dimensions. H3 was relabelled exploratory after the first run and H5 was
+written before C was run.</p>
+<ul>
+<li><strong>H1</strong> The Markowitz portfolio delivers less than it promises. <em>Supported, trivially.</em></li>
+<li><strong>H2</strong> Expected returns account for more than half of the value of perfect information. <em>Supported in all three universes.</em></li>
+<li><strong>H3</strong> (exploratory) Perfect covariance information has negative value under estimated means. <em>Point estimates negative in 14 of 17 variants; significant in 2. See 4.3.</em></li>
+<li><strong>H4</strong> No investable estimator beats 1/N after costs. <em>Not rejected anywhere.</em></li>
+<li><strong>H5</strong> (added with C) At high N/T the covariance share of the value of information rises above one half. <em>Rejected: it peaks at 38% (C, W = 240).</em></li>
+</ul>
+<h2>4. Results</h2>
+<h3>4.1 The factorial: means carry almost all of the value</h3>
+<p>Figure 1 (top of page) shows out-of-sample Sharpe ratios (gross) for all 15 cells. Going down the rows
+from sample to clairvoyant means adds +0.50 (A), +0.41 (C) and +0.71 (B) with the sample covariance.
+Going across the columns from sample to Ledoit–Wolf changes nothing by more than 0.012 in any of the 15 rows.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Shapley value of perfect information</th>
+<th>A · 12 industries</th>
+<th>B · 19 stocks</th>
+<th>C · 49 industries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Expected returns</td>
+<td><strong>+0.55</strong> [0.35, 0.75]</td>
+<td><strong>+0.75</strong> [0.51, 1.05]</td>
+<td><strong>+0.58</strong> [0.28, 0.89]</td>
+</tr>
+<tr>
+<td>Covariances</td>
+<td>−0.02 [−0.11, 0.06]</td>
+<td>+0.02 [−0.16, 0.21]</td>
+<td>+0.09 [−0.03, 0.23]</td>
+</tr>
+<tr>
+<td>Share due to means</td>
+<td><strong>105%</strong> [89%, 130%]</td>
+<td><strong>98%</strong> [78%, 131%]</td>
+<td><strong>86%</strong> [64%, 106%]</td>
+</tr>
+<tr>
+<td>Interaction (means × covariance)</td>
+<td>+0.09 [−0.04, 0.21], p = 0.18</td>
+<td>+0.09 [−0.09, 0.28], p = 0.33</td>
+<td><strong>+0.35 [0.15, 0.55], p = 0.0005</strong></td>
+</tr>
+<tr>
+<td>Classic Markowitz (Sample × Sample)</td>
+<td>0.40</td>
+<td>0.93</td>
+<td>0.45</td>
+</tr>
+<tr>
+<td>Perfect information (Clairvoyant × Clairvoyant)</td>
+<td>0.93</td>
+<td>1.70</td>
+<td>1.13</td>
+</tr>
+</tbody>
+</table></div>
+<p>The exact stationary calculation gives the same ranking from first principles. At the window actually used,
+knowing the true covariance but estimating the means costs 0.089 (A), 0.152 (C) and 0.238 (B) of Sharpe against the true
+optimum. Knowing the true means but estimating the covariance costs 0.013, 0.020 and 0.008. <strong>Even in a world built to
+be estimable, 88% (A), 88% (C) and 97% (B) of the loss comes from the means.</strong></p>
+<h3>4.2 Are means unknowable, or just badly estimated?</h3>
+<p>The <em>full-sample</em> row answers this. Replacing the trailing 10-year mean with the long-run average raises the Sharpe
+ratio by +0.18 in A (Holm p = 0.045 with LW, 0.088 with the sample covariance) and +0.30 in C (raw p = 0.03, Holm 0.38).
+<strong>Long-run industry premia exist and are stable enough to matter, but a 10-year window is far too short to see them.</strong>
+In B the gain (+0.19) is not significant and is partly survivorship.</p>
+<p>The <em>None</em> row asks whether estimated means are better than no means. Minimum variance beats the sample mean by
++0.12 (A) and +0.19 (C), not significant after Holm, and ties in B (−0.01). <strong>Trailing sample means carry somewhere
+between zero and negative information.</strong> Bayes–Stein helps a little in C (+0.09, raw p = 0.04) and not at all in A or B.</p>
+<h3>4.3 Covariance information pays only once the means are right</h3>
+<p><img alt="Value of covariance information" loading="lazy" src="figures/fig2_value_of_covariance_information.png" /></p>
+<p>Figure 2 plots the value of the true future covariance at each level of mean quality. The ordering is the same
+in all three universes. The value is negative or zero with sample or Bayes–Stein means (A −0.07, C −0.08 and −0.10,
+B −0.03) and positive with clairvoyant means (A +0.02, C <strong>+0.27</strong>, B +0.06). Only the C value with clairvoyant means
+is individually significant (raw p = 0.008, Holm 0.16 among 22 effects), but the interaction test in 4.1, which is a single
+pre-specified contrast, is decisive for C (p = 0.0005).</p>
+<p>Robustness of the value of the clairvoyant covariance <strong>given sample means</strong>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>A · 12 industries</th>
+<th>B · 19 stocks</th>
+<th>C · 49 industries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main</td>
+<td>−0.068 (p = 0.26)</td>
+<td>−0.029 (p = 0.80)</td>
+<td>−0.080 (p = 0.23)</td>
+</tr>
+<tr>
+<td>Shorter window (A, C: 5y; B: 1y)</td>
+<td>−0.051 (p = 0.31)</td>
+<td>−0.085 (p = 0.29)</td>
+<td>+0.002 (p = 0.98)</td>
+</tr>
+<tr>
+<td>Longer window (A, C: 20y; B: 5y)</td>
+<td>+0.075 (p = 0.26)</td>
+<td>−0.052 (p = 0.60)</td>
+<td><strong>+0.238 (p = 0.04)</strong></td>
+</tr>
+<tr>
+<td>Shorter horizon (A: 5y; C: 5y; B: 1y)</td>
+<td>−0.096 (p = 0.10)</td>
+<td>−0.021 (p = 0.85)</td>
+<td>−0.017 (p = 0.85)</td>
+</tr>
+<tr>
+<td>Longer horizon (A: 10y; B: 5y)</td>
+<td><strong>−0.106 (p = 0.03)</strong></td>
+<td>−0.050 (p = 0.63)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Shorts allowed (w ≥ −30%)</td>
+<td>−0.041 (p = 0.65)</td>
+<td>−0.094 (p = 0.43)</td>
+<td><strong>−0.390 (p = 0.015)</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Fourteen of 17 variants are negative. The variants share most of their data and are not independent, so this is
+a consistent sign, not a significant result. The two positive exceptions with real size are the 20-year windows, where
+the sample means are least noisy, and they are exactly where the interaction story predicts a positive value. In the stationary simulation the
+same effect is on average <em>positive</em> (+0.03 in A, +0.02 in C, +0.01 in B), so the negative sign on real data is not a
+property of the estimator.</p>
+<p><img alt="Concentration mechanism" loading="lazy" src="figures/fig3_concentration_mechanism.png" /></p>
+<p>The mechanism is visible in the weights (Figure 3). With sample means, the clairvoyant covariance makes the portfolio
+more concentrated in all three universes (effective holdings: A 2.5 → 2.4, C 4.1 → 3.9, B 4.7 → 3.9). An accurate
+risk model tells the optimiser precisely which combinations are cheap in risk, and it spends that budget on
+whichever assets the noisy mean favours. With clairvoyant means in C, the same covariance <em>diversifies</em> the
+portfolio (3.3 → 4.4 holdings), because now the bets it enables are right. Allowing shorts gives the optimiser more
+room to act on noise, and the C penalty grows from −0.08 to −0.39.</p>
+<h3>4.4 The N/T sweep: does the covariance ever become the bottleneck?</h3>
+<p><img alt="N/T sweep" loading="lazy" src="figures/fig8_nt_sweep.png" /></p>
+<p>The concern this sweep addresses is that 12–19 assets with 120 months or 3 years of data are a comfortable N/T, and
+the covariance might matter at higher dimension. The same code was run with 16 estimation windows:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>A · 12 industries</th>
+<th>B · 19 stocks</th>
+<th>C · 49 industries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N/T range</td>
+<td>0.05–0.50</td>
+<td>0.03–0.45</td>
+<td>0.20–0.82</td>
+</tr>
+<tr>
+<td>Shapley value of covariance</td>
+<td>−0.05 to +0.08, all CIs cross 0</td>
+<td>−0.01 to +0.06, all CIs cross 0</td>
+<td><strong>+0.07 to +0.29</strong>, positive at every N/T; significant at W = 240 (0.29 [0.09, 0.48])</td>
+</tr>
+<tr>
+<td>Covariance share of the value of information</td>
+<td>≤ 15%</td>
+<td>≤ 8%</td>
+<td>13% to 38%</td>
+</tr>
+<tr>
+<td>LW − sample, minimum variance</td>
+<td>≤ +0.02, n.s.</td>
+<td>≤ +0.04, n.s.</td>
+<td>≤ +0.02, n.s.</td>
+</tr>
+<tr>
+<td>LW − sample, max-Sharpe with sample means</td>
+<td>≤ +0.02, n.s.</td>
+<td><strong>+0.04 at N/T = 0.15, +0.09 at N/T = 0.45</strong></td>
+<td>≤ +0.01, n.s.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Three conclusions follow, and the first is the reverse of what the textbook view predicts:</p>
+<ol>
+<li><strong>The value of covariance information depends on N, not on N/T.</strong> Shortening the window in A or B never makes
+   the covariance matter. Moving from 12 to 49 industries does, at every window. In C the covariance value is <em>largest</em>
+   at the lowest N/T (W = 240), where the means are also least noisy. This is the interaction again.</li>
+<li><strong>Means stay the bottleneck at every N/T tested.</strong> The covariance share never exceeds 38%, so H5 is rejected.</li>
+<li><strong>Ledoit–Wolf earns its keep only for single stocks at short windows</strong>, where daily sample covariances of 19 names on 42–126
+   days are noisy enough for shrinkage to help max-Sharpe. For long-only minimum variance it is never significant,
+   consistent with Jagannathan &amp; Ma (2003): the no-short constraint already shrinks the extreme covariance estimates.</li>
+</ol>
+<p>The sweep stops at N/T = 0.82 because a long-only optimiser with a full-rank sample covariance needs T &gt; N. The
+regime where Ledoit–Wolf is known to matter most (N/T &gt; 1, hundreds of stocks, shorts allowed) is outside this study
+and is taken up in project #24 (PCA statistical arbitrage).</p>
+<h3>4.5 Promise vs delivery</h3>
+<p><img alt="Promise vs reality" loading="lazy" src="figures/fig4_promise_vs_reality.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Markowitz max-Sharpe</th>
+<th>A · 12 industries</th>
+<th>B · 19 stocks</th>
+<th>C · 49 industries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Promised (average in-sample Sharpe)</td>
+<td>0.86</td>
+<td>1.85</td>
+<td>1.08</td>
+</tr>
+<tr>
+<td>Delivered (out-of-sample, gross)</td>
+<td>0.45</td>
+<td>0.90</td>
+<td>0.51</td>
+</tr>
+<tr>
+<td>Gap</td>
+<td>0.41</td>
+<td>0.95</td>
+<td>0.57</td>
+</tr>
+<tr>
+<td>Gap in stationary worlds (mean; 95th pct.)</td>
+<td>0.32; 0.40</td>
+<td>0.96; 1.09</td>
+<td>0.52; 0.64</td>
+</tr>
+<tr>
+<td>P(stationary gap ≥ real gap)</td>
+<td><strong>0.025</strong></td>
+<td>0.55</td>
+<td>0.26</td>
+</tr>
+<tr>
+<td>Share of gap from non-stationarity</td>
+<td><strong>22%</strong></td>
+<td>≈ 0%</td>
+<td>8%</td>
+</tr>
+<tr>
+<td>Max-Sharpe minus 1/N: real vs stationary</td>
+<td>−0.05 vs 0.00 (p = 0.21)</td>
+<td>+0.02 vs −0.06 (p = 0.77)</td>
+<td><strong>−0.05 vs +0.10 (p = 0.06)</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Single stocks are so noisy that estimation error explains the whole gap. Industries are less noisy, and what is left
+shows that their expected returns <em>move</em>. C adds a sharper version of the same point: with 49 industries, a stationary
+world says Markowitz should beat 1/N by 0.10 of Sharpe, and the real world says it loses by 0.05. Only 6% of the
+simulated worlds are that bad.</p>
+<h3>4.6 How many years would you need?</h3>
+<p><img alt="Years needed" loading="lazy" src="figures/fig5_years_of_data_needed.png" /></p>
+<p>Using the exact Gaussian sampling distribution of the inputs (2,000 draws per point):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Years of data</th>
+<th>P(sample max-Sharpe beats 1/N): A</th>
+<th>B</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>38%</td>
+<td>24%</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5</td>
+<td>45%</td>
+<td>43%</td>
+<td>80%</td>
+</tr>
+<tr>
+<td>10</td>
+<td>57%</td>
+<td>64%</td>
+<td>92%</td>
+</tr>
+<tr>
+<td>20</td>
+<td>75%</td>
+<td>89%</td>
+<td>98%</td>
+</tr>
+<tr>
+<td>40</td>
+<td>92%</td>
+<td>99%</td>
+<td>100%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The answer depends on how much room the true optimum leaves over 1/N. In C the true tangency portfolio (Sharpe 0.71) is far
+ahead of 1/N (0.45), so even noisy means win in theory within 5 years. In A the gap is small (0.69 vs 0.60) and the
+sample-mean optimiser needs about 30 years to catch up with simple minimum variance. These are <em>best-case</em> numbers.
+They assume the moments never change, and Section 4.5 shows that for industries they do.</p>
+<h3>4.7 The horse race</h3>
+<p><img alt="Horse race" loading="lazy" src="figures/fig6_horse_race.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Net Sharpe (10 bp)</th>
+<th>A</th>
+<th>Δ vs 1/N [95% CI]</th>
+<th>B</th>
+<th>Δ vs 1/N [95% CI]</th>
+<th>C</th>
+<th>Δ vs 1/N [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1/N</td>
+<td>0.50</td>
+<td>—</td>
+<td>0.87</td>
+<td>—</td>
+<td>0.55</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Inverse vol</td>
+<td>0.51</td>
+<td>+0.01 [−0.00, 0.03]</td>
+<td>0.86</td>
+<td>−0.02 [−0.08, 0.05]</td>
+<td>0.57</td>
+<td>+0.01 [−0.01, 0.04]</td>
+</tr>
+<tr>
+<td>Min-var (sample)</td>
+<td>0.53</td>
+<td>+0.04 [−0.09, 0.16]</td>
+<td>0.84</td>
+<td>−0.03 [−0.22, 0.15]</td>
+<td>0.60</td>
+<td>+0.05 [−0.12, 0.21]</td>
+</tr>
+<tr>
+<td>Min-var (LW)</td>
+<td><strong>0.54</strong></td>
+<td>+0.05 [−0.07, 0.17]</td>
+<td>0.85</td>
+<td>−0.02 [−0.20, 0.16]</td>
+<td><strong>0.62</strong></td>
+<td>+0.06 [−0.09, 0.22]</td>
+</tr>
+<tr>
+<td>Max-Sharpe (sample)</td>
+<td>0.44</td>
+<td>−0.06 [−0.19, 0.07]</td>
+<td>0.88</td>
+<td>+0.01 [−0.25, 0.23]</td>
+<td>0.49</td>
+<td>−0.06 [−0.26, 0.14]</td>
+</tr>
+<tr>
+<td>Max-Sharpe (BS + LW)</td>
+<td>0.44</td>
+<td>−0.06 [−0.16, 0.06]</td>
+<td>0.87</td>
+<td>−0.00 [−0.21, 0.17]</td>
+<td>0.57</td>
+<td>+0.01 [−0.15, 0.19]</td>
+</tr>
+<tr>
+<td>Max-Sharpe (resampled)</td>
+<td>0.46</td>
+<td>−0.03 [−0.13, 0.06]</td>
+<td><strong>0.91</strong></td>
+<td>+0.04 [−0.16, 0.20]</td>
+<td>0.57</td>
+<td>+0.01 [−0.14, 0.18]</td>
+</tr>
+</tbody>
+</table></div>
+<p>Every Holm-adjusted p-value is 1.00 (smallest raw p = 0.17). Turnover per year ranges from 0.27 (1/N, A) to 3.7
+(max-Sharpe, B), and the max-Sharpe book holds 2.4 (A), 4.1 (C) and 4.6 (B) effective positions. These results are consistent with DeMiguel et al. (2009),
+here on a 68-year walk-forward with costs.</p>
+<p><strong>Costs.</strong> Raising costs from 0 to 50 bp moves max-Sharpe (sample) minus 1/N from −0.05 to −0.10 in A and from +0.02 to −0.05 in B.
+Minimum variance with LW stays ahead of 1/N on both industry sets at every cost level (+0.03 to +0.07). Full table in <code>results/*_cost_sensitivity.csv</code>.</p>
+<p><img alt="Weights over time" loading="lazy" src="figures/fig7_weights_over_time.png" /></p>
+<p>Figure 7 shows why max-Sharpe struggles. With sample means, the 12-industry portfolio rotates between two or three sectors at a time,
+for example 100% energy for long stretches around 1980. Without means, minimum variance holds a stable, utility-heavy book.</p>
+<h3>4.8 Crises</h3>
+<p>Cumulative net return inside each stress window:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>1973–74 (A)</th>
+<th>1987 (A)</th>
+<th>2000–02 (A)</th>
+<th>2008 (A)</th>
+<th>2008 (C)</th>
+<th>2008 (B)</th>
+<th>2020 COVID (A)</th>
+<th>2020 COVID (B)</th>
+<th>2022 (A)</th>
+<th>2022 (C)</th>
+<th>2022 (B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1/N</td>
+<td>−52%</td>
+<td>−30%</td>
+<td>−35%</td>
+<td>−46%</td>
+<td>−48%</td>
+<td>−43%</td>
+<td>−23%</td>
+<td>−11%</td>
+<td>−14%</td>
+<td>−14%</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>Min-var (LW)</td>
+<td><strong>−44%</strong></td>
+<td><strong>−17%</strong></td>
+<td><strong>−31%</strong></td>
+<td><strong>−31%</strong></td>
+<td>−36%</td>
+<td><strong>−33%</strong></td>
+<td>−19%</td>
+<td>−13%</td>
+<td><strong>−7%</strong></td>
+<td><strong>−2%</strong></td>
+<td><strong>+11%</strong></td>
+</tr>
+<tr>
+<td>Max-Sharpe (sample)</td>
+<td>−54%</td>
+<td>−29%</td>
+<td>−44%</td>
+<td>−41%</td>
+<td><strong>−35%</strong></td>
+<td>−43%</td>
+<td><strong>−18%</strong></td>
+<td><strong>−3%</strong></td>
+<td>−21%</td>
+<td>−8%</td>
+<td>−12%</td>
+</tr>
+<tr>
+<td>Max-Sharpe (resampled)</td>
+<td>−53%</td>
+<td>−28%</td>
+<td>−41%</td>
+<td>−39%</td>
+<td>−36%</td>
+<td>−39%</td>
+<td>−18%</td>
+<td>−5%</td>
+<td>−20%</td>
+<td>−7%</td>
+<td>−12%</td>
+</tr>
+</tbody>
+</table></div>
+<p>Minimum variance gives the best or near-best protection in almost every window. The exceptions are COVID and 2008 in C, where
+max-Sharpe happened to hold the recent winners. In B those winners were Microsoft, Eli Lilly, Walmart and Coca-Cola.
+That is momentum, not foresight, and it reversed in 2022, when max-Sharpe was the worst strategy in A and B.</p>
+<h2>5. What this means in practice</h2>
+<ol>
+<li><strong>For a long-only book, do not start with the covariance matrix.</strong> Shrinkage, factor models and even perfect foresight
+   move the Sharpe ratio by hundredths until the means are good. The covariance starts to pay with a larger cross-section <em>and</em>
+   a credible mean model, and the two have to come together.</li>
+<li><strong>Treat the expected-return input as the actual investment decision.</strong> It is worth +0.5 to +0.75 of Sharpe if right, and it
+   is what makes Markowitz worse than 1/N if wrong. Without a view you can defend, use none: minimum variance or 1/N.</li>
+<li><strong>Longer is better than cleverer.</strong> On industries, a long-run average beat a 10-year average by more than any shrinkage
+   estimator. If premia must be estimated, pool across time or across assets with a pricing model (project #17) rather than
+   shrinking a short sample.</li>
+<li><strong>Do not trust the frontier's promise.</strong> The in-sample Sharpe ratio was about twice the out-of-sample one in every
+   universe. Project #23 (Deflated Sharpe) formalises this haircut.</li>
+</ol>
+<h2>6. Referee self-review</h2>
+<p>Before publishing, I reviewed the study as a hostile referee would. The objections and responses follow.</p>
+<p><strong>"12 to 19 assets is a toy. Of course the covariance doesn't matter."</strong> This was the strongest objection to the first
+version. Answer: universe C (49 assets) and the N/T sweep (N/T up to 0.82) were added. The covariance does start to
+matter with 49 assets, but only through the interaction with good means, and never enough to overturn H2. The regime N/T &gt; 1
+remains untested, and the claims are limited to N ≤ 49.</p>
+<p><strong>"The clairvoyance horizon differs across universes (3 years in A, 10 years in C), so A and C are not comparable."</strong> True, and
+it cannot be avoided: a 49-asset covariance needs more than 49 months. Robustness rows with a 5-year horizon in C (−0.017) and
+5- and 10-year horizons in A (−0.10, −0.11) give the same sign. The A-versus-C contrast in the interaction may partly reflect the
+horizon as well as N, and I flag that rather than claim N alone drives it.</p>
+<p><strong>"A clairvoyant covariance estimated over 36 months is noisier than a 120-month sample covariance."</strong> Partly true in A, which is
+why the concentration evidence is also shown for B (both covariances on 756 days) and C (clairvoyant horizon 120 months, the same
+length as the window). The mechanism appears in all three.</p>
+<p><strong>"Long-only is a strong constraint and hides the problem."</strong> Correct, and that is part of the finding. The shorts variant
+(w ≥ −30%) lowers the means' share to 89% (A) and 79% (C) and makes the negative covariance interaction much larger in C (−0.39,
+p = 0.015). Unconstrained mean-variance is a different and worse problem. The conclusions here are for long-only and lightly
+levered books.</p>
+<p><strong>"You ran many variants and are reporting the ones that look good."</strong> All variants are reported, including the inconvenient
+ones (the 20-year windows with a positive covariance value, and B where nothing is significant). The 22 factorial effects and 6
+horse-race comparisons are Holm-corrected. The interaction is a single contrast specified in the design. H5 was written down
+before C was run, and it was rejected.</p>
+<p><strong>"Universe C and the N/T sweep were added after seeing the results."</strong> Yes. They were added to answer a reviewer's question, not to
+rescue a result, and they <em>weakened</em> the original headline: in v1 the covariance looked worthless everywhere, and C shows it is not.</p>
+<p><strong>"Survivorship in B."</strong> Acknowledged in Section 2. B is never used alone for a conclusion. Every claim is supported by an industry
+universe without survivorship.</p>
+<p><strong>"The Gaussian counterfactual has no fat tails or volatility clustering."</strong> True (project #01 shows these matter for risk). For a
+comparison of monthly-rebalanced Sharpe ratios the effect is second-order, but the p-values in Section 4.5 should be read as approximate.</p>
+<p><strong>"Costs of 10 bp are too low for 49 industries or single stocks."</strong> The cost table goes to 50 bp. Higher costs only hurt the
+high-turnover max-Sharpe strategies, which strengthens the conclusion against them.</p>
+<p><strong>"Bootstrap p-values on Sharpe differences are fragile."</strong> The paired stationary bootstrap respects autocorrelation and the
+cross-correlation of strategies (Ledoit &amp; Wolf 2008 recommend the same approach). With 448–813 months, a 0.1 Sharpe difference
+has a standard error of about 0.07, so the study is powered for effects of about 0.15 and above. It is not powered for the smaller ones.</p>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>Statistical power.</strong> Most covariance effects are in the ±0.1 range, below what 40–68 years of monthly data can resolve.</li>
+<li><strong>N ≤ 49 and N/T &lt; 1.</strong> The high-dimensional regime is outside the study.</li>
+<li><strong>Long-only</strong> (with one light-shorting variant).</li>
+<li><strong>"Clairvoyant" means a multi-year average, not the next month.</strong> A clairvoyant one-month mean would trivially dominate everything.</li>
+<li><strong>Survivorship and no risk-free rate</strong> in B. <strong>Prices rounded to 3 decimals</strong> in B, which adds tiny noise to early daily returns of low-priced shares.</li>
+<li><strong>B ends in 2022</strong> (the vintage of the package). The industry universes run to September 2026.</li>
+<li><strong>Gaussian counterfactual</strong> without fat tails.</li>
+</ul>
+<h2>8. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+./run_all.sh        # tests, backtests, simulations, N/T sweep, statistics, figures (~25 min on 4 cores)
+</code></pre>
+<p>Seeds are fixed in <code>src/config.py</code>. <code>src/data.py</code> rebuilds <code>data/*.csv</code> from <code>data/raw/</code> (Ken French files) and
+<code>skfolio</code>. <code>src/fetch_kf.js</code> documents how the raw files were downloaded. The unit tests cover the optimisers
+(against a generic solver and the closed-form tangency), Ledoit–Wolf (against scikit-learn), the absence of
+look-ahead in every investable strategy, cost accounting, the Holm correction and the bootstrap.</p>
+<h2>9. Repository layout</h2>
+<pre><code>05-efficient-frontier/
+├── README.md               this paper
+├── LINKEDIN_POST.md
+├── run_all.sh  requirements.txt
+├── data/                   raw/ (Ken French files) + the three return panels
+├── src/
+│   ├── config.py           every design choice
+│   ├── data.py             builds the three universes
+│   ├── portfolio.py        estimators (sample, Ledoit–Wolf, Bayes–Stein) and long-only QP optimisers
+│   ├── backtest.py         walk-forward horse race + 5×3 information factorial
+│   ├── simulate.py         stationary counterfactual and &quot;years of data needed&quot;
+│   ├── sweep.py            N/T sweep
+│   ├── evaluate.py         bootstrap tests, Holm, Shapley split, stress, robustness, costs
+│   └── figures.py
+├── tests/                  pytest suite
+├── results/                every number in this paper, as CSV (summary.csv has the headline numbers)
+├── figures/
+└── study/                  ESTUDIO_05.pdf (plain-Spanish study notes)
+</code></pre>
+<h2>References</h2>
+<ul>
+<li>Chopra, V. &amp; Ziemba, W. (1993). The effect of errors in means, variances, and covariances on optimal portfolio choice. <em>Journal of Portfolio Management</em> 19(2).</li>
+<li>DeMiguel, V., Garlappi, L. &amp; Uppal, R. (2009). Optimal versus naive diversification: how inefficient is the 1/N portfolio strategy? <em>Review of Financial Studies</em> 22(5).</li>
+<li>Jagannathan, R. &amp; Ma, T. (2003). Risk reduction in large portfolios: why imposing the wrong constraints helps. <em>Journal of Finance</em> 58(4).</li>
+<li>Jorion, P. (1986). Bayes–Stein estimation for portfolio analysis. <em>Journal of Financial and Quantitative Analysis</em> 21(3).</li>
+<li>Kan, R. &amp; Zhou, G. (2007). Optimal portfolio choice with parameter uncertainty. <em>Journal of Financial and Quantitative Analysis</em> 42(3).</li>
+<li>Ledoit, O. &amp; Wolf, M. (2004). A well-conditioned estimator for large-dimensional covariance matrices. <em>Journal of Multivariate Analysis</em> 88(2).</li>
+<li>Ledoit, O. &amp; Wolf, M. (2008). Robust performance hypothesis testing with the Sharpe ratio. <em>Journal of Empirical Finance</em> 15(5).</li>
+<li>Markowitz, H. (1952). Portfolio selection. <em>Journal of Finance</em> 7(1).</li>
+<li>Michaud, R. (1989). The Markowitz optimization enigma: is "optimized" optimal? <em>Financial Analysts Journal</em> 45(1).</li>
+<li>Michaud, R. (1998). <em>Efficient Asset Management</em>. Harvard Business School Press.</li>
+<li>Politis, D. &amp; Romano, J. (1994). The stationary bootstrap. <em>Journal of the American Statistical Association</em> 89(428).</li>
+<li>Shapley, L. (1953). A value for n-person games. <em>Contributions to the Theory of Games</em> II.</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/05-efficient-frontier">05-efficient-frontier on GitHub</a>.</footer>
+</div>
+</body>
+</html>

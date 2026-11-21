@@ -1,0 +1,16 @@
+mean,cov,sharpe,ci_lo,ci_hi
+None,Sample,0.5246,0.2865,0.7868
+None,Ledoit-Wolf,0.5328,0.2935,0.7981
+None,Clairvoyant,0.5814,0.3541,0.8248
+Sample,Sample,0.4042,0.1629,0.6689
+Sample,Ledoit-Wolf,0.4034,0.1603,0.6698
+Sample,Clairvoyant,0.3358,0.0985,0.6030
+Bayes-Stein,Sample,0.4074,0.1514,0.6840
+Bayes-Stein,Ledoit-Wolf,0.4151,0.1558,0.6928
+Bayes-Stein,Clairvoyant,0.3939,0.1334,0.6766
+Full-sample,Sample,0.5796,0.3496,0.8439
+Full-sample,Ledoit-Wolf,0.5858,0.3519,0.8497
+Full-sample,Clairvoyant,0.5773,0.3495,0.8220
+Clairvoyant,Sample,0.9088,0.6984,1.1373
+Clairvoyant,Ledoit-Wolf,0.9083,0.6953,1.1364
+Clairvoyant,Clairvoyant,0.9296,0.7127,1.1905

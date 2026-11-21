@@ -1,0 +1,43 @@
+window,strategy,cum_return,max_drawdown
+1973-74 oil shock,1/N,-0.5250,-0.5073
+1973-74 oil shock,Inverse vol,-0.5177,-0.5001
+1973-74 oil shock,Min-var (sample),-0.4430,-0.4281
+1973-74 oil shock,Min-var (LW),-0.4429,-0.4281
+1973-74 oil shock,Max-Sharpe (sample),-0.5391,-0.5299
+1973-74 oil shock,Max-Sharpe (BS + LW),-0.5336,-0.5276
+1973-74 oil shock,Max-Sharpe (resampled),-0.5288,-0.5207
+1987 crash,1/N,-0.3035,-0.2860
+1987 crash,Inverse vol,-0.2941,-0.2775
+1987 crash,Min-var (sample),-0.1672,-0.1630
+1987 crash,Min-var (LW),-0.1741,-0.1693
+1987 crash,Max-Sharpe (sample),-0.2874,-0.2691
+1987 crash,Max-Sharpe (BS + LW),-0.2472,-0.2382
+1987 crash,Max-Sharpe (resampled),-0.2810,-0.2643
+2000-02 dot-com,1/N,-0.3457,-0.3368
+2000-02 dot-com,Inverse vol,-0.3143,-0.3086
+2000-02 dot-com,Min-var (sample),-0.3167,-0.3350
+2000-02 dot-com,Min-var (LW),-0.3104,-0.3279
+2000-02 dot-com,Max-Sharpe (sample),-0.4371,-0.4261
+2000-02 dot-com,Max-Sharpe (BS + LW),-0.4266,-0.4195
+2000-02 dot-com,Max-Sharpe (resampled),-0.4095,-0.4007
+2008 GFC,1/N,-0.4560,-0.5071
+2008 GFC,Inverse vol,-0.4406,-0.4912
+2008 GFC,Min-var (sample),-0.3046,-0.3638
+2008 GFC,Min-var (LW),-0.3101,-0.3682
+2008 GFC,Max-Sharpe (sample),-0.4114,-0.4768
+2008 GFC,Max-Sharpe (BS + LW),-0.4099,-0.4545
+2008 GFC,Max-Sharpe (resampled),-0.3917,-0.4385
+2020 COVID,1/N,-0.2290,-0.1555
+2020 COVID,Inverse vol,-0.2172,-0.1440
+2020 COVID,Min-var (sample),-0.1879,-0.1092
+2020 COVID,Min-var (LW),-0.1868,-0.1090
+2020 COVID,Max-Sharpe (sample),-0.1791,-0.1062
+2020 COVID,Max-Sharpe (BS + LW),-0.1821,-0.1080
+2020 COVID,Max-Sharpe (resampled),-0.1788,-0.1069
+2022 inflation,1/N,-0.1407,-0.1763
+2022 inflation,Inverse vol,-0.1384,-0.1770
+2022 inflation,Min-var (sample),-0.0517,-0.1404
+2022 inflation,Min-var (LW),-0.0712,-0.1494
+2022 inflation,Max-Sharpe (sample),-0.2058,-0.2050
+2022 inflation,Max-Sharpe (BS + LW),-0.1248,-0.1691
+2022 inflation,Max-Sharpe (resampled),-0.1953,-0.1868

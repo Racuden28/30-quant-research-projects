@@ -1,0 +1,5 @@
+cost_bps,1/N minus 1/N,Inverse vol minus 1/N,Min-var (sample) minus 1/N,Min-var (LW) minus 1/N,Max-Sharpe (sample) minus 1/N,Max-Sharpe (BS + LW) minus 1/N,Max-Sharpe (resampled) minus 1/N
+0,0.0000,0.0125,0.0536,0.0695,-0.0489,0.0254,0.0316
+10,0.0000,0.0125,0.0485,0.0647,-0.0601,0.0142,0.0141
+25,0.0000,0.0125,0.0409,0.0576,-0.0770,-0.0027,-0.0120
+50,0.0000,0.0125,0.0281,0.0456,-0.1051,-0.0308,-0.0557

@@ -1,0 +1,7 @@
+variant,window,horizon,mean_share,cov_clairv_given_sample_mean,cov_clairv_given_sample_mean_p,cov_clairv_given_no_mean,none_minus_sample_mean,Min-var (LW) minus 1/N,Max-Sharpe (sample) minus 1/N,Max-Sharpe (resampled) minus 1/N
+main,120,36,1.0452,-0.0684,0.2590,0.0568,0.1204,0.0480,-0.0592,-0.0344
+W=60,60,36,1.0284,-0.0509,0.3125,0.0446,0.1076,0.0564,-0.0542,-0.0121
+W=240,240,36,0.8503,0.0752,0.2640,0.0789,0.1703,0.0649,-0.0872,-0.0539
+H=60,120,60,1.0469,-0.0965,0.0960,0.0173,0.1359,,,
+H=120,120,120,1.1664,-0.1061,0.0275,-0.0152,0.1553,,,
+shorts allowed (w >= -0.3),120,36,0.8919,-0.0408,0.6465,0.0568,0.2841,,,
