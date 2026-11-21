@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Smile History Would Have Charged</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="At what volatility would a daily delta-hedged option seller have broken even, strike by strike, on seven ETFs from 2007 to 2026?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 04 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 04</p>
+<h1>The Smile History Would Have Charged</h1>
+<p><strong>Break-even Black–Scholes volatilities by strike across seven asset classes, 2007–2026, and a pricer that keeps its digits in the wings</strong></p>
+<p><em>Project 04 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Break-even smiles" loading="lazy" src="figures/fig2_breakeven_smiles.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Black–Scholes has one free input, volatility, and the textbook way to fill it in is trailing realised
+volatility. This paper asks what that number <em>should</em> have been, strike by strike, judged by
+the hedging argument behind the formula. A delta-hedged option seller who quotes volatility σ
+earns ½ Σ Γ S² (σ² dt − R²). The σ that sets this to zero is the <strong>break-even volatility</strong>. It is a
+gamma-weighted realised volatility that depends on the strike, because gamma sits in different places
+for different strikes. I compute it for daily-hedged one-month options on a standardised strike grid at
+every trading day from January 2007 to October 2026, on seven ETFs covering US and emerging-market
+equities, high-yield credit, crude oil, long Treasuries, gold and uranium. That is 33,719 option paths per strike.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>At the money, Black–Scholes with trailing volatility is fair. In the wings it is not.</strong> The pooled
+   break-even multiplier m* = σ*/σ_trailing at the money ranges from 1.01 to 1.06, and none of the seven
+   differs from 1 after Holm correction. At 2.5 trailing standard deviations below spot, a put seller
+   needed <strong>1.70× trailing vol on SPY (95% CI 1.51–1.86) and 1.82× on HYG (1.57–2.05)</strong> to break even.</li>
+<li><strong>History charged a put skew on risk assets and a symmetric smile on havens.</strong> The skew
+   m*(−1.5σ) − m*(+1.5σ) is +0.53 on SPY (95% CI 0.45–0.61), +0.53 on HYG, +0.33 on EEM and +0.20 on
+   USO, all with Holm-adjusted p &lt; 0.01. It is −0.08 on TLT, −0.02 on gold and 0.00 on uranium.
+   Convexity (a smile) is positive and significant for <strong>all seven</strong> assets.</li>
+<li><strong>The skew is a regime-free fact for US equities and high yield.</strong> SPY's break-even skew is
+   positive in every one of the 20 calendar years, and so is HYG's. Gold's skew is positive in only 7
+   of 20 years.</li>
+<li><strong>It is the spot–volatility link, not the jumps.</strong> In simulation, a Merton model with large negative
+   jumps produces almost no daily-hedging skew (−0.02). A GJR-GARCH model without jumps but with leverage
+   reproduces the equity shape (+0.23). Variance arrives when prices are already lower, which is where
+   low-strike gamma sits.</li>
+<li><strong>The volatility risk premium, measured with Black–Scholes' own accounting.</strong> VIX exceeded the SPY
+   at-the-money break-even vol on 83% of start dates, by 3.6 vol points on average. The gap inverts in
+   every crash: −5.3 points for options started in September–December 2008 and −2.3 points in
+   February–April 2020.</li>
+<li><strong>The historical smile is forecastable out of sample.</strong> A smile re-estimated monthly from options that
+   had already expired, applied on top of the trailing vol, removes <strong>74–93% of flat Black–Scholes'
+   mean absolute pricing bias</strong> across strikes in 2012–2026. The improvement is significant for 6 of 7
+   assets after Holm correction; TLT, whose smile is shallow, is the exception.
+   It does not reduce the path-by-path squared hedging error by a significant amount. The smile
+   corrects the <em>price</em>, but it cannot make a single month's hedging P&amp;L predictable.</li>
+</ol>
+<p>Part I is the engineering underneath. The textbook formula F·N(d1) − K·N(d2) returns <strong>no correct
+digit in 18% of a standard (moneyness × volatility) grid</strong>. These are deep out-of-the-money puts priced
+through put–call parity. The pricer here prices the out-of-the-money side directly with the scaled
+complementary error function. It keeps at least 11.8 correct digits everywhere against a 60-digit
+reference, and its implied-volatility solver inverts every representable price to within 3.3 × 10⁻¹³.</p>
+<hr />
+<h2>1. Motivation and question</h2>
+<p>Every introductory Black–Scholes project prices an option with a volatility taken from history and stops.
+Every options desk knows the market does not quote a single volatility: it quotes a smile. The usual
+explanation is that the smile is <em>risk-neutral</em>: it reflects crash fear and risk premia, not physical
+reality. That claim is testable without any option data. Black–Scholes is also an accounting identity.
+Its P&amp;L decomposition says exactly what volatility a hedger needed, path by path and strike by strike.
+If the <em>physical</em> world also produces a smile, part of the market smile is simply fair value.</p>
+<p><strong>Research question.</strong> If you had sold every one-month option and delta-hedged it daily from 2007 to 2026,
+which volatility would have made you break even at each strike? Does that "realised smile" differ from
+flat? Does its shape differ by asset class? Does it predict where flat Black–Scholes will misprice next?</p>
+<p>Ideas this builds on: the gamma-weighted break-even volatility of Bergomi (<em>Stochastic Volatility
+Modeling</em>, 2016, ch. 1) and Dupire's work on the realised P&amp;L of a delta hedge; the variance risk premium
+(Carr and Wu 2009; Bollerslev, Tauchen and Zhou 2009); and Jäckel (2015, "Let's be rational") on
+the numerics of implied volatility. To my knowledge the break-even smile has not been published across asset
+classes, over two decades, with formal inference and an out-of-sample test.</p>
+<h2>2. Part I: a Black–Scholes pricer you can trust in the wings</h2>
+<p><code>src/bs.py</code> implements Black-76 on the forward with a discount factor, so the same function prices
+equity (Black–Scholes–Merton with yield q), futures and FX options. It provides analytic Greeks (delta,
+gamma, vega, theta, rho, vanna, volga) and an implied-volatility solver.</p>
+<p><strong>Two choices matter for accuracy.</strong></p>
+<ul>
+<li><em>Price the out-of-the-money side and get the other side by parity.</em> An in-the-money value is
+  "intrinsic + small number". The small number is the out-of-the-money value, and it carries all the
+  information.</li>
+<li><em>Use erfcx, not N(·), for the out-of-the-money value.</em> Using N(−x) = ½ erfcx(x/√2) e^{−x²/2} and the
+  identity K e^{−d2²/2} = F e^{−d1²/2}, the call becomes F e^{−d1²/2}/2 · [erfcx(−d1/√2) − erfcx(−d2/√2)].
+  This is a difference of two O(1) numbers rather than two tiny ones.</li>
+</ul>
+<p><strong>Implied volatility.</strong> The quote is mapped to the normalised out-of-the-money call. The solver
+iterates Newton steps on <em>log price</em> in total volatility. A bracket is always maintained, and the solver
+falls back to bisection whenever a Newton step would leave it. Quotes outside the no-arbitrage bounds return NaN.</p>
+<p><img alt="Pricer accuracy" loading="lazy" src="figures/fig1_pricer_accuracy.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Pricer</th>
+<th>Median correct digits</th>
+<th>Worst cell</th>
+<th>Cells with no correct digit</th>
+<th>IV round-trip max rel. error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Textbook F·N(d1) − K·N(d2)</td>
+<td>13.2</td>
+<td><strong>&lt; 0</strong></td>
+<td><strong>17.8%</strong></td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>Stable (this repo)</td>
+<td>14.7</td>
+<td>11.8</td>
+<td>0.0%</td>
+<td>3.3 × 10⁻¹³ (0 failures in 2,891)</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Grid: ln(K/F) ∈ [−4, 4] (81 points) × σ√T ∈ [0.002, 3] (61 points, log-spaced); reference: mpmath at 60
+digits; <code>results/accuracy_summary.csv</code>.</em></p>
+<p>This matters for the rest of the paper. Out-of-the-money puts at 2.5 standard deviations are exactly where
+the break-even smile is steepest. A pricer that rounds them to zero would hide the effect this paper measures.</p>
+<h2>3. Part II: the break-even smile</h2>
+<h3>3.1 Method (pre-registered)</h3>
+<p>For a path S₀, …, S_n rebalanced every h days, the seller of an option quoted at σ and delta-hedged at σ earns,
+to second order,</p>
+<p>P&amp;L(σ) = ½ Σⱼ Γⱼ(σ) Sⱼ² (σ² h/252 − Rⱼ²),  Rⱼ = S_{j+h}/S_j − 1.</p>
+<p>The drift of S drops out of this gamma–theta form, so no expected-return assumption is needed. Rates are set to zero;
+for one-month options the financing term is below 0.5% of vega at any rate seen in the sample.</p>
+<ul>
+<li><strong>Strikes in standardised units.</strong> On each start date t₀, σ_ref is the trailing 63-day realised vol,
+  known at t₀. Strikes are K = S₀ exp(x σ_ref √T) for x ∈ {−2.5, −2.25, …, 2.5}. A strike at x = −2 is
+  "two trailing standard deviations below spot" on every asset and date. That makes uranium and
+  Treasuries comparable.</li>
+<li><strong>Quote at a multiple of trailing vol.</strong> Each option is quoted at σ = m · σ_ref, on a grid
+  m ∈ [0.20, 4.00] in steps of 0.01. Gamma is evaluated at the quoted vol, so the break-even is a
+  fixed point. P&amp;L is divided by inception vega × σ_ref, which makes it scale-free across assets and decades.</li>
+<li><strong>Break-even multiplier.</strong> m*(x) solves mean_paths P&amp;L(m · σ_ref) = 0. It is the single multiplier that
+  would have made a seller of <em>all</em> such options break even. That is the economically relevant
+  pooled answer, rather than the median path.</li>
+<li><strong>Sample.</strong> Every trading day from 2007-01-03 (later for HYG and URA) to October 2026. There are
+  4,983 overlapping one-month paths per asset, and 4,853 for HYG and 3,951 for URA.</li>
+<li><strong>Data.</strong> Daily total-return log returns of seven ETFs (the same series as project 01, from Yahoo Finance)
+  and the CBOE VIX close (<code>data/vix_daily.csv</code>, from the datasets/finance-vix mirror on GitHub).</li>
+</ul>
+<p><strong>Hypotheses, fixed before the results were inspected.</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Statistic</th>
+<th>H₀</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1 skew</td>
+<td>S = m*(−1.5) − m*(+1.5)</td>
+<td>S = 0</td>
+<td>S &gt; 0 for SPY, EEM, HYG</td>
+</tr>
+<tr>
+<td>H2 convexity</td>
+<td>C = ½[m*(−1.5) + m*(+1.5)] − m*(0)</td>
+<td>C = 0</td>
+<td>C &gt; 0 for all</td>
+</tr>
+<tr>
+<td>H3 level</td>
+<td>L = m*(0) − 1</td>
+<td>L = 0</td>
+<td>not rejected</td>
+</tr>
+<tr>
+<td>H4 VRP</td>
+<td>SPY ATM sold at VIX</td>
+<td>mean P&amp;L = 0</td>
+<td>&gt; 0 overall, &lt; 0 in crises</td>
+</tr>
+<tr>
+<td>H5 OOS</td>
+<td>mean abs. bias, expanding smile vs flat</td>
+<td>no gain</td>
+<td>gain &gt; 0</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Inference.</strong> The 1,000-replicate moving-block bootstrap resamples start dates in blocks of 63 trading days.
+That is three times the overlap of the paths, so serial dependence from overlapping options is preserved.
+Within each hypothesis family, a Holm correction runs across the seven assets.
+Time-series means use Newey–West standard errors with 42 lags.</p>
+<h3>3.2 Validation: does the estimator recover a known answer?</h3>
+<p>The same pipeline runs on 80 years of simulated daily data (<code>src/validation.py</code>):</p>
+<p><img alt="Validation" loading="lazy" src="figures/fig7_validation.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Simulated world</th>
+<th>m*(−1.5)</th>
+<th>m*(0)</th>
+<th>m*(+1.5)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GBM, constant 20% vol (truth: flat 1)</td>
+<td>1.02</td>
+<td>1.01</td>
+<td>1.01</td>
+</tr>
+<tr>
+<td>Merton, σ = 15%, 3 jumps/yr of −5% ± 3%</td>
+<td>1.11</td>
+<td>1.07</td>
+<td>1.13</td>
+</tr>
+<tr>
+<td>GJR-GARCH(1,1) with leverage, no jumps</td>
+<td>1.23</td>
+<td>1.04</td>
+<td>1.00</td>
+</tr>
+</tbody>
+</table></div>
+<p>Under GBM the estimator is flat at 1, apart from a 1–2% upward bias. That bias is the Jensen effect of
+dividing by an <em>estimated</em> trailing vol, and it is small next to the effects below.</p>
+<p>The Merton row is the key interpretive result. Even large <em>negative</em> jumps produce a symmetric smile, not a
+skew. With daily hedging, a jump is charged at the gamma of the strike <em>where the spot was before the
+jump</em>. Jumps add variance at every strike, and that convexity is all they produce. A skew needs variance to be <em>higher when the
+price is lower</em>, the leverage effect. The GJR row shows that this alone reproduces the equity shape.</p>
+<h3>3.3 Results</h3>
+<p><strong>Pooled break-even multipliers</strong> (<code>results/breakeven_smiles.csv</code>, <code>results/hypothesis_tests.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>m*(−2.5)</th>
+<th>m*(−1.5)</th>
+<th>m*(0)</th>
+<th>m*(+1.5)</th>
+<th>m*(+2.5)</th>
+<th>Skew [95% CI]</th>
+<th>Convexity [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SPY</td>
+<td>1.70</td>
+<td>1.40</td>
+<td>1.06</td>
+<td>0.87</td>
+<td>0.97</td>
+<td><strong>+0.53</strong> [0.45, 0.61]</td>
+<td>+0.08 [0.04, 0.13]</td>
+</tr>
+<tr>
+<td>HYG</td>
+<td>1.82</td>
+<td>1.46</td>
+<td>1.02</td>
+<td>0.93</td>
+<td>1.01</td>
+<td><strong>+0.53</strong> [0.44, 0.64]</td>
+<td>+0.18 [0.13, 0.21]</td>
+</tr>
+<tr>
+<td>EEM</td>
+<td>1.55</td>
+<td>1.29</td>
+<td>1.02</td>
+<td>0.96</td>
+<td>1.00</td>
+<td><strong>+0.33</strong> [0.25, 0.42]</td>
+<td>+0.11 [0.08, 0.14]</td>
+</tr>
+<tr>
+<td>USO</td>
+<td>1.42</td>
+<td>1.21</td>
+<td>1.02</td>
+<td>1.02</td>
+<td>1.22</td>
+<td><strong>+0.20</strong> [0.11, 0.30]</td>
+<td>+0.10 [0.06, 0.13]</td>
+</tr>
+<tr>
+<td>TLT</td>
+<td>1.17</td>
+<td>1.06</td>
+<td>1.01</td>
+<td>1.14</td>
+<td>1.33</td>
+<td>−0.08 [−0.14, −0.01]</td>
+<td>+0.09 [0.06, 0.13]</td>
+</tr>
+<tr>
+<td>GLD</td>
+<td>1.34</td>
+<td>1.12</td>
+<td>1.01</td>
+<td>1.14</td>
+<td>1.35</td>
+<td>−0.02 [−0.10, 0.08]</td>
+<td>+0.12 [0.08, 0.16]</td>
+</tr>
+<tr>
+<td>URA</td>
+<td>1.30</td>
+<td>1.13</td>
+<td>1.03</td>
+<td>1.13</td>
+<td>1.35</td>
+<td>0.00 [−0.15, 0.13]</td>
+<td>+0.10 [0.04, 0.14]</td>
+</tr>
+</tbody>
+</table></div>
+<p>Holm-adjusted p-values: skew &lt; 0.001 for SPY, HYG, EEM and USO; TLT 0.06; GLD and URA 1.00. Convexity
+&lt; 0.001 for all seven. ATM level: no asset rejects (smallest Holm p = 0.63, SPY).</p>
+<ul>
+<li><strong>H1 is confirmed for equities and credit, and extends to oil.</strong> High yield, not the S&amp;P 500, has the
+  steepest realised skew in the sample. Credit is short a put on the issuers' assets (see project 27,
+  Merton credit model), and the hedging data show it.</li>
+<li><strong>H2 is confirmed everywhere.</strong> Every asset class has a realised smile. The flat Black–Scholes world is
+  rejected for all seven.</li>
+<li><strong>H3 is not rejected.</strong> At the money, the textbook recipe (63-day trailing vol) is unbiased on average.
+  The textbook error is a wing error. Non-rejection is not proof of zero, though. SPY's at-the-money CI
+  [0.99, 1.11] still allows trailing vol to understate the fair ATM vol by up to 11%.</li>
+<li><strong>The skew is not a crisis artefact.</strong> If every start date inside the GFC, COVID and 2022 windows is
+  dropped, the skew barely moves: SPY +0.52, HYG +0.51, EEM +0.30, USO +0.19, with TLT, GLD and URA
+  between −0.06 and −0.03 (<code>results/stress_smiles.csv</code>, "All other start dates").</li>
+<li><strong>Most months the seller wins, and the pooled answer is set by the months they lose.</strong> The median
+  per-path break-even multiplier at −1.5σ is <em>below</em> 1 on every asset (SPY 0.99, HYG 0.94). The pooled
+  value is 1.40 and 1.46. The put-wing P&amp;L is a short-skew profile: small gains most months, rare large losses.</li>
+</ul>
+<p><img alt="Yearly skew" loading="lazy" src="figures/fig3_yearly_skew.png" /></p>
+<p><strong>Stability.</strong> SPY's yearly skew is positive in all 20 calendar years, from +0.16 in 2009 to +0.82 in
+2020. HYG's is positive in all 20 as well, although only barely in 2023 (+0.001). Gold's is positive in just 7 of 20 years and changes sign 8 times. Treasuries
+lean slightly to a <em>call</em> skew in crisis years (2008: −0.20, 2011: −0.33, 2020: −0.28), the flight-to-quality rally.</p>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig4_stress_smiles.png" /></p>
+<p><strong>Stress windows</strong> (<code>results/stress_smiles.csv</code>). For options started inside a crisis, every strike breaks
+even above trailing vol, because trailing vol lags. In the COVID window the SPY multiplier is 2.71 at −1.5σ
+and 1.55 at the money. HYG reaches 3.30 and 2.14. The 2022 rate shock behaves differently. It was a slow
+grind rather than a crash, and SPY's smile in 2022 is <em>flatter</em> than usual (skew +0.28 against +0.52 in other
+years). TLT's at-the-money multiplier was 1.06, unremarkable, even though it was the asset at the centre of the shock.</p>
+<h3>3.4 H4: the volatility risk premium, in Black–Scholes' own units</h3>
+<p><img alt="VIX vs break-even" loading="lazy" src="figures/fig5_vix_vs_breakeven.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Start dates</th>
+<th>Mean VIX</th>
+<th>Mean ATM break-even</th>
+<th>Gap (vol pts)</th>
+<th>VIX above</th>
+<th>Mean seller P&amp;L at VIX (HAC s.e.)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full sample</td>
+<td>4,983</td>
+<td>19.7</td>
+<td>16.2</td>
+<td><strong>+3.6</strong></td>
+<td>83%</td>
+<td>+0.23 (0.02)</td>
+</tr>
+<tr>
+<td>GFC Sep–Dec 2008</td>
+<td>85</td>
+<td>51.6</td>
+<td>56.9</td>
+<td><strong>−5.3</strong></td>
+<td>46%</td>
+<td>−0.23 (0.28)</td>
+</tr>
+<tr>
+<td>COVID Feb 15–Apr 30 2020</td>
+<td>52</td>
+<td>45.4</td>
+<td>47.8</td>
+<td><strong>−2.3</strong></td>
+<td>63%</td>
+<td>−0.33 (0.35)</td>
+</tr>
+<tr>
+<td>2022 rate shock</td>
+<td>251</td>
+<td>25.6</td>
+<td>24.5</td>
+<td>+1.2</td>
+<td>62%</td>
+<td>+0.07 (0.04)</td>
+</tr>
+</tbody>
+</table></div>
+<p>H4 is confirmed in direction. The full-sample premium is about 10 HAC standard errors from zero. The crisis
+inversions are large in magnitude, but each window holds only 2–4 independent months, so they are not
+individually significant. Caveat: VIX is a 30-calendar-day variance-swap rate built from <em>all</em> strikes, so
+it sits above at-the-money implied vol by a convexity term of roughly 1–2 points. The gap here is therefore an upper bound on the at-the-money premium.</p>
+<h2>4. Part III: is the smile forecastable? (H5, out of sample)</h2>
+<p>From January 2012, each month I re-estimate m*(x) using only options that had <strong>already expired</strong> by
+the start of that month (an expanding window). Each new option is then priced with one of three models:</p>
+<ul>
+<li><strong>Textbook BS</strong>: σ = σ_ref at every strike.</li>
+<li><strong>Flat, level-corrected</strong>: σ = m̂*(0) · σ_ref at every strike.</li>
+<li><strong>Break-even smile</strong>: σ = m̂*(x) · σ_ref.</li>
+</ul>
+<p>For SPY, two VIX-based models are added: VIX flat, and VIX × the break-even shape m̂*(x)/m̂*(0). The seller's
+hedged P&amp;L at the model price is its pricing error. The primary metric was fixed in advance: the
+<strong>mean absolute bias across the 21 strikes</strong> over 2012–2026.</p>
+<p><img alt="Out-of-sample bias" loading="lazy" src="figures/fig6_oos_bias.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Textbook</th>
+<th>Level-corrected</th>
+<th>Break-even smile</th>
+<th>Bias removed</th>
+<th>95% CI of gain</th>
+<th>Holm p</th>
+<th>DM (MSE)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SPY</td>
+<td>0.403</td>
+<td>0.337</td>
+<td>0.062</td>
+<td>85%</td>
+<td>[0.13, 0.50]</td>
+<td>&lt; 0.001</td>
+<td>1.15</td>
+</tr>
+<tr>
+<td>EEM</td>
+<td>0.229</td>
+<td>0.217</td>
+<td>0.036</td>
+<td>84%</td>
+<td>[0.04, 0.36]</td>
+<td>0.020</td>
+<td>1.52</td>
+</tr>
+<tr>
+<td>HYG</td>
+<td>0.475</td>
+<td>0.477</td>
+<td>0.035</td>
+<td>93%</td>
+<td>[0.21, 0.66]</td>
+<td>&lt; 0.001</td>
+<td>1.43</td>
+</tr>
+<tr>
+<td>TLT</td>
+<td>0.126</td>
+<td>0.116</td>
+<td>0.016</td>
+<td>87%</td>
+<td>[−0.03, 0.21]</td>
+<td>0.123</td>
+<td>1.21</td>
+</tr>
+<tr>
+<td>GLD</td>
+<td>0.259</td>
+<td>0.238</td>
+<td>0.034</td>
+<td>87%</td>
+<td>[0.05, 0.32]</td>
+<td>0.020</td>
+<td>1.92</td>
+</tr>
+<tr>
+<td>USO</td>
+<td>0.272</td>
+<td>0.238</td>
+<td>0.072</td>
+<td>74%</td>
+<td>[0.10, 0.31]</td>
+<td>&lt; 0.001</td>
+<td>1.33</td>
+</tr>
+<tr>
+<td>URA</td>
+<td>0.213</td>
+<td>0.176</td>
+<td>0.033</td>
+<td>84%</td>
+<td>[0.02, 0.29]</td>
+<td>0.024</td>
+<td>2.25</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Units: seller's mean hedged P&amp;L per unit of inception vega × trailing vol (<code>results/oos_tests.csv</code>).</em></p>
+<ul>
+<li><strong>The shape matters, not just the level.</strong> A flat level correction removes at most 18% of the bias, and for HYG it removes none. The bias lives in the wings.</li>
+<li><strong>The smile survives out of sample.</strong> It was learned on 2007–2011 and then expanded. It was not fitted
+  to COVID, yet it priced the 2020 wings far better than flat volatility did.</li>
+<li><strong>What it does not do.</strong> Diebold–Mariano statistics on per-path <em>squared</em> error are 1.2–2.3: positive
+  everywhere, but only URA clears 1.96 before correction, and none survives a Holm correction at 5%. One
+  month's hedging P&amp;L is dominated by the realised path, and no smile can predict that.
+  The break-even smile is a fair <em>price</em>, not a hedge.</li>
+<li><strong>SPY and VIX.</strong> Selling SPY options at flat VIX still lost money at −2σ (−0.16). That is consistent
+  with VIX carrying a level premium but no skew. VIX × break-even shape earns a nearly constant +0.21 to
+  +0.33 across strikes. In other words, the variance risk premium is roughly <em>proportional</em> across the
+  smile once the realised shape is accounted for.</li>
+</ul>
+<h2>5. Robustness</h2>
+<p><code>src/ablation.py</code> re-estimates the smile under every modelling choice (<code>results/ablation.csv</code>):</p>
+<p>Skew m*(−1.5) − m*(+1.5), with ATM m*(0) in brackets:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>SPY</th>
+<th>HYG</th>
+<th>EEM</th>
+<th>USO</th>
+<th>TLT</th>
+<th>GLD</th>
+<th>URA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline</td>
+<td>+0.53 (1.06)</td>
+<td>+0.53 (1.02)</td>
+<td>+0.33 (1.02)</td>
+<td>+0.20 (1.02)</td>
+<td>-0.08 (1.01)</td>
+<td>-0.02 (1.01)</td>
+<td>-0.00 (1.03)</td>
+</tr>
+<tr>
+<td>Gamma at trailing vol</td>
+<td>+0.64 (1.06)</td>
+<td>+0.70 (1.02)</td>
+<td>+0.41 (1.02)</td>
+<td>+0.23 (1.02)</td>
+<td>-0.10 (1.01)</td>
+<td>-0.02 (1.01)</td>
+<td>+0.00 (1.03)</td>
+</tr>
+<tr>
+<td>Weekly hedging</td>
+<td>+0.31 (0.97)</td>
+<td>+0.41 (1.02)</td>
+<td>+0.22 (0.92)</td>
+<td>+0.18 (0.97)</td>
+<td>-0.06 (0.90)</td>
+<td>-0.01 (0.97)</td>
+<td>+0.02 (1.06)</td>
+</tr>
+<tr>
+<td>3-month options</td>
+<td>+0.59 (1.10)</td>
+<td>+0.81 (1.11)</td>
+<td>+0.36 (1.03)</td>
+<td>+0.21 (1.00)</td>
+<td>-0.16 (0.99)</td>
+<td>-0.06 (1.01)</td>
+<td>-0.03 (1.01)</td>
+</tr>
+<tr>
+<td>Log returns</td>
+<td>+0.53 (1.06)</td>
+<td>+0.54 (1.02)</td>
+<td>+0.34 (1.02)</td>
+<td>+0.21 (1.02)</td>
+<td>-0.08 (1.01)</td>
+<td>-0.02 (1.01)</td>
+<td>+0.01 (1.03)</td>
+</tr>
+<tr>
+<td>First half 2007-2016</td>
+<td>+0.53 (1.04)</td>
+<td>+0.52 (1.00)</td>
+<td>+0.37 (1.01)</td>
+<td>+0.20 (1.03)</td>
+<td>-0.10 (1.01)</td>
+<td>+0.06 (1.01)</td>
+<td>-0.04 (1.03)</td>
+</tr>
+<tr>
+<td>Second half 2017-2026</td>
+<td>+0.54 (1.08)</td>
+<td>+0.55 (1.04)</td>
+<td>+0.30 (1.02)</td>
+<td>+0.20 (1.01)</td>
+<td>-0.06 (1.02)</td>
+<td>-0.09 (1.02)</td>
+<td>+0.02 (1.03)</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>The sign and ranking of the skew survive every variant.</strong> Risk assets stay positive (SPY +0.31 to +0.64,
+  HYG +0.41 to +0.81). Havens and uranium stay within ±0.16 of zero. Both halves of the sample give
+  almost identical numbers: SPY +0.53 and +0.54, HYG +0.52 and +0.55.</li>
+<li><strong>Weekly hedging lowers the level, by 3–11% at the money, and roughly halves the equity skew.</strong> Two candidate explanations
+  are slight negative autocorrelation of daily returns (project 02 tests variance ratios) and gamma being
+  sampled less often near the strike. This project does not separate the two. Either way, the break-even
+  depends on how often you hedge.</li>
+<li><strong>Evaluating gamma at trailing vol</strong> (no fixed point) steepens every smile. The fixed point matters for the
+  wings.</li>
+<li><strong>Three-month options</strong> have steeper wings and a higher ATM level (SPY 1.10, HYG 1.11). Trailing vol is more
+  stale over a quarter.</li>
+<li><strong>Log instead of simple returns</strong> changes nothing beyond the second decimal.</li>
+</ul>
+<h2>6. Referee self-review: what it changed</h2>
+<p>A full referee-style pass was made after the first draft. It changed the following:</p>
+<ol>
+<li><strong>Added confidence intervals to the headline wing numbers.</strong> The point estimates 1.70 and 1.82 now carry
+   their bootstrap CIs (1.51–1.86 and 1.57–2.05), because wings are where the estimate is noisiest.</li>
+<li><strong>Tested whether the skew is a crisis artefact.</strong> The skew was re-estimated without the GFC, COVID and
+   2022 windows (Section 3.3). It barely moves.</li>
+<li><strong>Qualified the ATM non-rejection.</strong> "Not rejected" was rephrased, because SPY's ATM CI still allows a
+   bias of up to 11%.</li>
+<li><strong>Reported the median next to the pooled estimate,</strong> so that the short-skew P&amp;L profile is visible and
+   the pooled number is not mistaken for a typical month.</li>
+<li><strong>Added the robustness suite</strong> (Section 5). It showed that the break-even level depends on the hedging
+   frequency, and that caveat is now stated.</li>
+<li><strong>Added a validation study</strong> before trusting the data results. It overturned the original hypothesis
+   that jumps drive the skew: under daily hedging they produce a symmetric smile.</li>
+<li><strong>Labelled the reference line in the main figure</strong> ("m* = 1: Black–Scholes at trailing vol breaks even")
+   and marked which side holds puts and which holds calls, so the ratio axis cannot be read as a volatility level.</li>
+<li><strong>Stated explicitly that the OOS gain is in bias, not in squared error.</strong> The DM statistics are reported
+   even though they are not significant after correction.</li>
+</ol>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>Physical, not risk-neutral.</strong> The break-even smile is what hedgers <em>needed</em>, not what the market <em>charged</em>.
+  Without option quotes, the comparison with market smiles is limited to VIX. Project 14 (implied volatility
+  surface) closes that loop.</li>
+<li><strong>Second-order P&amp;L.</strong> The gamma–theta form ignores third-order terms (speed × R³). Those matter on
+  days with jumps larger than about 3 standard deviations, and they are concentrated in the wings. The
+  table in Section 3.2 shows the estimator still behaves sensibly under jumps, but a full-revaluation
+  hedging P&amp;L would be the stricter test. Project 16 (delta hedging) does that.</li>
+<li><strong>Overlapping paths and few crises.</strong> The 4,983 daily start dates contain about 237 independent months
+  and only two true crashes. The block bootstrap accounts for the overlap but cannot create crises that
+  did not happen. Stress-window estimates rest on 2–4 independent months each.</li>
+<li><strong>Transaction costs, discrete strikes, early exercise</strong> (ETF options are American) and dividends
+  inside the hedge are ignored. Delta-hedging costs would add a bid–ask term that also increases in the wings.</li>
+<li><strong>URA starts in 2011</strong>, so it has no GFC window, and HYG starts in mid-2007.</li>
+<li><strong>Same universe as project 01.</strong> The cloud environment could not reach market-data providers, so
+  this project reuses project 01's ETF returns. The question and the methods are different.</li>
+<li><strong>Data precision.</strong> Returns are stored to 4 decimals (±0.5 bp). The effect on R² is below 0.1% of
+  daily variance for every asset.</li>
+</ul>
+<h2>8. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh            # ~17 minutes on one core, two thirds of it in ablation.py; writes results/ and figures/
+python -m pytest tests     # 16 tests: pricer vs 60-digit reference, Greeks, IV, estimator under GBM
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/bs.py</code></td>
+<td>Pricer, Greeks, implied volatility</td>
+</tr>
+<tr>
+<td><code>src/accuracy.py</code></td>
+<td>Part I accuracy study vs mpmath</td>
+</tr>
+<tr>
+<td><code>src/breakeven.py</code></td>
+<td>Break-even P&amp;L engine on (path × strike × vol multiplier)</td>
+</tr>
+<tr>
+<td><code>src/analysis.py</code></td>
+<td>Hypotheses H1–H5, bootstrap, stress, VIX, out-of-sample</td>
+</tr>
+<tr>
+<td><code>src/validation.py</code></td>
+<td>Simulation study</td>
+</tr>
+<tr>
+<td><code>src/ablation.py</code></td>
+<td>Robustness</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>All figures</td>
+</tr>
+</tbody>
+</table></div>
+<h2>9. Connections to other projects</h2>
+<ul>
+<li><strong>01 Monte Carlo calibration</strong>: the same seven assets. Project 01 found that static simulators fail
+  in stressed regimes. Here the same mechanism shows up as a strike-dependent volatility.</li>
+<li><strong>13 GARCH</strong> and <strong>19 HMM regimes</strong>: the validation shows that the leverage effect, not jumps, creates skew.</li>
+<li><strong>14 Implied vol surface</strong>: compares this physical smile with the market's risk-neutral one.</li>
+<li><strong>16 Delta hedging</strong>: full-revaluation version of the P&amp;L used here.</li>
+<li><strong>26 Heston calibration</strong>: Heston's ρ is the parametric version of the skew measured here.</li>
+<li><strong>27 Merton credit</strong>: why high-yield credit has the steepest realised put skew.</li>
+</ul>
+<h2>References</h2>
+<p>Bergomi, L. (2016). <em>Stochastic Volatility Modeling</em>. Chapman &amp; Hall/CRC. · Black, F. (1976). The pricing of
+commodity contracts. <em>JFE</em>. · Black, F. and Scholes, M. (1973). <em>JPE</em>. · Bollerslev, T., Tauchen, G. and Zhou, H.
+(2009). Expected stock returns and variance risk premia. <em>RFS</em>. · Carr, P. and Wu, L. (2009). Variance risk
+premiums. <em>RFS</em>. · Glosten, L., Jagannathan, R. and Runkle, D. (1993). <em>JF</em>. · Holm, S. (1979). <em>Scand. J.
+Stat.</em> · Jäckel, P. (2015). Let's be rational. <em>Wilmott</em>. · Künsch, H. (1989). The jackknife and the
+bootstrap for general stationary observations. <em>Ann. Stat.</em> · Newey, W. and West, K. (1987). <em>Econometrica</em>.</p>
+<hr />
+<p>Code: MIT. Text and figures: CC BY 4.0.</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/04-black-scholes-breakeven-smile">04-black-scholes-breakeven-smile on GitHub</a>.</footer>
+</div>
+</body>
+</html>
