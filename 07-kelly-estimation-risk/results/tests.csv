@@ -1,0 +1,33 @@
+hypothesis,A,B,asset,diff_growth,ci_lo,ci_hi,nw_t,p_one_sided,p_holm
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,SPY,0.028213,-0.10617,0.1531,0.39629,0.65406,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,EEM,-0.050584,-0.10945,0.0054956,-1.63,0.051546,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,TLT,-0.064704,-0.20744,0.073718,-0.90756,0.18206,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,HYG,-0.034683,-0.13058,0.043411,-0.80359,0.21082,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,GLD,-0.037772,-0.17797,0.1026,-0.54018,0.29454,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,USO,0.0014258,-0.30803,0.35071,0.0085925,0.50343,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,URA,-0.15566,-0.57581,0.27941,-0.6867,0.24613,1
+H2: plug-in Kelly loses to buy & hold,Plug-in Kelly,Buy & hold,Pooled,-0.06887,-0.17295,0.028601,-1.3391,0.090267,0.2708
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,SPY,0.027565,-0.090412,0.15401,0.43385,0.3322,1
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,EEM,0.018059,-0.053112,0.094557,0.47041,0.31903,1
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,TLT,0.044336,-0.043084,0.13228,0.94885,0.17135,1
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,HYG,0.073991,0.0020328,0.15795,1.9868,0.023475,0.65729
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,GLD,0.070417,-0.022722,0.17485,1.3935,0.081738,1
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,USO,0.031876,-0.25512,0.30345,0.23068,0.40878,1
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,URA,0.1422,-0.28187,0.5546,0.64515,0.25941,1
+H3: prior-Sharpe GARCH beats plug-in,Prior-Sharpe GARCH,Plug-in Kelly,Pooled,0.090247,-0.010703,0.19479,1.7421,0.040742,0.16297
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,SPY,0.041137,-0.026016,0.11208,1.1034,0.13492,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,EEM,-0.02702,-0.084364,0.032692,-0.87464,0.80912,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,TLT,-0.0044709,-0.042994,0.033281,-0.21323,0.58442,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,HYG,0.017397,-0.034714,0.070927,0.65283,0.25693,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,GLD,0.013214,-0.041462,0.060294,0.54014,0.29455,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,USO,0.021037,-0.048483,0.11189,0.51137,0.30454,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,URA,-0.028848,-0.073702,0.015865,-1.2051,0.88591,1
+H4: volatility timing adds growth,Prior-Sharpe GARCH,Prior-Sharpe static,Pooled,0.012126,-0.01816,0.046267,0.73162,0.2322,0.46358
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,SPY,-0.06163,-0.13601,0.013615,-1.4754,0.92994,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,EEM,0.026159,-0.054786,0.11254,0.67325,0.25039,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,TLT,0.014141,-0.099073,0.13516,0.23617,0.40665,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,HYG,-0.025454,-0.088522,0.041984,-0.76852,0.77891,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,GLD,-0.00283,-0.10336,0.10993,-0.053039,0.52115,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,USO,0.056998,-0.071553,0.18187,0.88104,0.18915,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,URA,0.071878,-0.042068,0.19026,1.1765,0.1197,1
+H5: shrinkage beats plug-in,Shrinkage Kelly,Plug-in Kelly,Pooled,0.017815,-0.029163,0.067964,0.73296,0.23179,0.46358

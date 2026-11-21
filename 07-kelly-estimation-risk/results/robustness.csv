@@ -1,0 +1,57 @@
+config,strategy,pooled_growth,assets_beating_plugin
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Buy & hold,0.036795,5
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Oracle constant Kelly,0.08007,7
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Plug-in Kelly,-0.0080286,0
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Half Kelly,0.018789,6
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Shrinkage Kelly,0.0032945,4
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Prior-Sharpe static,0.045685,6
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Prior-Sharpe GARCH,0.05032,7
+"Baseline (theta0=0.3, 2bp, f in [-2,4])",Prior-Sharpe EWMA,0.04531,7
+theta0 = 0.2,Buy & hold,0.036795,5
+theta0 = 0.2,Oracle constant Kelly,0.08007,7
+theta0 = 0.2,Plug-in Kelly,-0.0080286,0
+theta0 = 0.2,Half Kelly,0.018789,6
+theta0 = 0.2,Shrinkage Kelly,0.0032945,4
+theta0 = 0.2,Prior-Sharpe static,0.045121,6
+theta0 = 0.2,Prior-Sharpe GARCH,0.048025,6
+theta0 = 0.2,Prior-Sharpe EWMA,0.046454,6
+theta0 = 0.4,Buy & hold,0.036795,5
+theta0 = 0.4,Oracle constant Kelly,0.08007,7
+theta0 = 0.4,Plug-in Kelly,-0.0080286,0
+theta0 = 0.4,Half Kelly,0.018789,6
+theta0 = 0.4,Shrinkage Kelly,0.0032945,4
+theta0 = 0.4,Prior-Sharpe static,0.036774,6
+theta0 = 0.4,Prior-Sharpe GARCH,0.040587,5
+theta0 = 0.4,Prior-Sharpe EWMA,0.03284,5
+Costs 10 bp,Buy & hold,0.036747,6
+Costs 10 bp,Oracle constant Kelly,0.078526,7
+Costs 10 bp,Plug-in Kelly,-0.012617,0
+Costs 10 bp,Half Kelly,0.017033,6
+Costs 10 bp,Shrinkage Kelly,0.0007423,4
+Costs 10 bp,Prior-Sharpe static,0.045048,6
+Costs 10 bp,Prior-Sharpe GARCH,0.042923,7
+Costs 10 bp,Prior-Sharpe EWMA,0.039129,7
+Spread 2%,Buy & hold,0.036795,5
+Spread 2%,Oracle constant Kelly,0.067624,7
+Spread 2%,Plug-in Kelly,-0.02163,0
+Spread 2%,Half Kelly,0.0157,6
+Spread 2%,Shrinkage Kelly,-0.0010572,5
+Spread 2%,Prior-Sharpe static,0.038485,6
+Spread 2%,Prior-Sharpe GARCH,0.035459,7
+Spread 2%,Prior-Sharpe EWMA,0.029221,7
+"Long-only, f in [0,2]",Buy & hold,0.036795,4
+"Long-only, f in [0,2]",Oracle constant Kelly,0.07032,7
+"Long-only, f in [0,2]",Plug-in Kelly,0.046784,0
+"Long-only, f in [0,2]",Half Kelly,0.035803,4
+"Long-only, f in [0,2]",Shrinkage Kelly,0.027546,3
+"Long-only, f in [0,2]",Prior-Sharpe static,0.045593,4
+"Long-only, f in [0,2]",Prior-Sharpe GARCH,0.050203,4
+"Long-only, f in [0,2]",Prior-Sharpe EWMA,0.04605,4
+"Loose bounds, f in [-5,8]",Buy & hold,0.036795,5
+"Loose bounds, f in [-5,8]",Oracle constant Kelly,0.082317,7
+"Loose bounds, f in [-5,8]",Plug-in Kelly,-0.025148,0
+"Loose bounds, f in [-5,8]",Half Kelly,0.018114,6
+"Loose bounds, f in [-5,8]",Shrinkage Kelly,3.5263e-05,4
+"Loose bounds, f in [-5,8]",Prior-Sharpe static,0.045685,7
+"Loose bounds, f in [-5,8]",Prior-Sharpe GARCH,0.044106,7
+"Loose bounds, f in [-5,8]",Prior-Sharpe EWMA,0.040277,7

@@ -1,0 +1,16 @@
+strategy,growth,max_dd,worst_week,mean_f,turnover,ruined,captured,family
+Cash,0.015221,0,5.9524e-06,0,0,0,0,benchmark
+Buy & hold,0.036795,0.5825,-0.41603,1,0,0,0.33267,benchmark
+Oracle constant Kelly,0.08007,0.57808,-0.52832,1.5886,0,0,1,oracle
+Plug-in Kelly,-0.0080286,0.77989,-0.49394,1.2504,2.3666,0,-0.35853,plug-in
+Plug-in Kelly 5y,0.011054,0.83252,-0.49394,1.3883,5.33,0,-0.064258,plug-in
+Half Kelly,0.018789,0.52329,-0.31023,0.62469,1.3964,0,0.055013,plug-in
+Shrinkage Kelly,0.0032945,0.51615,-0.42126,0.56854,2.1978,0,-0.18392,plug-in
+Prior-Sharpe static,0.045685,0.68888,-0.34361,1.406,0.084232,0,0.46977,prior
+Prior-Sharpe EWMA,0.04531,0.72623,-0.32792,1.9895,6.9224,0,0.46399,prior
+Prior-Sharpe GARCH,0.05032,0.7071,-0.30509,1.9108,8.405,0,0.54125,prior
+"Plug-in mean, GARCH var",0.002046,0.80239,-0.53576,1.8271,11.62,0,-0.20317,hybrid
+"Prior mean, GARCH var",0.027327,0.82197,-0.48417,2.3529,14.346,0,0.18667,hybrid
+"Shrinkage mean, GARCH var",0.018895,0.53205,-0.53576,1.0107,8.1254,0,0.05665,hybrid
+"Oracle mean, static var",0.062228,0.53944,-0.68317,1.3655,0.14817,0,0.72487,oracle
+"Oracle mean, GARCH var",0.070877,0.61691,-0.53576,1.9074,9.3167,0,0.85825,oracle

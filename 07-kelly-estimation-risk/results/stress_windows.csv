@@ -1,0 +1,286 @@
+window,strategy,asset,cum_return
+GFC (Sep 2008-Mar 2009),Buy & hold,EEM,-0.24866
+GFC (Sep 2008-Mar 2009),Buy & hold,GLD,0.13292
+GFC (Sep 2008-Mar 2009),Buy & hold,SPY,-0.31292
+GFC (Sep 2008-Mar 2009),Buy & hold,TLT,0.12457
+GFC (Sep 2008-Mar 2009),Buy & hold,USO,-0.64403
+GFC (Sep 2008-Mar 2009),Cash,EEM,0.004844
+GFC (Sep 2008-Mar 2009),Cash,GLD,0.004844
+GFC (Sep 2008-Mar 2009),Cash,SPY,0.004844
+GFC (Sep 2008-Mar 2009),Cash,TLT,0.004844
+GFC (Sep 2008-Mar 2009),Cash,USO,0.004844
+GFC (Sep 2008-Mar 2009),Half Kelly,EEM,-0.18518
+GFC (Sep 2008-Mar 2009),Half Kelly,GLD,-0.043361
+GFC (Sep 2008-Mar 2009),Half Kelly,SPY,-0.045875
+GFC (Sep 2008-Mar 2009),Half Kelly,TLT,0.039761
+GFC (Sep 2008-Mar 2009),Half Kelly,USO,-0.04167
+GFC (Sep 2008-Mar 2009),Oracle constant Kelly,EEM,-0.19523
+GFC (Sep 2008-Mar 2009),Oracle constant Kelly,GLD,0.14039
+GFC (Sep 2008-Mar 2009),Oracle constant Kelly,SPY,-0.79304
+GFC (Sep 2008-Mar 2009),Oracle constant Kelly,TLT,0.11185
+GFC (Sep 2008-Mar 2009),Oracle constant Kelly,USO,0.10602
+GFC (Sep 2008-Mar 2009),"Oracle mean, GARCH var",EEM,-0.012831
+GFC (Sep 2008-Mar 2009),"Oracle mean, GARCH var",GLD,0.14857
+GFC (Sep 2008-Mar 2009),"Oracle mean, GARCH var",SPY,-0.21216
+GFC (Sep 2008-Mar 2009),"Oracle mean, GARCH var",TLT,0.074104
+GFC (Sep 2008-Mar 2009),"Oracle mean, GARCH var",USO,0.047819
+GFC (Sep 2008-Mar 2009),"Oracle mean, static var",EEM,-0.12283
+GFC (Sep 2008-Mar 2009),"Oracle mean, static var",GLD,0.13534
+GFC (Sep 2008-Mar 2009),"Oracle mean, static var",SPY,-0.83171
+GFC (Sep 2008-Mar 2009),"Oracle mean, static var",TLT,0.19003
+GFC (Sep 2008-Mar 2009),"Oracle mean, static var",USO,0.16075
+GFC (Sep 2008-Mar 2009),Plug-in Kelly,EEM,-0.3491
+GFC (Sep 2008-Mar 2009),Plug-in Kelly,GLD,-0.18186
+GFC (Sep 2008-Mar 2009),Plug-in Kelly,SPY,0.084008
+GFC (Sep 2008-Mar 2009),Plug-in Kelly,TLT,0.23556
+GFC (Sep 2008-Mar 2009),Plug-in Kelly,USO,-0.20991
+GFC (Sep 2008-Mar 2009),Plug-in Kelly 5y,EEM,-0.3491
+GFC (Sep 2008-Mar 2009),Plug-in Kelly 5y,GLD,-0.18186
+GFC (Sep 2008-Mar 2009),Plug-in Kelly 5y,SPY,0.084008
+GFC (Sep 2008-Mar 2009),Plug-in Kelly 5y,TLT,0.23556
+GFC (Sep 2008-Mar 2009),Plug-in Kelly 5y,USO,-0.20991
+GFC (Sep 2008-Mar 2009),"Plug-in mean, GARCH var",EEM,-0.10235
+GFC (Sep 2008-Mar 2009),"Plug-in mean, GARCH var",GLD,0.020168
+GFC (Sep 2008-Mar 2009),"Plug-in mean, GARCH var",SPY,0.060575
+GFC (Sep 2008-Mar 2009),"Plug-in mean, GARCH var",TLT,0.00028447
+GFC (Sep 2008-Mar 2009),"Plug-in mean, GARCH var",USO,-0.078678
+GFC (Sep 2008-Mar 2009),"Prior mean, GARCH var",EEM,-0.022409
+GFC (Sep 2008-Mar 2009),"Prior mean, GARCH var",GLD,0.1406
+GFC (Sep 2008-Mar 2009),"Prior mean, GARCH var",SPY,-0.11249
+GFC (Sep 2008-Mar 2009),"Prior mean, GARCH var",TLT,0.11591
+GFC (Sep 2008-Mar 2009),"Prior mean, GARCH var",USO,-0.20674
+GFC (Sep 2008-Mar 2009),Prior-Sharpe EWMA,EEM,-0.057721
+GFC (Sep 2008-Mar 2009),Prior-Sharpe EWMA,GLD,0.13076
+GFC (Sep 2008-Mar 2009),Prior-Sharpe EWMA,SPY,-0.23604
+GFC (Sep 2008-Mar 2009),Prior-Sharpe EWMA,TLT,0.17439
+GFC (Sep 2008-Mar 2009),Prior-Sharpe EWMA,USO,-0.35437
+GFC (Sep 2008-Mar 2009),Prior-Sharpe GARCH,EEM,-0.06144
+GFC (Sep 2008-Mar 2009),Prior-Sharpe GARCH,GLD,0.15426
+GFC (Sep 2008-Mar 2009),Prior-Sharpe GARCH,SPY,-0.22025
+GFC (Sep 2008-Mar 2009),Prior-Sharpe GARCH,TLT,0.17319
+GFC (Sep 2008-Mar 2009),Prior-Sharpe GARCH,USO,-0.35821
+GFC (Sep 2008-Mar 2009),Prior-Sharpe static,EEM,-0.21407
+GFC (Sep 2008-Mar 2009),Prior-Sharpe static,GLD,0.13986
+GFC (Sep 2008-Mar 2009),Prior-Sharpe static,SPY,-0.47649
+GFC (Sep 2008-Mar 2009),Prior-Sharpe static,TLT,0.262
+GFC (Sep 2008-Mar 2009),Prior-Sharpe static,USO,-0.59963
+GFC (Sep 2008-Mar 2009),Shrinkage Kelly,EEM,0.004844
+GFC (Sep 2008-Mar 2009),Shrinkage Kelly,GLD,-0.034863
+GFC (Sep 2008-Mar 2009),Shrinkage Kelly,SPY,-0.22986
+GFC (Sep 2008-Mar 2009),Shrinkage Kelly,TLT,-0.16409
+GFC (Sep 2008-Mar 2009),Shrinkage Kelly,USO,-0.10373
+GFC (Sep 2008-Mar 2009),"Shrinkage mean, GARCH var",EEM,0.004844
+GFC (Sep 2008-Mar 2009),"Shrinkage mean, GARCH var",GLD,-0.013712
+GFC (Sep 2008-Mar 2009),"Shrinkage mean, GARCH var",SPY,-0.025393
+GFC (Sep 2008-Mar 2009),"Shrinkage mean, GARCH var",TLT,-0.10501
+GFC (Sep 2008-Mar 2009),"Shrinkage mean, GARCH var",USO,-0.022148
+COVID (Feb-Apr 2020),Buy & hold,EEM,-0.17527
+COVID (Feb-Apr 2020),Buy & hold,GLD,0.036449
+COVID (Feb-Apr 2020),Buy & hold,HYG,-0.080293
+COVID (Feb-Apr 2020),Buy & hold,SPY,-0.14487
+COVID (Feb-Apr 2020),Buy & hold,TLT,0.1336
+COVID (Feb-Apr 2020),Buy & hold,URA,-0.0009995
+COVID (Feb-Apr 2020),Buy & hold,USO,-0.77964
+COVID (Feb-Apr 2020),Cash,EEM,0.00073437
+COVID (Feb-Apr 2020),Cash,GLD,0.00073437
+COVID (Feb-Apr 2020),Cash,HYG,0.00073437
+COVID (Feb-Apr 2020),Cash,SPY,0.00073437
+COVID (Feb-Apr 2020),Cash,TLT,0.00073437
+COVID (Feb-Apr 2020),Cash,URA,0.00073437
+COVID (Feb-Apr 2020),Cash,USO,0.00073437
+COVID (Feb-Apr 2020),Half Kelly,EEM,-0.069917
+COVID (Feb-Apr 2020),Half Kelly,GLD,0.024428
+COVID (Feb-Apr 2020),Half Kelly,HYG,-0.20759
+COVID (Feb-Apr 2020),Half Kelly,SPY,-0.21832
+COVID (Feb-Apr 2020),Half Kelly,TLT,0.2211
+COVID (Feb-Apr 2020),Half Kelly,URA,-0.098807
+COVID (Feb-Apr 2020),Half Kelly,USO,0.59981
+COVID (Feb-Apr 2020),Oracle constant Kelly,EEM,-0.14855
+COVID (Feb-Apr 2020),Oracle constant Kelly,GLD,0.043665
+COVID (Feb-Apr 2020),Oracle constant Kelly,HYG,-0.45014
+COVID (Feb-Apr 2020),Oracle constant Kelly,SPY,-0.47534
+COVID (Feb-Apr 2020),Oracle constant Kelly,TLT,0.11792
+COVID (Feb-Apr 2020),Oracle constant Kelly,URA,0.014391
+COVID (Feb-Apr 2020),Oracle constant Kelly,USO,0.1376
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",EEM,-0.1758
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",GLD,-0.038099
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",HYG,-0.19549
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",SPY,-0.43849
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",TLT,0.11977
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",URA,-0.1916
+COVID (Feb-Apr 2020),"Oracle mean, GARCH var",USO,0.064479
+COVID (Feb-Apr 2020),"Oracle mean, static var",EEM,-0.11557
+COVID (Feb-Apr 2020),"Oracle mean, static var",GLD,0.039903
+COVID (Feb-Apr 2020),"Oracle mean, static var",HYG,-0.44977
+COVID (Feb-Apr 2020),"Oracle mean, static var",SPY,-0.56437
+COVID (Feb-Apr 2020),"Oracle mean, static var",TLT,0.1283
+COVID (Feb-Apr 2020),"Oracle mean, static var",URA,0.00049941
+COVID (Feb-Apr 2020),"Oracle mean, static var",USO,0.18535
+COVID (Feb-Apr 2020),Plug-in Kelly,EEM,-0.13979
+COVID (Feb-Apr 2020),Plug-in Kelly,GLD,0.01687
+COVID (Feb-Apr 2020),Plug-in Kelly,HYG,-0.42987
+COVID (Feb-Apr 2020),Plug-in Kelly,SPY,-0.44814
+COVID (Feb-Apr 2020),Plug-in Kelly,TLT,0.38982
+COVID (Feb-Apr 2020),Plug-in Kelly,URA,-0.2488
+COVID (Feb-Apr 2020),Plug-in Kelly,USO,1.2226
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,EEM,-0.23207
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,GLD,-0.13628
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,HYG,-0.67592
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,SPY,-0.71531
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,TLT,0.38005
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,URA,-0.21215
+COVID (Feb-Apr 2020),Plug-in Kelly 5y,USO,0.91901
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",EEM,-0.20636
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",GLD,-0.049231
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",HYG,-0.19101
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",SPY,-0.44341
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",TLT,0.42645
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",URA,0.33421
+COVID (Feb-Apr 2020),"Plug-in mean, GARCH var",USO,0.37411
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",EEM,-0.25971
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",GLD,-0.044957
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",HYG,-0.12994
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",SPY,-0.34888
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",TLT,0.26319
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",URA,-0.2812
+COVID (Feb-Apr 2020),"Prior mean, GARCH var",USO,-0.31878
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,EEM,-0.22832
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,GLD,-0.045196
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,HYG,-0.28437
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,SPY,-0.3357
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,TLT,0.24649
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,URA,-0.20025
+COVID (Feb-Apr 2020),Prior-Sharpe EWMA,USO,-0.45369
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,EEM,-0.20015
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,GLD,0.00065981
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,HYG,-0.14855
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,SPY,-0.24757
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,TLT,0.25675
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,URA,-0.17344
+COVID (Feb-Apr 2020),Prior-Sharpe GARCH,USO,-0.42158
+COVID (Feb-Apr 2020),Prior-Sharpe static,EEM,-0.17486
+COVID (Feb-Apr 2020),Prior-Sharpe static,GLD,0.044183
+COVID (Feb-Apr 2020),Prior-Sharpe static,HYG,-0.26783
+COVID (Feb-Apr 2020),Prior-Sharpe static,SPY,-0.25298
+COVID (Feb-Apr 2020),Prior-Sharpe static,TLT,0.27104
+COVID (Feb-Apr 2020),Prior-Sharpe static,URA,-0.0075738
+COVID (Feb-Apr 2020),Prior-Sharpe static,USO,-0.71208
+COVID (Feb-Apr 2020),Shrinkage Kelly,EEM,0.00073437
+COVID (Feb-Apr 2020),Shrinkage Kelly,GLD,0.0017898
+COVID (Feb-Apr 2020),Shrinkage Kelly,HYG,-0.32037
+COVID (Feb-Apr 2020),Shrinkage Kelly,SPY,-0.33253
+COVID (Feb-Apr 2020),Shrinkage Kelly,TLT,0.28456
+COVID (Feb-Apr 2020),Shrinkage Kelly,URA,-0.17919
+COVID (Feb-Apr 2020),Shrinkage Kelly,USO,0.27342
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",EEM,0.00073437
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",GLD,-0.062987
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",HYG,-0.12727
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",SPY,-0.4292
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",TLT,0.32389
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",URA,0.32718
+COVID (Feb-Apr 2020),"Shrinkage mean, GARCH var",USO,0.046376
+Rates shock (Jan-Oct 2022),Buy & hold,EEM,-0.28151
+Rates shock (Jan-Oct 2022),Buy & hold,GLD,-0.10264
+Rates shock (Jan-Oct 2022),Buy & hold,HYG,-0.12681
+Rates shock (Jan-Oct 2022),Buy & hold,SPY,-0.1807
+Rates shock (Jan-Oct 2022),Buy & hold,TLT,-0.33549
+Rates shock (Jan-Oct 2022),Buy & hold,URA,-0.17782
+Rates shock (Jan-Oct 2022),Buy & hold,USO,0.3442
+Rates shock (Jan-Oct 2022),Cash,EEM,0.016972
+Rates shock (Jan-Oct 2022),Cash,GLD,0.016972
+Rates shock (Jan-Oct 2022),Cash,HYG,0.016972
+Rates shock (Jan-Oct 2022),Cash,SPY,0.016972
+Rates shock (Jan-Oct 2022),Cash,TLT,0.016972
+Rates shock (Jan-Oct 2022),Cash,URA,0.016972
+Rates shock (Jan-Oct 2022),Cash,USO,0.016972
+Rates shock (Jan-Oct 2022),Half Kelly,EEM,-0.1093
+Rates shock (Jan-Oct 2022),Half Kelly,GLD,-0.11744
+Rates shock (Jan-Oct 2022),Half Kelly,HYG,-0.2247
+Rates shock (Jan-Oct 2022),Half Kelly,SPY,-0.26118
+Rates shock (Jan-Oct 2022),Half Kelly,TLT,-0.40717
+Rates shock (Jan-Oct 2022),Half Kelly,URA,-0.00031916
+Rates shock (Jan-Oct 2022),Half Kelly,USO,-0.099878
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,EEM,-0.24065
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,GLD,-0.25881
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,HYG,-0.48525
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,SPY,-0.52862
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,TLT,-0.2998
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,URA,-0.059344
+Rates shock (Jan-Oct 2022),Oracle constant Kelly,USO,-0.023739
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",EEM,-0.47225
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",GLD,-0.35035
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",HYG,-0.43252
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",SPY,-0.48735
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",TLT,-0.26122
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",URA,-0.025254
+Rates shock (Jan-Oct 2022),"Oracle mean, GARCH var",USO,-0.049423
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",EEM,-0.19137
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",GLD,-0.27872
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",HYG,-0.48281
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",SPY,-0.55422
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",TLT,-0.30484
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",URA,-0.067413
+Rates shock (Jan-Oct 2022),"Oracle mean, static var",USO,-0.031067
+Rates shock (Jan-Oct 2022),Plug-in Kelly,EEM,-0.22555
+Rates shock (Jan-Oct 2022),Plug-in Kelly,GLD,-0.25988
+Rates shock (Jan-Oct 2022),Plug-in Kelly,HYG,-0.42552
+Rates shock (Jan-Oct 2022),Plug-in Kelly,SPY,-0.51726
+Rates shock (Jan-Oct 2022),Plug-in Kelly,TLT,-0.66867
+Rates shock (Jan-Oct 2022),Plug-in Kelly,URA,-0.02725
+Rates shock (Jan-Oct 2022),Plug-in Kelly,USO,-0.21068
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,EEM,-0.28707
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,GLD,-0.42006
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,HYG,-0.40452
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,SPY,-0.69079
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,TLT,-0.37497
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,URA,-0.41022
+Rates shock (Jan-Oct 2022),Plug-in Kelly 5y,USO,-0.090144
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",EEM,-0.52932
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",GLD,-0.33132
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",HYG,-0.42689
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",SPY,-0.47659
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",TLT,-0.59105
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",URA,0.0034221
+Rates shock (Jan-Oct 2022),"Plug-in mean, GARCH var",USO,-0.31327
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",EEM,-0.63113
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",GLD,-0.25488
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",HYG,-0.39878
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",SPY,-0.30191
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",TLT,-0.51967
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",URA,-0.058735
+Rates shock (Jan-Oct 2022),"Prior mean, GARCH var",USO,0.27636
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,EEM,-0.40778
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,GLD,-0.21007
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,HYG,-0.38905
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,SPY,-0.30025
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,TLT,-0.5005
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,URA,-0.082962
+Rates shock (Jan-Oct 2022),Prior-Sharpe EWMA,USO,0.36245
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,EEM,-0.44313
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,GLD,-0.20972
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,HYG,-0.38667
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,SPY,-0.28264
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,TLT,-0.54812
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,URA,-0.093223
+Rates shock (Jan-Oct 2022),Prior-Sharpe GARCH,USO,0.27894
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,EEM,-0.28339
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,GLD,-0.18626
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,HYG,-0.33148
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,SPY,-0.28455
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,TLT,-0.58699
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,URA,-0.14488
+Rates shock (Jan-Oct 2022),Prior-Sharpe static,USO,0.29173
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,EEM,0.013203
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,GLD,-0.15344
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,HYG,-0.26212
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,SPY,-0.41688
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,TLT,-0.4311
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,URA,0.016972
+Rates shock (Jan-Oct 2022),Shrinkage Kelly,USO,0.016972
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",EEM,0.0072615
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",GLD,-0.20274
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",HYG,-0.34862
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",SPY,-0.412
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",TLT,-0.37691
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",URA,0.016972
+Rates shock (Jan-Oct 2022),"Shrinkage mean, GARCH var",USO,0.016972

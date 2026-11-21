@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Kelly Fraction You Cannot Know</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="With 20 years of data, can you even know the sign of the Kelly bet, and what should you size by instead?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 07 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 07</p>
+<h1>The Kelly Fraction You Cannot Know</h1>
+<p><strong>Estimation risk, volatility timing and the drawdown law in growth-optimal betting, seven asset classes, 2008–2026</strong></p>
+<p><em>Project 07 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="The Kelly fraction you cannot know" loading="lazy" src="figures/fig1_knowability.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>The Kelly criterion says how much to bet to make wealth grow as fast as possible: for an asset with
+excess drift μ and variance σ², hold the fraction f* = μ/σ². Every Kelly tutorial plugs in a historical
+mean and stops there. The question here is what happens when you <strong>cannot know μ</strong>, which is always.</p>
+<p>I combine three pieces of evidence. First, closed-form theory for the growth of the plug-in Kelly bet when
+μ is estimated from T years of data, checked by simulation. Second, a Monte Carlo "Kelly simulator" that
+replaces the textbook Gaussian world with block-bootstrapped paths of real ETF returns, so fat tails and
+volatility clustering are kept. Third, a strictly out-of-sample weekly walk-forward of 15 sizing rules on
+seven cross-asset ETFs (US and emerging equities, long Treasuries, high-yield credit, gold, crude oil and
+uranium) from 2008 to 2026, with costs, a leverage spread and a position cap. The volatility forecasts come
+from the best-calibrated simulator in <a href="../01-monte-carlo-calibration/">Project 01</a>, so this project also
+measures what that calibration is worth in money.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The Kelly fraction is unknowable on any realistic sample.</strong> With 20 years of daily data, the 90%
+   confidence interval of the Kelly fraction (Newey–West) excludes zero for only two of the seven assets
+   (US equities and gold). Knowing the <em>sign</em> of the bet would take 23 years for high yield, 34 for
+   emerging markets and 85 for long Treasuries. Knowing its <em>size</em> to within ±0.5 (say, 2.0× versus 2.5×
+   leverage) would take between 83 and 890 years for every asset.</li>
+<li><strong>Full Kelly with an estimated mean is worse than cash unless θ²T &gt; 1</strong>, where θ is the annual Sharpe
+   ratio and T the years of data. The optimal share of the estimated bet is c* = θ²T/(θ²T+1), which has a
+   feasible form, 1 − 1/t², where t is the t-statistic of the mean. In the Gaussian world the theory is
+   exact. On bootstrapped real returns the best share is 8–11% below theory (0.40, 0.55 and 0.70 for 5, 10
+   and 20 years against 0.44, 0.62 and 0.76), and over-betting is punished much harder than in theory.</li>
+<li><strong>Out of sample, plug-in Kelly lost to cash.</strong> Averaged across the seven assets, the expanding-window
+   plug-in bet grew wealth at <strong>−0.8% a year</strong>, against +1.5% for T-bills, +3.7% for buy-and-hold and
+   +8.0% for the best constant bet chosen with hindsight. Half Kelly (+1.9%) and the 1 − 1/t² shrinkage
+   rule (+0.3%) helped little.</li>
+<li><strong>Not estimating the mean beats estimating it.</strong> A rule that assumes the <em>same</em> Sharpe ratio of 0.3 for
+   every asset and only scales by forecast volatility (f = 0.3/σ̂, with σ̂ from Project 01's GJR-GARCH-t)
+   grew at <strong>+5.0% a year</strong>, capturing 54% of the hindsight-optimal excess growth, and beat plug-in Kelly
+   on <strong>all seven assets</strong>. The pooled advantage of 9.0 points a year has a Newey–West t of 1.74
+   (one-sided p = 0.04) but does <strong>not</strong> survive Holm correction (p = 0.16). Eighteen years is too short
+   to rank sizing rules with confidence, which is the paper's thesis applied to itself.</li>
+<li><strong>Volatility timing is the smaller lever.</strong> Holding the mean assumption fixed, swapping a static
+   volatility for the GARCH forecast adds 0.4 to 1.0 points a year. Knowing the true mean would add 1.6
+   points. Estimating it <em>costs</em> 5.4 points. Timing helped most in the 2008 crisis, where it cut the
+   average loss from 18% to 6%, and did not help in 2020 or 2022.</li>
+<li><strong>Kelly's drawdown law holds at the centre and fails in the tail.</strong> Under real return dynamics, full
+   Kelly halved wealth in 48% of 40-year paths (theory: 50%). But half Kelly on crude oil lost 90% of
+   wealth <strong>9× more often</strong> than the law says, and volatility timing brought it back to the law.</li>
+</ol>
+<hr />
+<h2>1. Why this question</h2>
+<p>The Kelly criterion is the most-cited answer to "how much should I bet", from Kelly (1956) and Thorp
+(1969) to Merton's continuous-time portfolio rule. Its promises are strong: no other strategy grows
+faster in the long run, and the probability that full Kelly ever halves your wealth is exactly one half.
+Both promises assume the bettor knows the odds. In financial markets the odds are the expected excess
+return, and the expected return is the hardest quantity in finance to estimate: its standard error
+shrinks only with the square root of <em>calendar time</em>, not of the number of observations (Merton, 1980).</p>
+<p>That makes the practical question different from the textbook one. It is not "what is the Kelly fraction"
+but "what is the best bet <em>given that I will estimate the Kelly fraction badly</em>". The literature has
+answers in pieces: Kan &amp; Zhou (2007) on estimation risk in mean-variance rules, MacLean, Thorp &amp; Ziemba
+(2010) on fractional Kelly, Moreira &amp; Muir (2017) on volatility-managed portfolios. This project puts the
+pieces in one experiment, adds real-return simulation and a long out-of-sample test, and asks which
+part of the Kelly bet can actually be known.</p>
+<h2>2. Theory in one page</h2>
+<p>Let excess returns have annual drift μ, variance σ² and Sharpe ratio θ = μ/σ. A constant fraction f grows
+wealth at g(f) = fμ − f²σ²/2, maximised by f* = μ/σ² with growth θ²/2 per year.</p>
+<p><strong>Estimation risk.</strong> Estimate μ from T years: μ̂ ~ N(μ, σ²/T). Bet a share c of the plug-in fraction,
+f = c·μ̂/σ². Then</p>
+<blockquote>
+<p>E[g] = c θ² − c² (θ² + 1/T) / 2, maximised at <strong>c* = θ²T / (θ²T + 1)</strong>.</p>
+</blockquote>
+<p>Full Kelly (c = 1) has E[g] = (θ² − 1/T)/2, which is <strong>negative unless θ²T &gt; 1</strong>. A Sharpe-0.3 asset needs
+11 years of data before full plug-in Kelly is even expected to beat cash; a Sharpe-0.16 asset (long
+Treasuries) needs 39. The unbiased estimate of θ²T is t² − 1, where t is the t-statistic of the mean, so
+the feasible optimal share is <strong>ĉ = 1 − 1/t²</strong> (positive part): bet nothing unless the mean is more than
+one standard error from zero.</p>
+<p><strong>Knowability.</strong> The standard error of f̂ is s.e.(μ̂)/σ² = 1/(σ√T) for iid returns; I use the Newey–West
+standard error of the mean instead, which multiplies this by a factor k between 0.82 and 1.04 across the
+seven assets. σ is treated as known: its relative sampling error over 20 years is 1–2%, against 50% or
+more for μ, so it adds almost nothing. Two decision-relevant horizons follow. The <strong>sign</strong> of the bet is
+known at 90% confidence once T &gt; (1.645k/θ)². The <strong>size</strong> is known to within ±0.5 once
+T &gt; (1.645k / 0.5σ)². The second does not depend on the estimate at all, so it cannot blow up near f = 0.</p>
+<p><strong>The drawdown law.</strong> Under geometric Brownian motion, betting c·f* makes the probability that wealth
+<em>ever</em> falls to a fraction x of its starting value equal to x^(2/c − 1): one half for full Kelly and x = ½,
+one in eight for half Kelly.</p>
+<p><img alt="Where full Kelly is worse than cash" loading="lazy" src="figures/fig2_theory_map.png" /></p>
+<p><em>Figure 2. Expected growth of full plug-in Kelly as a share of the oracle growth θ²/2. Below the thick
+line it is expected to grow slower than cash. Dots: the seven ETFs at their full-sample Sharpe ratio and
+sample length (oil and uranium have Sharpe ≈ 0 and fall off the left edge).</em></p>
+<h2>3. Data and pre-registered design</h2>
+<p><strong>Data.</strong> Daily total-return log returns of SPY, EEM, TLT, HYG, GLD, USO and URA from April 2006 (HYG April
+2007, URA November 2010) to 20 November 2026, the same file as Project 01. Cash earns the annual average
+3-month T-bill rate (<code>data/tbill_3m_annual.csv</code>).</p>
+<p><strong>Weekly walk-forward.</strong> Rebalance at each of Project 01's weekly forecast origins: 934 weeks per asset
+(884 for HYG, 703 for URA), 6,257 asset-weeks. Every input uses data up to the previous close. The
+position is clipped to f ∈ [−2, 4]; borrowing pays the T-bill rate + 0.5%; turnover after intra-week drift
+costs 2 bp per unit. If a week's loss exceeds wealth the strategy is ruined and stays at zero (it never
+happened in the baseline).</p>
+<p><strong>Inputs.</strong> μ̂ and σ̂ from an expanding window of daily excess returns (minimum 500 days), or a rolling
+1,260-day window; σ_EWMA with λ = 0.94; σ_GARCH from Project 01's out-of-sample GJR-GARCH-t predictive
+standard deviation for exactly the week being bet on. The agnostic prior Sharpe ratio θ₀ = 0.3 is the same
+for every asset and was fixed before any backtest was run.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Rule</th>
+<th>Position f</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Benchmarks</td>
+<td>Cash · Buy &amp; hold</td>
+<td>0 · 1</td>
+</tr>
+<tr>
+<td>Plug-in</td>
+<td>Plug-in Kelly · Plug-in 5y · Half Kelly · Shrinkage Kelly</td>
+<td>μ̂/σ̂² · rolling · ½μ̂/σ̂² · (1−1/t²)₊ μ̂/σ̂²</td>
+</tr>
+<tr>
+<td>Prior Sharpe (no mean estimate)</td>
+<td>static · EWMA · GARCH</td>
+<td>θ₀/σ̂ · θ₀/σ_EWMA · θ₀/σ_GARCH</td>
+</tr>
+<tr>
+<td>Hybrids</td>
+<td>plug-in / prior / shrinkage mean with GARCH variance</td>
+<td>μ̂/σ²_G · θ₀σ̂/σ²_G · ĉμ̂/σ²_G</td>
+</tr>
+<tr>
+<td>Infeasible oracles</td>
+<td>constant Kelly · oracle mean with static or GARCH variance</td>
+<td>best constant f in hindsight · μ_full/σ̂² · μ_full/σ²_G</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Pre-registered hypotheses</strong> (one-sided tests on weekly log-growth differences, Newey–West standard
+errors, stationary block-bootstrap 95% intervals, Holm correction across the 28 asset-level tests and
+separately across the 4 pooled tests):</p>
+<ul>
+<li><strong>H2</strong> plug-in Kelly grows slower than buy-and-hold;</li>
+<li><strong>H3</strong> the prior-Sharpe GARCH rule grows faster than plug-in Kelly;</li>
+<li><strong>H4</strong> volatility timing adds growth (prior-Sharpe GARCH vs prior-Sharpe static);</li>
+<li><strong>H5</strong> the 1 − 1/t² shrinkage rule grows faster than plug-in Kelly.</li>
+</ul>
+<p><strong>Simulator.</strong> S1 checks the closed forms in a Gaussian world (20,000 draws per cell). S2 draws stationary
+block-bootstrap paths (mean block 63 days, so volatility clusters survive) of each ETF's daily excess
+returns, re-centred to a common true Sharpe ratio of 0.4, estimates μ and σ on T ∈ {5, 10, 20} years,
+then bets c·f̂ for the next 10 years (1,000 paths per asset and T). S3 runs 1,500 40-year paths per asset
+at c ∈ {1, ½, ¼} of the <em>true</em> Kelly fraction, with and without EWMA volatility timing, against Gaussian
+paths with the same mean and variance.</p>
+<h2>4. Result 1: you cannot know the fraction</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Years</th>
+<th>Sharpe</th>
+<th>HAC t</th>
+<th>Kelly f̂</th>
+<th>90% CI (HAC)</th>
+<th>P(sign wrong)</th>
+<th>Years to know sign</th>
+<th>Years to know f ±0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>US equities (SPY)</td>
+<td>20.6</td>
+<td>0.52</td>
+<td>2.76</td>
+<td>2.71</td>
+<td>[1.10, 4.33]</td>
+<td>0.3%</td>
+<td>7</td>
+<td>215</td>
+</tr>
+<tr>
+<td>Gold (GLD)</td>
+<td>20.6</td>
+<td>0.44</td>
+<td>2.09</td>
+<td>2.40</td>
+<td>[0.51, 4.29]</td>
+<td>1.8%</td>
+<td>13</td>
+<td>294</td>
+</tr>
+<tr>
+<td>High yield (HYG)</td>
+<td>19.6</td>
+<td>0.34</td>
+<td>1.53</td>
+<td>3.14</td>
+<td>[−0.24, 6.51]</td>
+<td>6.3%</td>
+<td>23</td>
+<td>890</td>
+</tr>
+<tr>
+<td>EM equities (EEM)</td>
+<td>20.6</td>
+<td>0.23</td>
+<td>1.29</td>
+<td>0.83</td>
+<td>[−0.23, 1.89]</td>
+<td>9.9%</td>
+<td>34</td>
+<td>93</td>
+</tr>
+<tr>
+<td>Treasuries (TLT)</td>
+<td>20.6</td>
+<td>0.16</td>
+<td>0.81</td>
+<td>1.09</td>
+<td>[−1.13, 3.31]</td>
+<td>20.9%</td>
+<td>85</td>
+<td>405</td>
+</tr>
+<tr>
+<td>Crude oil (USO)</td>
+<td>20.6</td>
+<td>−0.03</td>
+<td>−0.15</td>
+<td>−0.09</td>
+<td>[−1.09, 0.91]</td>
+<td>44.1%</td>
+<td>2,514</td>
+<td>83</td>
+</tr>
+<tr>
+<td>Uranium (URA)</td>
+<td>16.0</td>
+<td>−0.01</td>
+<td>−0.05</td>
+<td>−0.04</td>
+<td>[−1.19, 1.12]</td>
+<td>47.9%</td>
+<td>15,736</td>
+<td>85</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Newey–West standard errors of the mean of daily excess returns (Bartlett kernel, 9 lags); σ treated as
+known. "Years to know" assumes the point estimate stays where it is. For oil and uranium the
+sign horizon is huge because the estimated Sharpe ratio is close to zero, which is the honest answer:
+if the true edge is near zero, no sample will tell you which way to bet. The ±0.5 horizon has no such
+problem and is long for every asset, longest for low-volatility assets, where a given error in μ is
+divided by a small σ².</em></p>
+<p>The interval for high-yield credit runs from a small short to 6.5× leverage. Even the best-measured asset,
+the S&amp;P 500, has an interval from 1.1× to 4.3×, and the growth of those two bets differs by more than the
+equity premium.</p>
+<p>In real time it is worse, because the estimate is updated as data arrive (Figure 3). The expanding-window
+plug-in bet on SPY sat at the −2 short limit through early 2009, at the bottom of the market. On uranium it
+pointed the wrong way 90% of the time. The 1 − 1/t² rule set the bet to zero in 86% of weeks for EEM and
+76% for oil, which is the honest answer: the data do not say which way to bet.</p>
+<p><img alt="Walk-forward Kelly fractions" loading="lazy" src="figures/fig3_fraction_paths.png" /></p>
+<h2>5. Result 2: how much of the estimated bet to take</h2>
+<p>In the Gaussian world, the closed forms match simulation within Monte Carlo noise (largest error
+0.07 oracle-growth units for θ ≥ 0.3, in the 3-year cells where f̂ is wildest; see <code>results/sim_gbm_grid.csv</code>). With θ = 0.3 and 10 years of data, full plug-in
+Kelly is expected to grow 11% <em>slower than cash</em> in units of the oracle growth, and a single 10-year path
+ends below cash 47% of the time.</p>
+<p>On real return paths (Figure 6) the shape is the same, but two things change. The best share is lower
+than theory, and the right side of the curve falls much faster: with 5 years of data, betting the full
+estimated fraction loses 10% a year on average, against −2% in theory, because fat tails and volatility
+clusters punish leverage that the quadratic approximation does not see. Under-betting is cheap; over-betting
+is expensive, and more expensive than the Gaussian model says.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Estimation window</th>
+<th>c* theory</th>
+<th>c* simulated</th>
+<th>Growth at simulated c*</th>
+<th>Growth of full plug-in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5 years</td>
+<td>0.44</td>
+<td>0.40</td>
+<td>+3.8%</td>
+<td>−10.0%</td>
+</tr>
+<tr>
+<td>10 years</td>
+<td>0.62</td>
+<td>0.55</td>
+<td>+5.0%</td>
+<td>+1.0%</td>
+</tr>
+<tr>
+<td>20 years</td>
+<td>0.76</td>
+<td>0.70</td>
+<td>+6.0%</td>
+<td>+4.9%</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>True Sharpe 0.4 for every asset; oracle growth θ²/2 = 8.0% a year.</em></p>
+<p><img alt="Optimal multiplier under real dynamics" loading="lazy" src="figures/fig6_multiplier_real_dynamics.png" /></p>
+<h2>6. Result 3: out of sample, 2008–2026</h2>
+<p><img alt="Realised growth" loading="lazy" src="figures/fig4_realised_growth.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Pooled growth</th>
+<th>Share of oracle excess growth</th>
+<th>Mean f</th>
+<th>Avg max drawdown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Oracle constant Kelly (hindsight)</td>
+<td>+8.0%</td>
+<td>100%</td>
+<td>1.59</td>
+<td>58%</td>
+</tr>
+<tr>
+<td>Oracle mean, GARCH variance (infeasible)</td>
+<td>+7.1%</td>
+<td>86%</td>
+<td>1.91</td>
+<td>62%</td>
+</tr>
+<tr>
+<td>Oracle mean, static variance (infeasible)</td>
+<td>+6.2%</td>
+<td>73%</td>
+<td>1.37</td>
+<td>54%</td>
+</tr>
+<tr>
+<td><strong>Prior-Sharpe, GARCH vol</strong></td>
+<td><strong>+5.0%</strong></td>
+<td><strong>54%</strong></td>
+<td>1.91</td>
+<td>71%</td>
+</tr>
+<tr>
+<td>Prior-Sharpe, static vol</td>
+<td>+4.6%</td>
+<td>47%</td>
+<td>1.41</td>
+<td>69%</td>
+</tr>
+<tr>
+<td>Prior-Sharpe, EWMA vol</td>
+<td>+4.5%</td>
+<td>46%</td>
+<td>1.99</td>
+<td>73%</td>
+</tr>
+<tr>
+<td>Buy &amp; hold</td>
+<td>+3.7%</td>
+<td>33%</td>
+<td>1.00</td>
+<td>58%</td>
+</tr>
+<tr>
+<td>Half Kelly</td>
+<td>+1.9%</td>
+<td>6%</td>
+<td>0.63</td>
+<td>52%</td>
+</tr>
+<tr>
+<td>Cash</td>
+<td>+1.5%</td>
+<td>0%</td>
+<td>0</td>
+<td>0%</td>
+</tr>
+<tr>
+<td>Plug-in Kelly, 5-year window</td>
+<td>+1.1%</td>
+<td>−6%</td>
+<td>1.39</td>
+<td>83%</td>
+</tr>
+<tr>
+<td>Shrinkage Kelly (1 − 1/t²)</td>
+<td>+0.3%</td>
+<td>−18%</td>
+<td>0.57</td>
+<td>52%</td>
+</tr>
+<tr>
+<td><strong>Plug-in Kelly</strong></td>
+<td><strong>−0.8%</strong></td>
+<td><strong>−36%</strong></td>
+<td>1.25</td>
+<td>78%</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Pooled growth is the equal-weight average of the seven assets' annualised log growth. Full per-asset
+numbers in <code>results/summary_by_asset.csv</code>.</em></p>
+<p>The ranking has a clear structure. Every rule that uses an <em>estimated</em> asset mean is near or below cash.
+Every rule that ignores it and only scales by volatility is above buy-and-hold. The infeasible rows show
+that the mean <em>is</em> valuable when known: the oracle mean adds 1.6 points to the static prior rule. The
+problem is not that the mean does not matter, but that its estimate is mostly noise, and Kelly converts
+noise into leverage.</p>
+<p><strong>Pre-registered tests</strong> (annualised growth difference, bootstrap 95% CI, Holm-adjusted p):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Hypothesis</th>
+<th>Pooled difference</th>
+<th>95% CI</th>
+<th>NW t</th>
+<th>p (one-sided)</th>
+<th>p (Holm)</th>
+<th>Assets in the hypothesised direction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H2 plug-in &lt; buy &amp; hold</td>
+<td>−6.9 pts</td>
+<td>[−17.3, +2.9]</td>
+<td>−1.34</td>
+<td>0.09</td>
+<td>0.27</td>
+<td>5 of 7</td>
+</tr>
+<tr>
+<td>H3 prior-Sharpe GARCH &gt; plug-in</td>
+<td>+9.0 pts</td>
+<td>[−1.1, +19.5]</td>
+<td>1.74</td>
+<td>0.04</td>
+<td>0.16</td>
+<td><strong>7 of 7</strong></td>
+</tr>
+<tr>
+<td>H4 GARCH timing &gt; static</td>
+<td>+1.2 pts</td>
+<td>[−1.8, +4.6]</td>
+<td>0.73</td>
+<td>0.23</td>
+<td>0.46</td>
+<td>4 of 7</td>
+</tr>
+<tr>
+<td>H5 shrinkage &gt; plug-in</td>
+<td>+1.8 pts</td>
+<td>[−2.9, +6.8]</td>
+<td>0.73</td>
+<td>0.23</td>
+<td>0.46</td>
+<td>4 of 7</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>"Pooled" averages the weekly growth of whichever assets are live each week, which weights the early
+years (fewer assets) more heavily than the per-asset table; the simple average of the seven per-asset
+H3 differences is +5.8 points.</em></p>
+<p>None of the pre-registered hypotheses is significant after multiple-testing correction, and I report
+that as a result, not a footnote. H3 has the right sign on every asset, with a sign test p of 1/128, but
+the per-asset growth differences are so noisy that 18 years cannot separate them at conventional levels.
+That is finding 1 again, one level up: if the mean of one asset's return cannot be known in 20 years, the
+mean of the <em>difference</em> between two leveraged strategies cannot either.</p>
+<p><img alt="Wealth paths" loading="lazy" src="figures/fig5_wealth_paths.png" /></p>
+<p><strong>Decomposing the gap.</strong> Holding the variance input fixed and changing only the mean input:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Mean input →</th>
+<th>Oracle (infeasible)</th>
+<th>Prior Sharpe 0.3</th>
+<th>Estimated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static variance</td>
+<td>+6.2%</td>
+<td>+4.6%</td>
+<td>−0.8%</td>
+</tr>
+<tr>
+<td>GARCH variance, Kelly 1/σ² scaling</td>
+<td>+7.1%</td>
+<td>+2.7%</td>
+<td>+0.2%</td>
+</tr>
+<tr>
+<td>GARCH variance, constant-Sharpe 1/σ scaling</td>
+<td>–</td>
+<td>+5.0%</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two lessons. The mean input is worth 7 points a year between the best and the worst choice; the variance
+input is worth about 1. And scaling by 1/σ² (the literal Kelly rule with a fixed mean) is too aggressive
+when the volatility forecast is low: it pushes leverage to the cap in calm markets just before the shock.
+Scaling by 1/σ, which assumes a constant Sharpe ratio rather than a constant mean, kept the timing gains
+and avoided that.</p>
+<p><strong>Stress windows.</strong> Volatility timing cut the average loss in the 2008 crisis from 17.8% (static prior)
+to 6.2%. It did not help in the COVID crash (−13.3% against −15.7%), which arrived faster than a weekly
+volatility forecast can react, exactly as Project 01 found for its forecast intervals. In the 2022 rates
+shock it was slightly worse (−24.1% against −21.8%), because volatility in Treasuries rose gradually while
+prices fell steadily. Plug-in Kelly lost 33% in 2022: it had learned from 14 years of falling yields that
+long Treasuries deserved 2–4× leverage.</p>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig8_stress_windows.png" /></p>
+<h2>7. Result 4: the drawdown law under real returns</h2>
+<p><img alt="Drawdown law" loading="lazy" src="figures/fig7_drawdown_law.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Fraction of true Kelly</th>
+<th>Wealth falls to</th>
+<th>Law</th>
+<th>GBM, 40 years</th>
+<th>Real dynamics</th>
+<th>Real, vol-timed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full</td>
+<td>50%</td>
+<td>50.0%</td>
+<td>46.7%</td>
+<td>47.7%</td>
+<td>49.7%</td>
+</tr>
+<tr>
+<td>Full</td>
+<td>10%</td>
+<td>10.0%</td>
+<td>7.8%</td>
+<td>9.5%</td>
+<td>9.9%</td>
+</tr>
+<tr>
+<td>Half</td>
+<td>50%</td>
+<td>12.5%</td>
+<td>11.7%</td>
+<td>12.9%</td>
+<td>13.8%</td>
+</tr>
+<tr>
+<td>Half</td>
+<td>30%</td>
+<td>2.7%</td>
+<td>2.4%</td>
+<td>3.2%</td>
+<td>3.6%</td>
+</tr>
+<tr>
+<td>Half</td>
+<td>10%</td>
+<td>0.10%</td>
+<td>0.03%</td>
+<td>0.18%</td>
+<td>0.21%</td>
+</tr>
+<tr>
+<td>Quarter</td>
+<td>50%</td>
+<td>0.78%</td>
+<td>0.60%</td>
+<td>1.11%</td>
+<td>1.30%</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Averages over the seven assets, 1,500 paths each, daily rebalancing.</em></p>
+<p>On average the law survives fat tails and clustering surprisingly well, because daily rebalancing turns
+a large shock into many small ones. The failure is in the tail and in specific assets. Deep losses at
+fractional Kelly happen 1.2–1.8× more often than the law says on average (and up to 6× more often than
+in equivalent Gaussian paths), and the excess is concentrated where returns jump: at half Kelly, crude oil lost 90% of its starting wealth with probability 0.93% (law: 0.10%), and
+high-yield credit fell to 30% with probability 4.7% (law: 2.7%). For oil, volatility timing brought the
+probability back to 0.07%. For high yield and uranium it made the tail worse, because constant-Sharpe
+scaling holds 40% more average leverage than the fixed fraction.</p>
+<h2>8. What would change the conclusion (limitations)</h2>
+<ul>
+<li><strong>The prior Sharpe is a choice.</strong> θ₀ = 0.3 was fixed in advance and is an ordinary long-run Sharpe for
+  risky assets. With θ₀ = 0.2 the rule grows 4.8%, with 0.4 it grows 4.1%; it beats plug-in Kelly at every
+  value (<code>results/robustness.csv</code>). It is not robust to an asset with a <em>negative</em> true Sharpe: it lost
+  4.6% a year on crude oil, where contango made the ETF a structurally bad bet.</li>
+<li><strong>Shorting drives much of the plug-in loss.</strong> Long-only with f ∈ [0, 2], plug-in Kelly grows 4.7% and the
+  prior-Sharpe GARCH rule 5.0%, so the gap shrinks to 0.3 points. A long-only investor loses much less by
+  estimating the mean, because the worst estimates were negative ones that the cap now ignores.</li>
+<li><strong>Single assets.</strong> Each asset is sized on its own. A multi-asset Kelly portfolio (Σ⁻¹μ) amplifies
+  estimation error further; that question belongs to Projects 05 (efficient frontier) and 20 (risk parity).</li>
+<li><strong>The T-bill series</strong> is annual averages, and the 2026 value is a year-to-date estimate. Leverage at
+  T-bill + 0.5% is cheaper than most investors can borrow; with a 2% spread the levered rules lose
+  0.3–1.5 points; the prior-Sharpe GARCH rule still beats plug-in Kelly on all seven assets, although the static
+  version (3.9%) now edges the GARCH version (3.6%).</li>
+<li><strong>Eighteen years, one history.</strong> The out-of-sample period contains one great financial crisis, one
+  pandemic crash and one rates shock. The simulator widens the evidence, but it resamples the same history.</li>
+<li><strong>What was not tested:</strong> Bayesian priors fitted across assets, regime-dependent means (Project 19),
+  option-implied volatility (Project 14), intraweek rebalancing and taxes.</li>
+</ul>
+<h2>9. Referee notes</h2>
+<p>Points I checked against my own results before publishing:</p>
+<ul>
+<li><strong>Is "years to know" a mechanical artefact?</strong> An earlier draft used a <em>relative</em> tolerance (±50% of f),
+  which explodes when f is near zero (oil, uranium). The headline now uses the sign horizon and an
+  <em>absolute</em> tolerance; the relative version is kept in <code>results/knowability.csv</code> (<code>years_rel_50</code>) only.</li>
+<li><strong>Are the confidence intervals too narrow?</strong> They use Newey–West standard errors. Daily returns of SPY
+  and EEM are slightly negatively autocorrelated, so HAC is 14–18% <em>narrower</em> than iid there; for the
+  other assets it is up to 4% wider. With iid errors the sign horizons move by a few years (SPY from 7
+  to 10, HYG from 23 to 24), and the same two assets have a known sign.</li>
+<li><strong>The "7 of 7" sign test is not independent evidence.</strong> The seven assets share shocks (2008, 2020), so
+  1/128 overstates the evidence. I report it, but the Holm-corrected tests are the ones to trust.</li>
+<li><strong>Discrete versus continuous Kelly.</strong> The plug-in rules use the continuous formula μ/σ²; with weekly
+  rebalancing the exact log-optimal fraction differs by a few percent of f, far below the estimation
+  error. The hindsight oracle is solved on exact discrete weekly growth, so the approximation can only
+  make the feasible rules look slightly worse, not better.</li>
+<li><strong>Asset selection.</strong> The seven ETFs were chosen in 2026 and include two (oil, uranium) whose long-run
+  returns were poor. This hurts every long-biased rule equally and does not change the ranking.</li>
+<li><strong>Data reuse.</strong> The prior Sharpe of 0.3, the weekly calendar and the position limits were fixed before
+  the backtest was run; the volatility forecasts are Project 01's, produced without seeing this project.</li>
+</ul>
+<h2>10. Conclusion</h2>
+<p>The Kelly criterion is right about what to maximise and wrong about what you know. Its input is the
+expected return, which twenty years of data cannot pin down for most assets, and its output turns
+estimation noise directly into leverage. In this sample, a bettor who refused to estimate any asset's
+mean, assumed the same modest Sharpe ratio everywhere and spent their modelling effort on forecasting
+volatility, grew wealth faster than the plug-in Kelly bettor on every asset, and kept 54% of what perfect
+hindsight would have earned. The part of Kelly you can know is the denominator.</p>
+<h2>Connections to the other projects</h2>
+<ul>
+<li><strong><a href="../01-monte-carlo-calibration/">01 Monte Carlo calibration</a></strong> supplies the volatility forecasts. Its
+  finding that dynamic volatility matters more than fat tails reappears here in money: GARCH timing helped
+  in 2008, and nothing history-based helped in March 2020.</li>
+<li><strong>13 GARCH volatility forecasting</strong> will test whether better variance forecasts add more growth here.</li>
+<li><strong>23 Deflated Sharpe ratio</strong> formalises the problem in section 6: comparing strategies on one noisy history.</li>
+</ul>
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+./run_all.sh          # tests, backtest, simulator, statistics, figures: about 2 minutes
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/kelly.py</code></td>
+<td>theory, drawdown law, bootstrap, Newey–West, Holm</td>
+</tr>
+<tr>
+<td><code>src/backtest.py</code></td>
+<td><code>results/weekly.csv.gz</code>, <code>results/inputs.csv.gz</code></td>
+</tr>
+<tr>
+<td><code>src/simulate.py</code></td>
+<td><code>results/sim_gbm_grid.csv</code>, <code>sim_real_multiplier.csv</code>, <code>sim_drawdown_law.csv</code></td>
+</tr>
+<tr>
+<td><code>src/evaluate.py</code></td>
+<td><code>summary_*.csv</code>, <code>tests.csv</code>, <code>stress_windows.csv</code>, <code>knowability.csv</code>, <code>plugin_instability.csv</code>, <code>robustness.csv</code></td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td><code>figures/*.png</code></td>
+</tr>
+<tr>
+<td><code>tests/test_kelly.py</code></td>
+<td>8 unit tests: closed forms, drawdown law, no look-ahead, accounting</td>
+</tr>
+</tbody>
+</table></div>
+<p>All seeds are fixed. <code>data/gjr_garch_t_weekly_forecasts_from_project01.csv</code> is the GJR-GARCH-t, 5-day
+subset of Project 01's <code>results/forecasts.csv.gz</code> (columns asset, origin, t, y, sd, mean).</p>
+<h2>References</h2>
+<ul>
+<li>Kelly, J. L. (1956). A new interpretation of information rate. <em>Bell System Technical Journal</em>, 35(4).</li>
+<li>Thorp, E. O. (1969). Optimal gambling systems for favorable games. <em>Review of the ISI</em>, 37(3).</li>
+<li>Merton, R. C. (1980). On estimating the expected return on the market. <em>Journal of Financial Economics</em>, 8(4).</li>
+<li>Kan, R., &amp; Zhou, G. (2007). Optimal portfolio choice with parameter uncertainty. <em>JFQA</em>, 42(3).</li>
+<li>MacLean, L. C., Thorp, E. O., &amp; Ziemba, W. T. (2010). Long-term capital growth: the good and bad properties of the Kelly and fractional Kelly capital growth criteria. <em>Quantitative Finance</em>, 10(7).</li>
+<li>Moreira, A., &amp; Muir, T. (2017). Volatility-managed portfolios. <em>Journal of Finance</em>, 72(4).</li>
+<li>Politis, D. N., &amp; Romano, J. P. (1994). The stationary bootstrap. <em>JASA</em>, 89(428).</li>
+<li>Newey, W. K., &amp; West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em>, 55(3).</li>
+<li>Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scandinavian Journal of Statistics</em>, 6(2).</li>
+</ul>
+<hr />
+<p><em>Not investment advice. Code MIT, text and figures CC BY 4.0.</em></p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/07-kelly-estimation-risk">07-kelly-estimation-risk on GitHub</a>.</footer>
+</div>
+</body>
+</html>

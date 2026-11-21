@@ -19,7 +19,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 04 | Black–Scholes pricer | | ⏳ Planned |
 | 05 | Efficient frontier | | ⏳ Planned |
 | 06 | Value-at-Risk calculator | | ⏳ Planned |
-| 07 | Kelly criterion simulator | | ⏳ Planned |
+| 07 | [The Kelly Fraction You Cannot Know](07-kelly-estimation-risk/) | How many years of data does it take to know the Kelly bet, and what survives out of sample when you don't? | ✅ Published |
 | 08 | Correlation structure | | ⏳ Planned |
 | 09 | Beta & CAPM regression | | ⏳ Planned |
 | 10 | [What on a Market Screen Is Worth Looking At?](10-market-terminal/) | Which of fourteen terminal widgets forecast returns, volatility or drawdowns out of sample, beyond realised volatility? | ✅ Published |
