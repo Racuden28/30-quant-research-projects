@@ -7,7 +7,7 @@ Every project starts from a **research question**, not a tutorial. Each one is e
 of sample, compared against honest baselines, and published with its code, data pipeline, every number
 in the write-up as CSV, and a section on what does *not* work.
 
-**Website:** `https://<your-github-username>.github.io/30-quant-research-projects/` (served from `docs/`)
+**Website:** https://racuden28.github.io/30-quant-research-projects/ (served from `docs/`)
 
 ## Projects
 

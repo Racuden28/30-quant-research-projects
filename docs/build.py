@@ -20,7 +20,7 @@ import markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
-REPO_URL = "https://github.com/<your-github-username>/30-quant-research-projects"  # edit once
+REPO_URL = "https://github.com/Racuden28/30-quant-research-projects"  # edit once
 
 PROJECTS = [
     # (number, folder or None, title, one-line question)
@@ -42,6 +42,8 @@ PROJECTS = [
     (28, None, "Market-making agent", ""), (29, None, "Optimal execution", ""),
     (30, None, "Deep hedging", ""),
 ]
+# extra folders inside a project that the site serves as-is (e.g. an interactive page)
+STATIC_DIRS = ("terminal",)
 TIERS = {range(1, 11): "Foundations", range(11, 21): "Intermediate", range(21, 31): "Advanced"}
 
 CSS = """
@@ -128,11 +130,32 @@ def page(title: str, body: str, description: str, standalone: bool = True) -> st
             f"{head}</head>\n<body>\n{body}\n</body>\n</html>\n")
 
 
+def rewrite_links(src: str, folder: str) -> str:
+    """Point relative Markdown links that the site does not serve to the file on GitHub.
+
+    Served on the site: figures/, the STATIC_DIRS, and ../NN-slug/ project folders (other articles).
+    Everything else relative (PREREGISTRATION.md, results/*.csv, src/...) goes to the repository.
+    """
+    def fix(m: re.Match) -> str:
+        bang, text, target = m.group(1), m.group(2), m.group(3)
+        if bang or re.match(r"^(https?:|mailto:|#|/)", target):
+            return m.group(0)
+        if target.startswith("figures/") or target.split("/")[0] in STATIC_DIRS:
+            return m.group(0)
+        if target in ("../", "./") or re.match(r"^\.\./\d\d-[^/]+/?$", target):  # site home or another article
+            return m.group(0)
+        path = target[3:] if target.startswith("../") else f"{folder}/{target}"
+        kind = "tree" if path.endswith("/") else "blob"
+        return f"[{text}]({REPO_URL}/{kind}/main/{path})"
+    return re.sub(r"(!?)\[([^\]]*)\]\(([^)\s]+)\)", fix, src)
+
+
 def render_article(folder: str, standalone: bool = True, home_href: str = "../") -> tuple[str, str]:
     src = (ROOT / folder / "README.md").read_text(encoding="utf-8")
     title = re.search(r"^# (.+)$", src, re.M).group(1).strip()
     src = re.sub(r"^# .+\n", "", src, count=1, flags=re.M)
     src = src.replace("](../README.md)", f"]({home_href})")
+    src = rewrite_links(src, folder)
     html = markdown.markdown(src, extensions=["tables", "fenced_code", "sane_lists"])
     html = re.sub(r"<table>", '<div class="table-scroll"><table>', html)
     html = html.replace("</table>", "</table></div>")
@@ -198,6 +221,11 @@ def main():
         if (out / "figures").exists():
             shutil.rmtree(out / "figures")
         shutil.copytree(ROOT / folder / "figures", out / "figures")
+        for d in STATIC_DIRS:
+            if (ROOT / folder / d).is_dir():
+                if (out / d).exists():
+                    shutil.rmtree(out / d)
+                shutil.copytree(ROOT / folder / d, out / d)
     (DOCS / ".nojekyll").write_text("")
     print("site built in", DOCS)
 

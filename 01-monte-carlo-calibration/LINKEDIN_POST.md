@@ -33,5 +33,5 @@ Full paper, code and data (every number reproducible with one command) in the fi
 ---
 
 **First comment:**
-Paper and code: https://github.com/<your-github-username>/30-quant-research-projects/tree/main/01-monte-carlo-calibration
-Article version: https://<your-github-username>.github.io/30-quant-research-projects/01-monte-carlo-calibration/
+Paper and code: https://github.com/Racuden28/30-quant-research-projects/tree/main/01-monte-carlo-calibration
+Article version: https://racuden28.github.io/30-quant-research-projects/01-monte-carlo-calibration/
