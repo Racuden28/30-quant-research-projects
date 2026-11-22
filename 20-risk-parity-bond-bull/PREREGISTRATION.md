@@ -55,3 +55,7 @@ of turnover, leverage financed at T-bill + 25 bp a year.
    stocks-only windfall removals, the full-sample windfall-free gap, a 3× leverage cap, the window ending in 2010 and
    2020–26 without 2022, and the risk-share measure. They were added to answer referee-style objections. None of them
    changes a pre-registered verdict.
+
+3. **2026-11-22, after publication (text only, no numbers changed).** Added to the abstract and Limitations that four
+   sign matches have a 1/16 chance under a coin flip and that the era cuts are chosen ex post, pointing to the
+   rolling regression (Section 4.4) as the cut-free test. Documented the provenance and checks of the LTGOVTBD copy.

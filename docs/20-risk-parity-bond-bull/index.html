@@ -112,7 +112,11 @@ backtest (<a href="https://github.com/Racuden28/30-quant-research-projects/blob/
    minus that of 60/40: <strong>+0.61</strong> in 1929–41 (95% CI +0.24 to +1.17), <strong>−0.18</strong> in 1941–81 (−0.42 to +0.06),
    <strong>+0.13</strong> in 1981–2020 (−0.04 to +0.29) and <strong>−0.60</strong> in 2020–26 (−0.89 to −0.38). The two short eras are significant after Holm (p = 0.046 and 0.002).
    Over the whole 97 years the gap is <strong>+0.06</strong> (−0.10 to +0.23), statistically zero. Every one of 16 robustness
-   specifications gives the same sign in every era.</li>
+   specifications gives the same sign in every era. <em>How much four signs prove:</em> four matches out of four would happen
+   by a coin flip with probability 1/16 ≈ 0.06; only 1929–41 and 2020–26 are individually significant; and although
+   the era boundaries are set by the yield's turning points, not by the result, they were chosen with hindsight. The
+   test that needs no era cuts is the rolling one (Section 4.4, figure 4): the gap falls by 0.058 Sharpe per
+   percentage point of rise in the yield (Newey–West t = −2.55; −0.14, t = −2.4, on non-overlapping decades).</li>
 <li><strong>The 1981–2020 edge was the bond bull.</strong> Removing that era's average gain from falling yields (+2.9% a year on the
    10-year bond) turns risk parity's +0.13 into <strong>−0.02</strong>. Removing the stock re-rating as well leaves +0.02, so
    <strong>88% of the edge is gone</strong> (pre-registered threshold: 50%).</li>
@@ -175,9 +179,9 @@ which is enough to test them.</p>
 </tr>
 <tr>
 <td>Long-term government bond yield</td>
-<td>Federal Reserve, <em>Banking and Monetary Statistics</em> (FRED LTGOVTBD), via a GitHub mirror</td>
+<td>Federal Reserve Board, <em>Banking and Monetary Statistics</em> (FRED series LTGOVTBD), unofficial copy from the <code>open-datahub/interest_rate</code> GitHub repository</td>
 <td>monthly averages, 1925-01 to 2000-06</td>
-<td>used before 1962</td>
+<td>used before 1962; checks below</td>
 </tr>
 <tr>
 <td>10-year Treasury yield, monthly average</td>
@@ -216,6 +220,14 @@ interpolated from annual data</strong>, so monthly bond returns are artificially
 Risk parity loads up on the "riskless" asset with up to 8× leverage. I replaced the series with the Federal Reserve's
 genuinely monthly yields and recorded the change in the pre-registration log. This is worth knowing for anyone
 backtesting before 1953.</p>
+<p><strong>Checking the LTGOVTBD copy.</strong> FRED and the Federal Reserve's site are blocked from the cloud environment this was
+built in, so the series comes from a third-party GitHub copy (<code>open-datahub/interest_rate</code>, file <code>LTGOVTBD.csv</code>), not
+from FRED itself. Three checks: (i) a second, independent GitHub copy of the same series (in
+<code>Akma86/us-tech-giants-market-analytics</code>) matches it value for value, apart from trailing-zero formatting;
+(ii) over 1953–2000, where it overlaps FRED GS10, it correlates <strong>0.988</strong> in levels and <strong>0.968</strong> in monthly changes,
+with a mean gap of −0.13 pp, as expected for bonds of 10+ years against a 10-year constant maturity; (iii) it is
+genuinely monthly, not interpolated: monthly changes have an AR(1) of 0.32, against the near-1 an interpolated series
+gives. A spot check against FRED or the printed Fed tables was <strong>not</strong> possible here; it is listed in Section 7.</p>
 <p><strong>Averaged yields.</strong> The Federal Reserve series before 1962 is still a monthly <em>average</em> of daily yields, not a month-end
 value. Over 1962–2026, where both exist, bond returns from averaged yields have 15% less volatility (6.6% vs 7.7%) and
 more autocorrelation (AR(1) 0.31 vs 0.10) than from month-end yields (<code>results/data_smoothing_check.csv</code>). Two
@@ -807,6 +819,10 @@ windfall variants are descriptive and labelled as such.</p>
 <li><strong>Two or three assets.</strong> Real risk-parity funds hold 10–20 markets, including inflation-linked bonds and commodity
   futures. Long histories of those are not freely available.</li>
 <li><strong>Gold before 2000 is a monthly average</strong>, which smooths its risk in 1975–2000.</li>
+<li><strong>The pre-1953 bond yields come from an unofficial copy</strong> of FRED LTGOVTBD. It passes the consistency checks in
+  Section 2, but it was not spot-checked against FRED or the Fed's <em>Banking and Monetary Statistics</em> tables directly.</li>
+<li><strong>Four eras, boundaries chosen ex post.</strong> Four sign matches have a 1-in-16 chance under a coin flip; the rolling
+  regression in Section 4.4 is the cut-free test.</li>
 <li><strong>The financing spread is a constant.</strong> In practice, implied financing in futures varies, and it rose during crises.</li>
 </ul>
 <h2>8. Reproduce</h2>
