@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Floor Under Delta Hedging</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="How much of an option&#x27;s hedging risk can rebalancing more often remove, and what removes the rest?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 16 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 16</p>
+<h1>The Floor Under Delta Hedging</h1>
+<p><strong>How much of an option's hedging risk can rebalancing remove? 98 years of the S&amp;P 500, seven asset classes, a factorial of simulated worlds, and a minimum-variance delta</strong></p>
+<p><em>Project 16 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="The rebalancing floor" loading="lazy" src="figures/fig1_rebalancing_floor.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>The textbook says the error of a delta hedge shrinks like 1/√N with the number of rebalances N
+(Boyle and Emanuel 1980; Kamal and Derman 1999). Hedge daily instead of weekly and the error variance
+should fall to 5/21 of its weekly value. A desk that believes this hedges as often as costs allow. This
+paper measures what rebalancing actually buys on real price paths. It sells a one-month at-the-money
+call at a volatility known on the day, delta-hedges it every h days, and repeats this on every
+trading day of the S&amp;P 500 from 1928 to 2026 (24,757 options) and of seven ETFs from 2006 to 2026
+(US and EM equities, high yield, crude oil, long Treasuries, gold, uranium).</p>
+<p>The variance of the hedging error is fitted by the linear law Var = a + b·(T/N). The intercept <em>a</em>
+is the part that would remain under continuous hedging if the law kept holding below one day. I call
+a/(a+b) the <strong>floor share</strong>. It is zero in the textbook world.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>Daily hedging keeps 62% of the weekly variance on the S&amp;P 500. The textbook law promises 24%.</strong>
+   Moving from weekly to daily rebalancing removes 38% of the variance of the hedging error
+   (95% block-bootstrap CI 30–46%), against 76% under geometric Brownian motion. Across the seven ETFs
+   the gain ranges from 22% (EEM) to 63% (uranium).</li>
+<li><strong>Most delta-hedging risk is a floor.</strong> The floor share is <strong>0.81 on the S&amp;P 500 (CI 0.73–0.87)</strong>,
+   0.70 when the option is sold at VIX instead of a historical forecast, and between 0.47 (uranium) and
+   0.93 (EEM) on the ETFs. Every confidence interval excludes zero. It is 0.70–0.94 in all but one decade
+   since the 1930s, so it is not a feature of one era.</li>
+<li><strong>The floor is the volatility you did not know, plus the shape of the month.</strong> A simulated
+   GJR-GARCH-t world fitted to the S&amp;P 500 reproduces the real numbers almost exactly: floor share
+   0.79 against 0.81, weekly-to-daily gain 40% against 38%. Inside that world, quoting the best
+   forecast the model allows lowers the floor only to 0.75. Quoting the variance the month actually
+   delivered, which nobody can know in advance, lowers it to 0.38. Pure volatility clustering without
+   fat tails leaves no floor once the level is known (GARCH-normal, −0.19, CI −0.40 to 0.01).
+   Jumps alone create a large one (Merton, 0.83).</li>
+<li><strong>In a crash, hedging daily instead of weekly bought nothing.</strong> For S&amp;P 500 options sold in
+   September–December 2008 the gain was 0% (and −41% for EEM). In 1929 it was 30%, in February–April
+   2020 26%, and in the 1987 crash 53%, all below the textbook 76%.</li>
+<li><strong>Which volatility you put in the delta matters more than how often you trade.</strong> For S&amp;P 500
+   options sold at VIX (1992–2026, 8,718 options), a <strong>minimum-variance delta</strong> that adds the
+   leverage effect, using the slope of VIX on index returns estimated only from past data,
+   reduces the variance of the terminal hedging error by <strong>23% (CI 9–34%, Holm p = 0.003)</strong> relative
+   to the desk-standard delta at today's VIX. It cuts the day-to-day mark-to-market error by 40%.
+   For comparison, going from weekly to daily rebalancing cuts the variance by 48% on the VIX-quoted
+   sample, and that takes four times as many trades. Recomputing the delta at today's realised volatility
+   instead of VIX changes nothing (−5%, Holm p = 0.34).</li>
+<li><strong>Hedge by delta, not by calendar.</strong> At equal transaction cost, rebalancing whenever the delta has
+   drifted by more than 0.16 has a standard deviation 1.2 vol points lower than rebalancing once a week
+   (CI 0.9–1.6), which removes 31% of the variance. The ranking holds at 1, 5 and 20 bps. At 5 bps or
+   less the best rule is a narrow band, close to daily hedging. Pre-registered hypothesis H5, that
+   costs would make weekly-type hedging optimal, is <strong>rejected</strong>: frequency buys little, but it also
+   costs little.</li>
+</ol>
+<p>The engine (<code>src/hedgesim.py</code>) is a reusable, vectorised discrete-hedging simulator. It is validated
+against the Kamal–Derman law and put–call parity in the tests, and project 30 (deep hedging) builds on it.</p>
+<hr />
+<h2>1. Motivation and question</h2>
+<p><a href="../04-black-scholes-breakeven-smile/">Project 04</a> asked what volatility a daily delta hedger <em>should</em>
+have charged, strike by strike: the mean of the hedged P&amp;L. This paper asks about its <strong>spread</strong>.
+A market maker who sells an option and hedges it is not exposed to the average month but to this month.
+The standard advice is that the spread is a discretisation error that more frequent hedging removes. If
+that were true, the right response to hedging risk would be to trade more, and the only limit would be
+transaction costs. That is the logic of Leland (1985) and of Whalley and Wilmott (1997).</p>
+<p>There is a second source of spread that rebalancing cannot touch. A hedger who sells at σ_q while the
+market delivers a different volatility earns ½ Σ Γ S² (σ_q² dt − r²). Its expected value does not
+depend on how often you hedge (Ahmad and Wilmott 2005; Carr's "gamma-weighted variance" accounting).
+The question is quantitative: <strong>how much of real hedging risk is each kind, and what does that imply
+for how often, and with which delta, a desk should hedge?</strong></p>
+<p>I could not find this split measured on a century of index data, across asset classes, with a
+calibrated simulation that explains it. The closest empirical work is Hull and White (2017), on the
+minimum-variance delta, which is tested here too.</p>
+<h3>Hypotheses (written down before the real-data runs)</h3>
+<ul>
+<li><strong>H1</strong> The weekly-to-daily variance reduction on real paths is smaller than the textbook 76%.</li>
+<li><strong>H2</strong> The floor share is above 0.5 for the S&amp;P 500 at daily hedging.</li>
+<li><strong>H3</strong> A minimum-variance delta built from the out-of-sample VIX–return slope lowers the terminal
+  hedging-error variance relative to the Black–Scholes delta at today's VIX.</li>
+<li><strong>H4</strong> At equal mean cost, delta-band rules have a lower P&amp;L spread than calendar rules.</li>
+<li><strong>H5</strong> With realistic costs (5 bps), the best calendar rule hedges less often than daily.</li>
+<li><strong>Prediction P1</strong> (from iid theory): the floor share equals ek/(2+ek), where ek is the excess
+  kurtosis of daily returns standardised by their own month's volatility.</li>
+</ul>
+<hr />
+<h2>2. Design</h2>
+<h3>2.1 The engine</h3>
+<p><code>hedgesim.hedge_short_call</code> sells a European call and holds <code>pos</code> units of the underlying, reset on
+the days chosen by a calendar schedule or by a band. It works with r = q = 0, so the hedge
+instrument is the forward. A test shows that a 5%/year carry changes the P&amp;L spread by less than 2%.
+P&amp;L is divided by the option's vega at inception and multiplied by 100, so it is in <strong>volatility points</strong>:
+an error of 2 is as large as mis-pricing the option by 2 vol points. Options are one month (21 trading
+days), at the money, on every trading day (overlapping, so every statistic uses a moving-block bootstrap
+with 126-day blocks and 2,000 resamples).</p>
+<p>Rebalancing intervals are h ∈ {1, 2, 3, 4, 5, 10, 21} days. With N = ⌈21/h⌉ hedges, the textbook
+variance is proportional to T/N, not h (h = 4 and h = 5 give 6 and 5 hedges). The frequency law is
+therefore fitted as Var = a + b·T/N on h = 1…5 (daily to weekly). Under GBM with the correct
+volatility, the fitted floor share is −0.07 (CI −0.12 to −0.01): the estimator reads zero to within 0.1.</p>
+<h3>2.2 Quotes (what the option is sold at, and what goes into the delta)</h3>
+<ul>
+<li><strong>EWMA forecast</strong> (λ = 0.94), known at the close of the sale day. Used for every underlying.</li>
+<li><strong>VIX</strong> at the close of the sale day, for the S&amp;P 500 from 1990. VIX is a 30-day variance-swap rate,
+  so it sits above at-the-money implied volatility. That shifts the mean P&amp;L (the variance risk premium
+  measured in <a href="../04-black-scholes-breakeven-smile/">project 04</a>) but barely moves its spread.</li>
+<li><strong>Realised-vol oracle</strong> (diagnostic only): the root mean square of the next 21 daily returns. It is
+  exactly the volatility that makes a daily hedge break even on average, so it mechanically favours
+  daily hedging and cannot be used to fit the floor (it gives negative floor shares). It answers only one
+  question: how much of the daily-hedging variance is level error? On the S&amp;P 500, knowing the month's
+  realised volatility in advance would cut the daily-hedging std from 7.4 to 2.2 vol points, i.e. <strong>91%
+  of the variance is the level of volatility</strong>.</li>
+</ul>
+<h3>2.3 Data</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Series</th>
+<th>Period</th>
+<th>Options</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500 price index (^GSPC)</td>
+<td>1928-03 to 2026-10 starts</td>
+<td>24,757</td>
+<td>Yahoo, same file as <a href="../03-moving-average-volatility/">project 03</a></td>
+</tr>
+<tr>
+<td>VIX close</td>
+<td>1990-01 to 2026-09</td>
+<td>9,244</td>
+<td>CBOE via datasets/finance-vix, same as <a href="../04-black-scholes-breakeven-smile/">project 04</a></td>
+</tr>
+<tr>
+<td>SPY, EEM, HYG, USO, TLT, GLD, URA (total return)</td>
+<td>2006–2026</td>
+<td>3,953–5,106 each</td>
+<td>Yahoo, same file as <a href="../01-monte-carlo-calibration/">project 01</a></td>
+</tr>
+</tbody>
+</table></div>
+<p>The overlap with projects 01 and 04 is deliberate. The same paths that 01 forecasts and 04 prices are
+hedged here. Market data ends in November 2026, VIX on 2026-09-22, so the last VIX-quoted option starts
+in August 2026.</p>
+<hr />
+<h2>3. Result 1: rebalancing buys much less than the textbook says (H1, H2)</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Underlying</th>
+<th>Sample</th>
+<th>Std, daily</th>
+<th>Std, weekly</th>
+<th>Std, once</th>
+<th>Weekly→daily gain (CI)</th>
+<th>Floor share (CI)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500, EWMA</td>
+<td>1928–2026</td>
+<td>7.41</td>
+<td>9.43</td>
+<td>16.1</td>
+<td><strong>38%</strong> (30–46%)</td>
+<td><strong>0.81</strong> (0.73–0.87)</td>
+</tr>
+<tr>
+<td>S&amp;P 500, VIX</td>
+<td>1990–2026</td>
+<td>5.22</td>
+<td>7.24</td>
+<td>12.2</td>
+<td>48% (39–56%)</td>
+<td>0.70 (0.59–0.80)</td>
+</tr>
+<tr>
+<td>SPY</td>
+<td>2006–2026</td>
+<td>7.43</td>
+<td>9.25</td>
+<td>13.7</td>
+<td>36% (26–48%)</td>
+<td>0.82 (0.70–0.89)</td>
+</tr>
+<tr>
+<td>EEM</td>
+<td>2006–2026</td>
+<td>11.19</td>
+<td>12.64</td>
+<td>19.1</td>
+<td>22% (1–45%)</td>
+<td>0.93 (0.73–1.02)</td>
+</tr>
+<tr>
+<td>HYG</td>
+<td>2007–2026</td>
+<td>4.30</td>
+<td>5.80</td>
+<td>8.8</td>
+<td>45% (36–59%)</td>
+<td>0.74 (0.56–0.82)</td>
+</tr>
+<tr>
+<td>USO</td>
+<td>2006–2026</td>
+<td>12.48</td>
+<td>17.35</td>
+<td>31.0</td>
+<td>48% (39–57%)</td>
+<td>0.70 (0.58–0.79)</td>
+</tr>
+<tr>
+<td>TLT</td>
+<td>2006–2026</td>
+<td>5.69</td>
+<td>6.64</td>
+<td>11.3</td>
+<td>27% (−7–61%)</td>
+<td>0.90 (0.50–1.03)</td>
+</tr>
+<tr>
+<td>GLD</td>
+<td>2006–2026</td>
+<td>6.65</td>
+<td>8.97</td>
+<td>13.9</td>
+<td>45% (34–55%)</td>
+<td>0.73 (0.61–0.83)</td>
+</tr>
+<tr>
+<td>URA</td>
+<td>2011–2026</td>
+<td>11.12</td>
+<td>18.25</td>
+<td>30.7</td>
+<td>63% (57–69%)</td>
+<td>0.47 (0.27–0.61)</td>
+</tr>
+<tr>
+<td><em>GBM, correct vol</em></td>
+<td>simulated</td>
+<td>3.51</td>
+<td>7.23</td>
+<td>14.1</td>
+<td><em>76%</em></td>
+<td><em>−0.07</em></td>
+</tr>
+</tbody>
+</table></div>
+<p>Standard deviations are in vol points. "Once" means hedging only at inception. Source:
+<code>results/floor_shares.csv</code>, <code>results/frontier_summary.csv</code>.</p>
+<p><strong>H1 holds</strong> for all eight underlyings. Even with a Bonferroni bound across the eight (one-sided
+0.05/8, stricter than Holm), every upper limit of the gain is below the textbook 76%. The highest is
+uranium's, at 71%. <strong>H2 holds</strong>: the S&amp;P 500 floor share is 0.81, with lower limit 0.73, above 0.5.
+No bootstrap resample out of 2,000 gives a floor share at or below zero for any underlying, and the
+Bonferroni lower bounds run from 0.18 (uranium) to 0.71 (S&amp;P 500). Columns <code>share_lo_bonf</code>,
+<code>gain_hi_bonf</code> and <code>p_floor_le_0</code> in <code>results/floor_shares.csv</code>.</p>
+<p>Uranium is the exception. Rebalancing helps more there than anywhere else (63%), and its floor
+share is the lowest (0.47). A plausible reading, not tested here, is that uranium's large moves come
+as trends lasting several days that a daily hedge can follow, rather than as one-day gaps.</p>
+<p><strong>Robustness</strong> (<code>results/robustness_floor.csv</code>). Strikes one standard deviation in or out of the money:
+S&amp;P floor shares 0.82 and 0.82. Three-month options (hedged up to every 63 days): 0.84–0.92 on the
+S&amp;P 500, 0.86–0.93 on USO. By decade (<code>results/spx_by_decade.csv</code>, Figure 6) the S&amp;P floor share is
+between 0.70 and 0.94 in every decade except the 1970s (0.24), a decade of low and slowly drifting
+volatility in which EWMA forecasts were unusually accurate.</p>
+<p><img alt="Floor by decade" loading="lazy" src="figures/fig6_floor_by_decade.png" /></p>
+<hr />
+<h2>4. Result 2: what the floor is made of</h2>
+<p>Five simulated worlds, 200,000 days each, cut into 50,000 one-month options and hedged with the same
+engine (<code>src/simulation.py</code>). The GARCH worlds are fitted by maximum likelihood to the S&amp;P 500
+1928–2026 (<code>results/sim_garch_params.csv</code>; GJR: α = 0.031, γ = 0.106, β = 0.907, ν = 6.0).</p>
+<p><img alt="What makes the floor" loading="lazy" src="figures/fig2_what_makes_the_floor.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>World</th>
+<th>Quote = what the month delivered</th>
+<th>Quote = best forecast</th>
+<th>Quote = EWMA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GBM</td>
+<td>−0.07</td>
+<td>−0.07</td>
+<td>0.29</td>
+</tr>
+<tr>
+<td>iid Student-t(5)</td>
+<td>0.63</td>
+<td>0.63</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>Merton jumps (4/yr, −3% ± 4%)</td>
+<td>0.83</td>
+<td>0.83</td>
+<td>0.89</td>
+</tr>
+<tr>
+<td>GARCH, normal</td>
+<td><strong>−0.19</strong></td>
+<td>0.58</td>
+<td>0.61</td>
+</tr>
+<tr>
+<td>GJR-GARCH-t (S&amp;P fit)</td>
+<td><strong>0.38</strong></td>
+<td>0.75</td>
+<td><strong>0.79</strong></td>
+</tr>
+<tr>
+<td><em>Real S&amp;P 500</em></td>
+<td>—</td>
+<td>—</td>
+<td><strong><em>0.81</em></strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Three readings.</p>
+<ul>
+<li><strong>The calibrated world matches reality.</strong> GJR-GARCH-t with an EWMA quote gives a floor share of 0.79
+  and a weekly-to-daily gain of 40%. On real data they are 0.81 and 38%. The standardised within-month
+  kurtosis matches too (0.29 simulated, 0.24 real). That is the evidence that the real floor is not an
+  artefact of the data.</li>
+<li><strong>Volatility clustering creates a floor only through forecast error.</strong> In the GARCH-normal world the
+  floor disappears (−0.19, CI −0.40 to 0.01) when the quote equals the variance the month actually delivered.
+  The best forecast the model allows still leaves 0.58, because the next month's average variance is
+  genuinely uncertain.</li>
+<li><strong>Fat tails and jumps create a floor that no forecast can remove.</strong> With iid t(5) returns or Merton
+  jumps, the volatility is constant and known, and the floor is still 0.63 and 0.83. In the S&amp;P world,
+  the floor left after removing all level error is 0.38.</li>
+</ul>
+<p><strong>Prediction P1 fails.</strong> The iid formula ek/(2+ek) with the real standardised kurtosis (0.24) predicts a
+floor share of 0.11, against 0.81 measured. After scaling by the month's own volatility, daily S&amp;P returns
+are close to Gaussian (Andersen et al. 2001 report the same for realised-volatility-standardised returns).
+The floor is a cross-month phenomenon: which volatility the month will bring, and when its large moves
+arrive relative to gamma. It is not a within-month tail effect that a kurtosis statistic could capture.</p>
+<hr />
+<h2>5. Result 3: in a crash, rebalancing buys nothing</h2>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig3_stress_windows.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window (start dates)</th>
+<th>Options</th>
+<th>Std daily</th>
+<th>Std weekly</th>
+<th>Weekly→daily gain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sep–Dec 1929</td>
+<td>81</td>
+<td>30.3</td>
+<td>36.2</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>Sep–Nov 1987</td>
+<td>63</td>
+<td>31.5</td>
+<td>45.8</td>
+<td>53%</td>
+</tr>
+<tr>
+<td>Sep–Dec 2008</td>
+<td>85</td>
+<td>26.9</td>
+<td>26.9</td>
+<td><strong>0%</strong></td>
+</tr>
+<tr>
+<td>Feb–Apr 2020</td>
+<td>62</td>
+<td>29.3</td>
+<td>34.0</td>
+<td>26%</td>
+</tr>
+<tr>
+<td>Jan–Oct 2022</td>
+<td>209</td>
+<td>5.9</td>
+<td>8.8</td>
+<td>55%</td>
+</tr>
+<tr>
+<td>All 1928–2026</td>
+<td>24,757</td>
+<td>7.4</td>
+<td>9.4</td>
+<td>38%</td>
+</tr>
+</tbody>
+</table></div>
+<p>S&amp;P 500, EWMA quote. These windows hold few, heavily overlapping options, so the numbers are descriptive.
+They come without confidence intervals and enter no test. In 2008 the result is the same for SPY (2%)
+and worse for EEM (−41%): hedging EM equities daily instead of weekly <em>added</em> risk, because a daily hedge
+re-sized into every reversal. In 2020, sold at VIX instead, the S&amp;P gain was 38%. The 2022 bear market,
+a slow decline without a volatility shock, looks like an ordinary period (55%).</p>
+<hr />
+<h2>6. Result 4: which volatility belongs inside the delta (H3)</h2>
+<p><img alt="Which delta" loading="lazy" src="figures/fig4_which_delta.png" /></p>
+<p>S&amp;P 500, one-month ATM calls sold at VIX, hedged daily, start dates 1992–2026 (the first two years of
+VIX are the estimation window for the slope). Four delta rules, same premium, same paths:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Delta rule</th>
+<th>Std terminal</th>
+<th>Mean P&amp;L</th>
+<th>Variance change vs today's-VIX delta (CI)</th>
+<th>Holm p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Black–Scholes at today's VIX (desk standard, baseline)</td>
+<td>5.45</td>
+<td>4.17</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Black–Scholes at the vol the option was sold at</td>
+<td>5.23</td>
+<td>4.06</td>
+<td>−8% (−16% to −2%)</td>
+<td>0.11</td>
+</tr>
+<tr>
+<td>Black–Scholes at today's EWMA realised vol</td>
+<td>5.57</td>
+<td>3.97</td>
+<td>+5% (−6% to +12%)</td>
+<td>0.34</td>
+</tr>
+<tr>
+<td><strong>Minimum-variance: today's VIX + vega · β̂ / S</strong></td>
+<td><strong>4.78</strong></td>
+<td>3.72</td>
+<td><strong>−23% (−34% to −9%)</strong></td>
+<td><strong>0.003</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>β̂ is the expanding-window OLS slope of daily VIX changes on S&amp;P log returns, using only data before
+the sale date. It moves from −0.86 in 1992 to −1.16 in 2026 (<code>results/leverage_slope.csv</code>): a 1% fall in
+the index has come with a VIX rise of about one point. The adjustment vega·β̂/S lowers an ATM call delta
+by about 0.1, similar in size to the adjustment Hull and White (2017) report for S&amp;P 500 options.</p>
+<p><strong>H3 holds.</strong> The minimum-variance delta is the only rule that beats the baseline after Holm correction
+over the six comparisons in <code>results/which_delta_tests.csv</code>. Two caveats. (i) Its mean P&amp;L is 0.45 vol
+points lower, because holding less of a rising index costs the equity drift. (ii) The daily
+mark-to-market score (−40%) marks the option at VIX, the same series the slope is estimated on, so it
+flatters the rule. The terminal score uses only premium, payoff and hedge gains, so it is model-free
+and is the one I rely on.</p>
+<hr />
+<h2>7. Result 5: costs, and calendar against band rules (H4, H5)</h2>
+<p><img alt="Cost frontier" loading="lazy" src="figures/fig5_cost_frontier.png" /></p>
+<p>Costs are proportional: k bps of notional per unit traded, including the trades that set up and unwind
+the hedge. For the S&amp;P 500 sold at VIX (1990–2026):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Mean cost at 5 bps</th>
+<th>Std of total P&amp;L</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Every day</td>
+<td>1.03</td>
+<td>5.20</td>
+</tr>
+<tr>
+<td>Every 5 days</td>
+<td>0.77</td>
+<td>7.24</td>
+</tr>
+<tr>
+<td>Band 0.16</td>
+<td>0.76</td>
+<td><strong>6.02</strong></td>
+</tr>
+<tr>
+<td>Band 0.02</td>
+<td>1.01</td>
+<td>5.20</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>H4 holds.</strong> At equal cost the band rule has a lower standard deviation than every calendar rule
+except daily, where the two coincide. Against weekly hedging the difference is −1.22 vol points (CI
+−1.61 to −0.86) at 5 bps, and −1.17 (CI −1.56 to −0.81) at 20 bps (<code>results/costs_band_vs_calendar.csv</code>).</p>
+<p><strong>H5 is rejected.</strong> Minimising mean cost + λ·std, the best calendar rule at 5 bps is daily for every
+λ ∈ {0.5, 1, 2}, and so is the best rule for all seven ETFs at 5 bps (<code>results/costs_best.csv</code>). Only at
+20 bps does a calendar rule of 2–3 days win. The reason is the flip side of Result 1. Halving the number of
+trades does not halve the cost: going from 21 hedges to 5 cuts it only from 1.03 to 0.77 vol points,
+because most of the turnover is the set-up and unwind trades plus the large re-hedges after big moves,
+which a weekly hedge also has to make. Frequent hedging is a poor tool, but it is also a cheap one.</p>
+<hr />
+<h2>8. Validation</h2>
+<p><img alt="Validation" loading="lazy" src="figures/fig7_validation.png" /></p>
+<ul>
+<li>Under GBM the engine reproduces the Kamal–Derman standard deviation √(π/4)·σ/√N to within 3–7% for
+  every N from 3 to 21, at σ = 10%, 20% and 40% (<code>results/derman_check.csv</code>). The simulated values sit
+  slightly below the formula, which is an asymptotic approximation. At N = 1 the formula overstates the
+  error by 15%, as expected for an approximation built for many rebalances. The mean P&amp;L is zero within
+  0.2 vol points.</li>
+<li>The pricer and greeks agree with project 04's <code>bs.py</code> to 1e-12.</li>
+<li>A short put hedged with delta − 1 has exactly the same P&amp;L as the short call (put–call parity). That
+  is why only calls are reported.</li>
+<li>A zero-volatility path returns the premium (σ·100 vol points to first order).</li>
+<li><code>pytest -q tests</code>: 12 tests pass.</li>
+</ul>
+<hr />
+<h2>9. Referee self-review: what it changed</h2>
+<p>I reviewed the first draft as a hostile referee would. Points raised and what was done:</p>
+<ol>
+<li><em>"Your fitted floor is non-zero even under GBM."</em> It was (0.24) in the first version, because the law
+   was fitted on h rather than on T/N, and ⌈21/h⌉ makes h = 4 and h = 5 nearly the same hedge. It is
+   now fitted on T/N, and GBM reads −0.07.</li>
+<li><em>"The oracle quote gives negative floors. Is the method broken?"</em> No. The realised-vol oracle is
+   computed from the same daily returns the hedge is scored on, so it is tuned to daily sampling. It is
+   now used only for the level-error share (91%). The ablation that removes level error without
+   look-ahead is done in simulation (true integrated variance).</li>
+<li><em>"Extrapolating to continuous hedging from daily data is a leap."</em> Agreed. The floor is defined as the
+   intercept of a law fitted between daily and weekly. The paper says "if the law continues below one
+   day" everywhere. For a jump process the law is exactly linear with a positive intercept. For
+   diffusive intraday volatility clustering it is linear with intercept equal to the level-error term.</li>
+<li><em>"The minimum-variance gain may come from the VIX marks."</em> That is why the terminal, model-free
+   score is the headline (23%) and the mark-to-market score (40%) is labelled as flattered.</li>
+<li><em>"Stress windows have tiny samples."</em> They are shown as descriptive and enter no test.</li>
+<li><em>"Your iid kurtosis prediction failed. Why keep it?"</em> Because it was pre-registered. Its failure is
+   informative: the floor is not a within-month tail effect.</li>
+<li><em>"H5 was rejected. Is the cost model too kind?"</em> At 20 bps, a cost an index-options desk would
+   consider high, calendar rules of 2–3 days do win. The conclusion is stated per cost level.</li>
+</ol>
+<hr />
+<h2>10. Limitations</h2>
+<ul>
+<li><strong>No traded option prices.</strong> Options are priced by Black–Scholes at a quote. The study measures hedging
+  error of a book quoted at VIX or EWMA, not the P&amp;L of real SPX options, whose implied vol varies by
+  strike and moves with the surface (see <a href="../">project 14</a> for the surface).</li>
+<li><strong>Daily closes only.</strong> Nothing is measured below one day. The floor is an extrapolation of the law
+  fitted between daily and weekly. Intraday hedging data could show the law bending.</li>
+<li><strong>Before 1952, Saturdays were trading days.</strong> Each row is treated as one day. On start dates from 1952
+  only (18,823 options) the S&amp;P floor share is 0.71 and the weekly-to-daily gain 48%, still far from the
+  textbook 0 and 76%.</li>
+<li><strong>Price index, not total return, for the S&amp;P 500.</strong> It is the right underlying for index options. The
+  forward carry is ignored (test shows &lt; 2% effect on the spread).</li>
+<li><strong>ETF returns are rounded to 4 decimals.</strong> This adds noise of about 1% to squared returns, which is
+  negligible here.</li>
+<li><strong>One maturity per main run.</strong> Three-month options are a robustness check only. Strikes beyond ±1
+  standard deviation, where #4 found the gamma sits in different places, are not tested.</li>
+<li><strong>Costs are linear.</strong> No market impact, no fixed fee per ticket, no spread widening in crises, which
+  would hurt frequent hedging most when it buys least (Section 5).</li>
+<li><strong>One minimum-variance specification.</strong> The slope is linear in returns and the same for all strikes.
+  Hull and White fit it as a quadratic in delta.</li>
+</ul>
+<hr />
+<h2>11. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh          # about 2 minutes on 4 cores; writes results/, figures/ and runs the tests
+</code></pre>
+<p>Seeds are fixed (16, 1616, 1603, 1604). Every number in this README is in a CSV in <code>results/</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Produces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/hedgesim.py</code></td>
+<td>the engine (no outputs)</td>
+</tr>
+<tr>
+<td><code>src/frontier.py</code></td>
+<td>frontier_paths.csv.gz, frontier_summary, floor_shares, spx_by_decade, stress_windows, robustness_floor</td>
+</tr>
+<tr>
+<td><code>src/simulation.py</code></td>
+<td>sim_factorial, sim_garch_params, derman_check</td>
+</tr>
+<tr>
+<td><code>src/which_delta.py</code></td>
+<td>which_delta, which_delta_tests, which_delta_paths.csv.gz, leverage_slope</td>
+</tr>
+<tr>
+<td><code>src/costs.py</code></td>
+<td>costs_frontier, costs_best, costs_band_vs_calendar</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>figures/fig1–fig7</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>12. Connections to other projects</h2>
+<ul>
+<li><a href="../01-monte-carlo-calibration/">01 Monte Carlo</a>: the GJR-GARCH-t model that forecasts best there is
+  the one whose simulated world reproduces the real hedging floor here.</li>
+<li><a href="../04-black-scholes-breakeven-smile/">04 Black–Scholes break-even smile</a>: 04 measures the <em>mean</em>
+  of the daily-hedged P&amp;L (break-even vol). This paper measures its <em>spread</em> and how it responds to
+  frequency, delta choice and costs. The realised-vol oracle here is 04's break-even vol at the money.</li>
+<li><a href="../03-moving-average-volatility/">03 Moving average</a>: same S&amp;P 500 history. Its leverage effect is
+  what the minimum-variance delta monetises.</li>
+<li>13 GARCH, 14 implied vol surface, 26 Heston: better volatility forecasts and a real surface attack the
+  level error, which Section 4 shows is most of the floor.</li>
+<li>30 Deep hedging: reuses <code>hedgesim.py</code> (any <code>delta_fn</code>, schedule or band) and should be judged against
+  the floor measured here, not against zero.</li>
+</ul>
+<hr />
+<h2>References</h2>
+<p>Ahmad, R. and Wilmott, P. (2005). Which free lunch would you like today, sir? Delta hedging, volatility
+arbitrage and optimal portfolios. <em>Wilmott Magazine</em>. · Andersen, T., Bollerslev, T., Diebold, F. and
+Ebens, H. (2001). The distribution of realized stock return volatility. <em>JFE</em>. · Bollerslev, T. (1986).
+<em>J. Econometrics</em>. · Boyle, P. and Emanuel, D. (1980). Discretely adjusted option hedges. <em>JFE</em>. ·
+Carr, P. and Madan, D. (1998). Towards a theory of volatility trading. · Glosten, L., Jagannathan, R.
+and Runkle, D. (1993). <em>JF</em>. · Holm, S. (1979). <em>Scand. J. Stat.</em> · Hull, J. and White, A. (2017).
+Optimal delta hedging for options. <em>J. Banking &amp; Finance</em>. · Kamal, M. and Derman, E. (1999). When you
+cannot hedge continuously: the corrections to Black–Scholes. <em>Risk</em>. · Künsch, H. (1989). <em>Ann. Stat.</em>
+· Leland, H. (1985). Option pricing and replication with transaction costs. <em>JF</em>. · Merton, R. (1976).
+<em>JFE</em>. · Whalley, A. E. and Wilmott, P. (1997). An asymptotic analysis of an optimal hedging model for
+option pricing with transaction costs. <em>Math. Finance</em>.</p>
+<hr />
+<p>Code: MIT. Text and figures: CC BY 4.0.</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/16-delta-hedging-floor">16-delta-hedging-floor on GitHub</a>.</footer>
+</div>
+</body>
+</html>

@@ -28,7 +28,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 13 | GARCH volatility forecasting | | ⏳ Planned |
 | 14 | Implied volatility surface | | ⏳ Planned |
 | 15 | Binomial tree pricing | | ⏳ Planned |
-| 16 | Delta-hedging simulation | | ⏳ Planned |
+| 16 | [The Floor Under Delta Hedging](16-delta-hedging-floor/) | How much of an option's hedging risk can rebalancing more often remove, and what removes the rest? | ✅ Published |
 | 17 | Fama–French factors | | ⏳ Planned |
 | 18 | Yield-curve PCA | | ⏳ Planned |
 | 19 | Regime detection with HMMs | | ⏳ Planned |
