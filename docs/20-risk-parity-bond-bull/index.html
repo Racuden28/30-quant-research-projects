@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Was Risk Parity Just a Bond Bull Market?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Did risk parity beat 60/40 because of a structural premium or because of the 40-year fall in bond yields?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 20 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 20</p>
+<h1>Was Risk Parity Just a Bond Bull Market?</h1>
+<p><strong>A closed-form hurdle, a windfall decomposition and 97 years of US stocks and Treasuries (1929–2026) show when levered risk parity beats 60/40, and why its famous 1981–2020 edge came from falling yields</strong></p>
+<p><em>Project 20 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Risk parity's edge follows bond yields" loading="lazy" src="figures/fig1_edge_follows_yields.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Risk parity holds stocks and bonds in proportions that give each the same risk, then uses leverage to bring the
+portfolio up to the volatility of a 60/40 portfolio. From the early 1980s to 2020 it beat 60/40 at the same
+volatility, and in 2022 it had its worst year on record. There are two competing explanations. The <strong>structural</strong>
+one (Asness, Frazzini &amp; Pedersen 2012) says investors who cannot or will not borrow overpay for risky assets, so
+low-risk assets such as bonds earn more per unit of risk, and a levered portfolio of them wins in any era. The
+<strong>bond-bull</strong> one says risk parity simply overweighted the one asset that enjoyed a 40-year fall in yields, from
+15.8% to 0.5%.</p>
+<p>I separate the two with three tools:</p>
+<ol>
+<li><strong>A closed-form hurdle.</strong> For two assets, levered risk parity beats 60/40 at equal volatility exactly when the
+   bond Sharpe ratio exceeds <em>r*</em> times the stock Sharpe ratio, where <em>r*</em> depends only on the stock–bond
+   correlation and the vol ratio. At a zero correlation <em>r*</em> ≈ 0.6: bonds do <strong>not</strong> need a higher Sharpe ratio than
+   stocks. At a correlation of +0.5 the bar rises to ≈ 0.84.</li>
+<li><strong>Eras cut by the yield, not by the result.</strong> The 10-year yield's turning points split 1929–2026 into two
+   falling-yield eras (1929–41, 1981–2020) and two rising-yield eras (1941–81, 2020–26). This gives two
+   "out-of-sample" bond bears for a strategy whose reputation was built in a bull.</li>
+<li><strong>A windfall decomposition.</strong> Bond returns split into carry and the capital gain or loss from yield changes;
+   stock returns into dividends plus growth and re-rating. Removing each era's average windfall shows what is left.</li>
+</ol>
+<p>The bond series is rebuilt from yields (month-end 10-year yields from 1962, the Federal Reserve's monthly long-term
+yield before) and tracks two real Treasury funds with correlations of 0.94–0.96. The strategy uses only past data,
+pays trading costs and finances its leverage at T-bills + 25 bp. Hypotheses were written down before the first
+backtest (<a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/20-risk-parity-bond-bull/PREREGISTRATION.md">PREREGISTRATION.md</a>).</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The sign of risk parity's edge followed the direction of yields in all four eras.</strong> Sharpe ratio of risk parity
+   minus that of 60/40: <strong>+0.61</strong> in 1929–41 (95% CI +0.24 to +1.17), <strong>−0.18</strong> in 1941–81 (−0.42 to +0.06),
+   <strong>+0.13</strong> in 1981–2020 (−0.04 to +0.29) and <strong>−0.60</strong> in 2020–26 (−0.89 to −0.38). The two short eras are significant after Holm (p = 0.046 and 0.002).
+   Over the whole 97 years the gap is <strong>+0.06</strong> (−0.10 to +0.23), statistically zero. Every one of 16 robustness
+   specifications gives the same sign in every era.</li>
+<li><strong>The 1981–2020 edge was the bond bull.</strong> Removing that era's average gain from falling yields (+2.9% a year on the
+   10-year bond) turns risk parity's +0.13 into <strong>−0.02</strong>. Removing the stock re-rating as well leaves +0.02, so
+   <strong>88% of the edge is gone</strong> (pre-registered threshold: 50%).</li>
+<li><strong>The structural premium is real but small, and it shows up in the bear markets.</strong> With all four eras' windfalls
+   removed, the century-long gap is <strong>+0.17 (+0.02 to +0.33)</strong>, and it is positive in 1941–81 (+0.27). Bond bears hid
+   a modest leverage-aversion premium. In the bull the premium itself was absent (+0.02); the windfall stood in for it.</li>
+<li><strong>The hurdle formula calls the winner in all four eras</strong> (pre-registered: at least 3 of 4), and its static
+   prediction of the gap is within 0.2 of the dynamic backtest in each. In 2020–26 the stock–bond correlation rose to
+   +0.47, lifting the hurdle from 0.61 to 0.83, at the same time as bonds' Sharpe ratio fell to −0.82.</li>
+<li><strong>Across any 10-year window, each percentage point of rise in the 10-year yield cost risk parity 0.058 of Sharpe
+   relative to 60/40</strong> (Newey–West t = −2.6; 9 non-overlapping decades give the same sign, t = −2.4).</li>
+<li><strong>Mean-based timing does not reliably beat plain risk parity</strong> (link to project 05). Max-Sharpe on trailing means
+   and a rule that switches to 60/40 when trailing estimates fail the hurdle add +0.02 to +0.08 of Sharpe, none
+   significant after Holm.</li>
+<li><strong>Gold is insurance for bond bears that is paid for in the bull.</strong> Adding gold through equal risk contribution
+   raised Sharpe over stock–bond risk parity by +0.37 in 1975–81 and +0.46 in 2020–26 (neither survives Holm), and
+   cost −0.28 in 1981–2020 (p = 0.03). Over 1975–2026, plain 60/40 had the highest Sharpe ratio of the four.</li>
+</ol>
+<p><strong>The practical message.</strong> Risk parity is a bet that bonds' Sharpe ratio will clear a hurdle of about 0.6 times
+stocks', and that the stock–bond correlation stays low. That bet paid when yields fell and lost when they rose,
+once in each direction in the 1930s–70s and again since 1981. Strip out the yield cycle and a premium of about
+0.15–0.17 of Sharpe remains over the century. It came from 1929–81, not from 1981–2020, it is uncertain, and it disappears
+at financing costs about 50 bp higher than assumed here.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>Project <a href="../05-efficient-frontier/">05</a> found that the mean-variance frontier breaks in the <strong>means</strong>: estimated
+expected returns destroy value, and "no view" portfolios such as 1/N and inverse volatility are the benchmark to
+beat. Risk parity is the most popular "no view" portfolio in practice. It needs only a covariance matrix, and it is
+the max-Sharpe portfolio <em>if</em> every asset has the same Sharpe ratio and the correlations are equal. So risk parity
+does carry a view on the means after all, a hidden one: that bonds earn roughly the same return per unit of risk as
+stocks. Project <a href="../08-correlation-crash-illusion/">08</a> found that correlations move with the volatility regime.
+Risk parity's leverage depends on the stock–bond correlation as well.</p>
+<p>The debate around 2022 put the question sharply. Supporters pointed to decades of better risk-adjusted returns and to
+the leverage-aversion theory. Critics pointed out that those decades coincided with the largest bond rally in history.
+The two stories make different predictions about <strong>bond bear markets</strong>. The structural story predicts the edge
+survives them. The bond-bull story predicts it reverses. Long US data contain two bond bears (1941–81 and 2020–26),
+which is enough to test them.</p>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Series</th>
+<th>Source</th>
+<th>Frequency, span</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>US stock market excess return, 1-month T-bill</td>
+<td>Ken French data library (CRSP vintage 2026-09), copied from project 09</td>
+<td>monthly, 1926-07 to 2026-09</td>
+<td>value-weighted, total return</td>
+</tr>
+<tr>
+<td>10-year Treasury yield, month-end</td>
+<td>^TNX (CBOE), Yahoo Finance, via Chrome</td>
+<td>1962-01 to 2026-10</td>
+<td>used from 1962</td>
+</tr>
+<tr>
+<td>Long-term government bond yield</td>
+<td>Federal Reserve, <em>Banking and Monetary Statistics</em> (FRED LTGOVTBD), via a GitHub mirror</td>
+<td>monthly averages, 1925-01 to 2000-06</td>
+<td>used before 1962</td>
+</tr>
+<tr>
+<td>10-year Treasury yield, monthly average</td>
+<td>FRED GS10, via datasets/bond-yields-us-10y</td>
+<td>1953-04 to 2026-09</td>
+<td>robustness only</td>
+</tr>
+<tr>
+<td>Gold</td>
+<td>World Bank Pink Sheet (monthly average) to 2000-08; COMEX front month (Yahoo GC=F) month-end after</td>
+<td>1972-01 to 2026-10</td>
+<td>3-asset universe only</td>
+</tr>
+<tr>
+<td>S&amp;P 500 dividend yield</td>
+<td>multpl.com (Shiller's series, updated monthly)</td>
+<td>1871-01 to 2026-11</td>
+<td>stock re-rating only</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>Vanguard Intermediate-Term (VFITX) and Long-Term (VUSTX) Treasury funds, Yahoo adjusted close</td>
+<td>1986/1991 to 2026</td>
+<td>checks the rebuilt bond</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Rebuilding the bond.</strong> Each month a 10-year par bond is bought at last month's yield and revalued a month later at
+this month's yield, with 9 years 11 months left. Its return is coupon accrual plus the price change. The two parts are
+kept separately (<code>bond_carry</code>, <code>bond_price</code> in <code>data/monthly_panel.csv</code>). From 1962 onwards, with month-end yields,
+the rebuilt bond correlates <strong>0.96</strong> with VFITX and <strong>0.94</strong> with VUSTX over 1986–2026, with annual returns of 4.5% vs
+4.5% and 5.2% vs 5.7% (<code>results/data_bond_validation.csv</code>).</p>
+<p><strong>A data trap I fell into.</strong> The first run used Shiller's monthly long-term rate for 1926–61, as many replications do.
+Risk parity then had a Sharpe ratio of 3.6 in the 1930s. The reason: before 1953 Shiller's yields are <strong>linearly
+interpolated from annual data</strong>, so monthly bond returns are artificially smooth and bonds look almost riskless.
+Risk parity loads up on the "riskless" asset with up to 8× leverage. I replaced the series with the Federal Reserve's
+genuinely monthly yields and recorded the change in the pre-registration log. This is worth knowing for anyone
+backtesting before 1953.</p>
+<p><strong>Averaged yields.</strong> The Federal Reserve series before 1962 is still a monthly <em>average</em> of daily yields, not a month-end
+value. Over 1962–2026, where both exist, bond returns from averaged yields have 15% less volatility (6.6% vs 7.7%) and
+more autocorrelation (AR(1) 0.31 vs 0.10) than from month-end yields (<code>results/data_smoothing_check.csv</code>). Two
+robustness runs handle this: one uses averaged yields throughout, the other rescales pre-1962 bond volatility by
+×1.17. Neither changes any sign (Section 4.9).</p>
+<p><strong>Sample.</strong> With a 36-month warm-up, the backtests run from <strong>1929-07 to 2026-09 (1,167 months)</strong>. They include the 1929–32
+crash, the 1970s stagflation, the Volcker shock, 2008, 2020 and 2022.</p>
+<h2>3. Design</h2>
+<h3>3.1 Strategies</h3>
+<p>All positions are in excess returns (as if held through futures) and rebalanced monthly. Weights at month <em>t</em> use only
+data up to <em>t − 1</em>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Weights</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>60/40</strong></td>
+<td>60% stocks, 40% bonds, unlevered</td>
+</tr>
+<tr>
+<td><strong>RP</strong> (main)</td>
+<td>inverse volatility (36-month sample covariance), then scaled so its <em>ex-ante</em> volatility equals 60/40's under the same covariance</td>
+</tr>
+<tr>
+<td>RP-unlevered</td>
+<td>inverse volatility, weights sum to one</td>
+</tr>
+<tr>
+<td>MVO-expanding / MVO-10y</td>
+<td>long-only max-Sharpe on trailing mean excess returns (all history, or 10 years), scaled like RP</td>
+</tr>
+<tr>
+<td>Switch-10y</td>
+<td>holds RP when trailing 10-year means say RP has the higher Sharpe ratio, else 60/40</td>
+</tr>
+<tr>
+<td>IV-3, ERC-3</td>
+<td>stocks, bonds and gold by inverse volatility or equal risk contribution, scaled like RP (1975 onwards)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Costs.</strong> 5 bp per unit of turnover. Leverage above 1× is financed at T-bill + 25 bp a year. Risk parity averaged
+2.6× notional exposure overall: 5.9× in the 1930s when bonds were very calm, 1.4–1.5× since 1981.</p>
+<h3>3.2 The hurdle</h3>
+<p>Let <em>S_s</em> and <em>S_b</em> be the Sharpe ratios of stocks and bonds, <em>ρ</em> their correlation, and let a portfolio hold a bond
+position whose stand-alone volatility is <em>k</em> times that of its stock position. Its Sharpe ratio is</p>
+<p>$$\text{SR}(k) = S_s\,\frac{1 + k\,r}{\sqrt{1 + k^2 + 2\rho k}}, \qquad r = S_b / S_s .$$</p>
+<p>Risk parity is <em>k</em> = 1. For 60/40, <em>k</em> = <em>a</em> = 0.4σ_b / 0.6σ_s, about 0.23–0.34 in the data. Setting SR(1) = SR(<em>a</em>)
+gives the break-even ratio</p>
+<p>$$r^*(\rho, a) = \frac{A - B}{B - aA}, \qquad A = \sqrt{2 + 2\rho}, \quad B = \sqrt{1 + a^2 + 2\rho a}.$$</p>
+<p>Risk parity wins when <em>S_b</em> &gt; <em>r*</em> <em>S_s</em>, a half-plane in the (<em>S_s</em>, <em>S_b</em>) plane (Figure 2). Leverage does not
+appear, because both portfolios are compared at the same volatility. For <em>a</em> = 0.29, <em>r*</em> is 0.38 at <em>ρ</em> = −0.3,
+0.59 at <em>ρ</em> = 0 and 0.84 at <em>ρ</em> = 0.5. Three things follow:</p>
+<ul>
+<li><strong>Bonds do not need to beat stocks on Sharpe.</strong> With uncorrelated assets, risk parity wins if bonds deliver about
+  60% of stocks' Sharpe ratio, because the diversification gain covers the rest.</li>
+<li><strong>Correlation is part of the bet.</strong> A rising stock–bond correlation raises the bar at exactly the moment (inflation
+  shocks) when bond returns are poor.</li>
+<li><strong>Risk parity is a view on means after all.</strong> It is optimal only when <em>S_b</em> = <em>S_s</em>, and it beats 60/40 only when
+  <em>S_b</em> / <em>S_s</em> &gt; <em>r*</em>. Project 05's finding that means cannot be estimated reliably applies to that view as well.</li>
+</ul>
+<p>The unit tests check the formula against Sharpe ratios computed from 400,000 simulated months.</p>
+<h3>3.3 Eras</h3>
+<p>Eras are cut at the global extremes of the 10-year yield: a trough of 1.98% in 1941-07, a peak of 15.84% in 1981-09
+and a trough of 0.54% in 2020-07. The cut uses the yield only, not the strategies' returns. It is still an ex-post
+cut, and the claim it supports is <em>conditional</em> ("in eras when yields rose, ...") rather than a forecast.
+The rolling analysis in Section 4.4 does not depend on the cut.</p>
+<h3>3.4 Windfalls</h3>
+<p>Within each era I subtract a constant from each month's return: for bonds, the era's average price change from yield
+moves; for stocks, the era's average change in log price/dividend. Volatility, correlation, carry, dividends and
+earnings growth are left as they were. The result is what each asset would have returned had valuations ended each
+era where they started. Both strategies are re-run on these returns.</p>
+<h3>3.5 Statistics</h3>
+<p>Sharpe differences use a paired stationary bootstrap (Politis &amp; Romano 1994; mean block 12 months, 5,000 resamples).
+Confidence intervals are percentile intervals, and p-values come from the re-centred bootstrap distribution. Each
+pre-registered family gets a Holm correction: the four era tests (H1/H2), the three timing rules (H5) and the two
+gold tests (H6). Rolling regressions use Newey–West errors with 120 lags.</p>
+<h2>4. Results</h2>
+<h3>4.1 The record, era by era</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Era</th>
+<th style="text-align: right;">Months</th>
+<th style="text-align: right;">60/40 Sharpe</th>
+<th style="text-align: right;">RP Sharpe</th>
+<th>RP − 60/40 [95% CI]</th>
+<th style="text-align: right;">Holm p</th>
+<th style="text-align: right;">RP avg. leverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–1941, yields fall</td>
+<td style="text-align: right;">145</td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">0.74</td>
+<td><strong>+0.61</strong> [+0.24, +1.17]</td>
+<td style="text-align: right;"><strong>0.046</strong></td>
+<td style="text-align: right;">5.9×</td>
+</tr>
+<tr>
+<td>1941–1981, bond bear</td>
+<td style="text-align: right;">482</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.30</td>
+<td><strong>−0.18</strong> [−0.42, +0.06]</td>
+<td style="text-align: right;">0.29</td>
+<td style="text-align: right;">3.0×</td>
+</tr>
+<tr>
+<td>1981–2020, bond bull</td>
+<td style="text-align: right;">466</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">0.86</td>
+<td><strong>+0.13</strong> [−0.04, +0.29]</td>
+<td style="text-align: right;">0.29</td>
+<td style="text-align: right;">1.4×</td>
+</tr>
+<tr>
+<td>2020–2026, bond bear</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">−0.12</td>
+<td><strong>−0.60</strong> [−0.89, −0.38]</td>
+<td style="text-align: right;"><strong>0.002</strong></td>
+<td style="text-align: right;">1.5×</td>
+</tr>
+<tr>
+<td>Full sample 1929–2026</td>
+<td style="text-align: right;">1,167</td>
+<td style="text-align: right;">0.46</td>
+<td style="text-align: right;">0.53</td>
+<td>+0.06 [−0.10, +0.23]</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">2.6×</td>
+</tr>
+</tbody>
+</table></div>
+<p>The signs alternate with the yield cycle. 1929–41 and 2020–26 are individually significant after Holm, and the two
+long eras have intervals that include zero. The signs repeat across all 16 specifications,
+though, and the rolling regression below uses every window. Unlevered risk parity shows the same pattern with larger
+swings: −0.42 in 1941–81 and −0.53 in 2020–26, both with p ≤ 0.001 (<code>results/sharpe_tests.csv</code>).</p>
+<p><strong>The 2020–26 result is not only 2022.</strong> Without calendar 2022, the gap over the remaining 62 months is −0.65.
+After 2022 stocks kept rallying while bonds stayed weak, and that is the worst case for risk parity.</p>
+<p><strong>Why earlier studies found a premium.</strong> Ending the sample in 2010, as Asness, Frazzini &amp; Pedersen (2012) did, gives
++0.11 (−0.07 to +0.29). That window contains both falling-yield eras and only one of the two bears.</p>
+<p><img alt="Wealth" loading="lazy" src="figures/fig5_wealth.png" /></p>
+<h3>4.2 The hurdle calls every era</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Era</th>
+<th style="text-align: right;">Stock SR</th>
+<th style="text-align: right;">Bond SR</th>
+<th style="text-align: right;">Corr.</th>
+<th style="text-align: right;">Hurdle <em>r*</em></th>
+<th style="text-align: right;">Bond SR needed</th>
+<th style="text-align: right;">Predicted gap (static)</th>
+<th style="text-align: right;">Backtest gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–41</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">1.24</td>
+<td style="text-align: right;">+0.01</td>
+<td style="text-align: right;">0.46</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">+0.78</td>
+<td style="text-align: right;">+0.61</td>
+</tr>
+<tr>
+<td>1941–81</td>
+<td style="text-align: right;">0.56</td>
+<td style="text-align: right;">−0.19</td>
+<td style="text-align: right;">+0.21</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">−0.24</td>
+<td style="text-align: right;">−0.18</td>
+</tr>
+<tr>
+<td>1981–2020</td>
+<td style="text-align: right;">0.56</td>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">−0.03</td>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">+0.11</td>
+<td style="text-align: right;">+0.13</td>
+</tr>
+<tr>
+<td>2020–26</td>
+<td style="text-align: right;">0.82</td>
+<td style="text-align: right;">−0.82</td>
+<td style="text-align: right;">+0.47</td>
+<td style="text-align: right;">0.83</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">−0.48</td>
+<td style="text-align: right;">−0.60</td>
+</tr>
+</tbody>
+</table></div>
+<p>The formula uses each era's full-sample moments and fixed weights. The backtest uses rolling estimates and
+time-varying leverage. Even so, the formula gets the sign right in <strong>4 of 4 eras</strong> (H4 required 3) and the size to
+within 0.2. Applied to the full sample, the formula predicts a gap of zero (−0.004) and the backtest gives +0.06.</p>
+<p>Two things stand out. In 1981–2020 bonds cleared the bar easily: 0.61 against 0.34 required. A bond Sharpe of 0.61 over
+39 years is not a normal premium, though. It is the bull market. In 2020–26 the bar rose to 0.68 because the
+correlation turned positive, and bonds delivered −0.82.</p>
+<p><img alt="Hurdle plane" loading="lazy" src="figures/fig2_hurdle_plane.png" /></p>
+<p><img alt="Hurdle vs correlation" loading="lazy" src="figures/fig3_hurdle_vs_correlation.png" /></p>
+<h3>4.3 Removing the windfalls</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Era</th>
+<th style="text-align: right;">Bond carry (%/yr)</th>
+<th style="text-align: right;">Bond yield-change windfall (%/yr)</th>
+<th style="text-align: right;">Stock re-rating (%/yr)</th>
+<th style="text-align: right;">Gap, actual</th>
+<th style="text-align: right;">Gap, bond windfall removed</th>
+<th style="text-align: right;">Gap, both removed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–41</td>
+<td style="text-align: right;">2.3</td>
+<td style="text-align: right;">+1.2</td>
+<td style="text-align: right;">−5.5</td>
+<td style="text-align: right;">+0.61</td>
+<td style="text-align: right;">+0.39</td>
+<td style="text-align: right;">+0.38</td>
+</tr>
+<tr>
+<td>1941–81</td>
+<td style="text-align: right;">1.2</td>
+<td style="text-align: right;">−2.2</td>
+<td style="text-align: right;">+0.5</td>
+<td style="text-align: right;">−0.18</td>
+<td style="text-align: right;">+0.25</td>
+<td style="text-align: right;">+0.27</td>
+</tr>
+<tr>
+<td>1981–2020</td>
+<td style="text-align: right;">1.9</td>
+<td style="text-align: right;"><strong>+2.9</strong></td>
+<td style="text-align: right;">+2.8</td>
+<td style="text-align: right;">+0.13</td>
+<td style="text-align: right;"><strong>−0.02</strong></td>
+<td style="text-align: right;">+0.02</td>
+</tr>
+<tr>
+<td>2020–26</td>
+<td style="text-align: right;">0.3</td>
+<td style="text-align: right;"><strong>−6.5</strong></td>
+<td style="text-align: right;">+8.9</td>
+<td style="text-align: right;">−0.60</td>
+<td style="text-align: right;">−0.32</td>
+<td style="text-align: right;">−0.14</td>
+</tr>
+<tr>
+<td>Full 1929–2026</td>
+<td style="text-align: right;">1.6</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">+1.2</td>
+<td style="text-align: right;">+0.06</td>
+<td style="text-align: right;">+0.15</td>
+<td style="text-align: right;"><strong>+0.17</strong> [+0.02, +0.33]</td>
+</tr>
+</tbody>
+</table></div>
+<p>(<code>results/windfall_decomposition.csv</code>, <code>results/windfall_free_tests.csv</code>.)</p>
+<ul>
+<li><strong>H3 holds.</strong> With both windfalls removed, the 1981–2020 edge falls from +0.13 to +0.02 (−88%). With only the bond
+  windfall removed it becomes −0.02. <strong>Nothing of risk parity's 1981–2020 edge over 60/40 survives once bonds are
+  denied the fall in yields.</strong> The stock re-rating in that era (dividend yield from 5.5% to 1.8%) actually helped 60/40.</li>
+<li><strong>The bears hid a premium.</strong> In 1941–81 the gap goes from −0.18 to +0.25 to +0.27. Over the full sample the
+  windfall-free gap is +0.17, with an interval that excludes zero (p = 0.03). This is the leverage-aversion premium
+  of the structural story, measured without the yield cycle in it. It is about a quarter of the 0.6 of Sharpe that
+  1929–41 alone suggests, and it sits close to the edge of significance (bond-only removal: +0.15, p = 0.07).</li>
+<li><strong>2020–26 stays negative</strong> after both removals (−0.14, n.s.). The positive correlation did damage beyond the yield
+  rise: the hurdle without windfalls is still 0.83, and bonds' windfall-free Sharpe ratio was only 0.16 of stocks'.</li>
+</ul>
+<p><img alt="Windfalls" loading="lazy" src="figures/fig6_windfalls.png" /></p>
+<h3>4.4 Rolling evidence, without era cuts</h3>
+<p>Over every rolling 10-year window from 1939 to 2026, the Sharpe gap falls by <strong>0.058 per percentage point of rise in the
+10-year yield</strong> (Newey–West t = −2.55, R² = 0.22). The 9 non-overlapping decades give a slope of −0.14 (t = −2.4).
+The gap also falls with the window's stock–bond correlation: −0.44 per unit of correlation (t = −3.5), consistent with
+the hurdle formula (<code>results/rolling_regressions.csv</code>).</p>
+<p><img alt="Rolling" loading="lazy" src="figures/fig4_rolling_gap_vs_yields.png" /></p>
+<h3>4.5 Can the hurdle be timed? (H5, link to project 05)</h3>
+<p>If the hurdle decides the winner, an investor could estimate it and switch. The trailing-mean rules do that:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule (full sample)</th>
+<th style="text-align: right;">Sharpe</th>
+<th>vs RP [95% CI]</th>
+<th style="text-align: right;">Holm p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RP (no means)</td>
+<td style="text-align: right;">0.53</td>
+<td>—</td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr>
+<td>MVO on expanding-window means</td>
+<td style="text-align: right;">0.54</td>
+<td>+0.02 [−0.09, +0.12]</td>
+<td style="text-align: right;">0.79</td>
+</tr>
+<tr>
+<td>MVO on 10-year means</td>
+<td style="text-align: right;">0.60</td>
+<td>+0.08 [−0.04, +0.19]</td>
+<td style="text-align: right;">0.39</td>
+</tr>
+<tr>
+<td>Switch to 60/40 when the 10-year trailing hurdle fails</td>
+<td style="text-align: right;">0.59</td>
+<td>+0.07 [−0.00, +0.15]</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+</tbody>
+</table></div>
+<p>None is significant, so H5 holds: no mean-based rule reliably beats ignoring the means, as project 05 found for
+industries. The point estimates are positive, though, and the switch rule's gain is concentrated in 1941–81, where it
+roughly matched 60/40 instead of lagging it. Ten-year trailing Sharpe ratios carry some information about multi-decade
+yield trends, but 97 years of data cannot separate it from luck. That is the same knowability problem project
+<a href="../07-kelly-estimation-risk/">07</a> found for Kelly fractions.</p>
+<h3>4.6 Did risk parity deliver parity?</h3>
+<p>Measured with each era's realised covariance and the strategy's actual weights, bonds supplied <strong>54%</strong> of risk
+parity's variance over the full sample (60/40: 7%). The share was 47–53% in three eras and <strong>68% in 1941–81</strong>, when
+bond volatility kept rising and a 36-month window kept underestimating it (<code>results/risk_share_by_era.csv</code>). Risk parity
+therefore puts about half its risk in bonds by design, and more than half in bond bears, which are exactly the eras
+when bonds lose.</p>
+<h3>4.7 Gold as a third leg (H6)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Period</th>
+<th style="text-align: right;">60/40</th>
+<th style="text-align: right;">RP (stocks + bonds)</th>
+<th style="text-align: right;">IV-3</th>
+<th style="text-align: right;">ERC-3</th>
+<th>ERC-3 − RP [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1975–81 (bond bear, gold boom)</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">−0.08</td>
+<td style="text-align: right;">0.22</td>
+<td style="text-align: right;">0.29</td>
+<td>+0.37 [−0.43, +1.12]</td>
+</tr>
+<tr>
+<td>1981–2020 (bond bull)</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">0.86</td>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">0.58</td>
+<td>−0.28 [−0.54, −0.03]</td>
+</tr>
+<tr>
+<td>2020–26 (bond bear)</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">−0.12</td>
+<td style="text-align: right;">0.28</td>
+<td style="text-align: right;">0.34</td>
+<td>+0.46 [+0.05, +1.00]</td>
+</tr>
+<tr>
+<td>1975–2026</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">0.49</td>
+<td>−0.06 [−0.32, +0.18]</td>
+</tr>
+</tbody>
+</table></div>
+<p>Gold held about 40% of the notional exposure (a third of the risk, by construction). It rescued risk parity in both bond bears, with point estimates large enough
+to matter, but neither survives Holm (adjusted p = 0.37 and 0.11), so H6 is supported in direction only. The price was
+paid in the bull. Over 1975–2026 none of the risk-parity variants beat 60/40.</p>
+<p><img alt="Gold" loading="lazy" src="figures/fig9_gold.png" /></p>
+<h3>4.8 Stress windows</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th style="text-align: right;">60/40</th>
+<th style="text-align: right;">RP</th>
+<th style="text-align: right;">ERC-3</th>
+<th>Who did the damage in RP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–32 crash</td>
+<td style="text-align: right;">−65%</td>
+<td style="text-align: right;">−58%</td>
+<td style="text-align: right;">—</td>
+<td>stocks</td>
+</tr>
+<tr>
+<td>1937–38</td>
+<td style="text-align: right;">−32%</td>
+<td style="text-align: right;">−19%</td>
+<td style="text-align: right;">—</td>
+<td>stocks</td>
+</tr>
+<tr>
+<td>1973–74 stagflation</td>
+<td style="text-align: right;">−39%</td>
+<td style="text-align: right;">−35%</td>
+<td style="text-align: right;">—</td>
+<td>mostly stocks (bonds −11 pts)</td>
+</tr>
+<tr>
+<td>1979–81 Volcker</td>
+<td style="text-align: right;">−15%</td>
+<td style="text-align: right;"><strong>−27%</strong></td>
+<td style="text-align: right;">−11%</td>
+<td><strong>bonds (−27 pts)</strong></td>
+</tr>
+<tr>
+<td>1987 crash</td>
+<td style="text-align: right;">−19%</td>
+<td style="text-align: right;">−14%</td>
+<td style="text-align: right;">−13%</td>
+<td>stocks</td>
+</tr>
+<tr>
+<td>2000–02 dot-com</td>
+<td style="text-align: right;">−26%</td>
+<td style="text-align: right;">−3%</td>
+<td style="text-align: right;">+2%</td>
+<td>stocks, offset by bonds</td>
+</tr>
+<tr>
+<td>2008 GFC</td>
+<td style="text-align: right;">−30%</td>
+<td style="text-align: right;">−17%</td>
+<td style="text-align: right;">−12%</td>
+<td>stocks, offset by bonds</td>
+</tr>
+<tr>
+<td>2020 Covid</td>
+<td style="text-align: right;">−8%</td>
+<td style="text-align: right;">+2%</td>
+<td style="text-align: right;">+1%</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2022 inflation</td>
+<td style="text-align: right;">−19%</td>
+<td style="text-align: right;"><strong>−31%</strong></td>
+<td style="text-align: right;">−27%</td>
+<td><strong>bonds (−26 pts)</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Cumulative excess returns (<code>results/stress_windows.csv</code>). Risk parity's design suits growth shocks: it lost less
+than 60/40 in every equity crash. In inflation shocks it loses more, because its largest position becomes the source
+of the loss. Gold helped in 1979–81 (+17 pts) and did not help in 2022 (−5 pts).</p>
+<p><img alt="Stress" loading="lazy" src="figures/fig7_stress_windows.png" /></p>
+<h3>4.9 Robustness</h3>
+<p>Sixteen specifications: covariance windows of 12, 24, 60 and 120 months, EWMA (half-life 12 months), financing spreads of
+0, 50, 100 and 200 bp, costs of 0 and 20 bp, a 3× leverage cap, a 10% volatility target instead of matching 60/40, bonds
+built only from averaged yields, and pre-1962 bond volatility rescaled ×1.17. <strong>Within each era the sign never changes</strong>
+(Figure 8, <code>results/robustness.csv</code>). The full-sample gap does change sign: it ranges from +0.10 (no spread) to −0.16
+(200 bp spread). The full-sample edge disappears at a financing spread about <strong>50 bp</strong> above the 25 bp assumed
+(<code>results/break_even_spread.csv</code>). In 1981–2020 the edge survived up to about 3.3% of extra spread, because leverage
+was only 1.4×.</p>
+<p><img alt="Robustness" loading="lazy" src="figures/fig8_robustness.png" /></p>
+<h3>4.10 Pre-registered hypotheses: scorecard</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Hypothesis</th>
+<th>Verdict</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1 bond bull: gap &gt; 0 in 1981–2020, ≤ 0 in 1941–81 and 2020–26</td>
+<td><strong>Supported in direction</strong>; the 1981–2020 gap is not significant</td>
+<td>+0.13 (p = 0.15), −0.18, −0.60</td>
+</tr>
+<tr>
+<td>H2 structural: gap &gt; 0 in every era</td>
+<td><strong>Rejected</strong></td>
+<td>2020–26: −0.60, Holm p = 0.002</td>
+</tr>
+<tr>
+<td>H3 windfalls remove &gt; 50% of the 1981–2020 edge</td>
+<td><strong>Supported</strong></td>
+<td>88% (both), 117% (bonds only)</td>
+</tr>
+<tr>
+<td>H4 hurdle calls ≥ 3 of 4 eras</td>
+<td><strong>Supported</strong></td>
+<td>4 of 4</td>
+</tr>
+<tr>
+<td>H5 no mean-based rule beats RP after Holm</td>
+<td><strong>Supported</strong></td>
+<td>smallest Holm p = 0.25</td>
+</tr>
+<tr>
+<td>H6 gold raises RP's Sharpe in both bond bears</td>
+<td><strong>Direction only</strong></td>
+<td>+0.37, +0.46; Holm p = 0.37, 0.11</td>
+</tr>
+</tbody>
+</table></div>
+<h2>5. What this means in practice</h2>
+<ol>
+<li><strong>Know what risk parity bets on.</strong> It is not a "no-view" portfolio. It bets that bonds will deliver at least
+   <em>r*</em> ≈ 0.6 of stocks' Sharpe ratio, and <em>r*</em> rises with the stock–bond correlation. Write that view down and
+   judge it the way any other return forecast would be judged.</li>
+<li><strong>Do not extrapolate 1981–2020.</strong> That edge came from falling yields, and yields cannot fall from 15.8% to 0.5%
+   again. The windfall-free premium is about +0.15 of Sharpe, with a confidence interval that reaches zero.</li>
+<li><strong>Financing is a first-order input.</strong> With 2–3× leverage, 50 bp of extra financing cost removes the century-long
+   edge. A retail investor borrowing at a margin rate would have done better with 60/40.</li>
+<li><strong>Watch the stock–bond correlation, not only volatility.</strong> Risk parity's risk model re-weights on volatility. The
+   correlation moves the hurdle, and it turned positive in the two inflationary decades (projects
+   <a href="../08-correlation-crash-illusion/">08</a> and 19 study how correlations and regimes shift).</li>
+<li><strong>A third asset that hedges inflation changes the bet.</strong> Gold rescued risk parity in both bond bears and cost it in
+   the bull. That is insurance with a premium, not a free lunch.</li>
+</ol>
+<h2>6. Referee self-review</h2>
+<p>I reviewed the study as a hostile referee would. The objections and responses follow.</p>
+<p><strong>"The eras are cut with hindsight."</strong> Yes, at the yield's extremes, and Section 3.3 says so. The cut uses the yield,
+not returns, and the claims are conditional on the direction of yields. The rolling regression (Section 4.4) uses no
+cut at all and gives the same answer, as do the 9 non-overlapping decades.</p>
+<p><strong>"1929–41 with 5.9× leverage is fantasy: there were no bond futures before 1977."</strong> Agreed, and it is why that era's
++0.61 should not be taken at face value. With leverage capped at 3×, the gap is +0.65, so the cap does not change
+the result. The point of including the era is the <em>sign</em> in a falling-yield period, not an investable number.</p>
+<p><strong>"Pre-1962 bonds are built from averaged yields, which understates their risk."</strong> Quantified (15% less volatility over
+1962–2026), and two robustness runs correct for it in opposite ways. No sign changes. The first version used
+interpolated Shiller yields. That bug produced a Sharpe ratio of 3.6, was caught, and is documented in the
+pre-registration log.</p>
+<p><strong>"The windfall removal is arbitrary: why subtract the era mean rather than the full-sample mean or zero?"</strong> The aim is
+a counterfactual in which valuations end each era where they started. Subtracting a constant keeps every second
+moment, so risk parity's weights hardly change. Both windfalls are removed symmetrically, and the bonds-only and
+stocks-only versions are reported separately. Using the full-sample mean would by construction leave the long-run total
+unchanged and could not answer the era question.</p>
+<p><strong>"The stock re-rating measure uses the S&amp;P 500 dividend yield while stock returns come from the CRSP market."</strong> True.
+The two indices' valuations move closely together, and the re-rating enters only as one constant per era. The bond
+windfall, which drives H3, is measured exactly from the bond's own price changes.</p>
+<p><strong>"E4 is only 74 months."</strong> It is short, and its interval is wide (−0.89 to −0.38), but it is significant after Holm (p = 0.002), and the result does not depend on 2022 alone (Section 4.1).</p>
+<p><strong>"A 10-year bond is not what risk parity funds hold."</strong> Funds also hold inflation-linked bonds, credit and
+commodities. That is why the gold extension exists, and why the conclusions are stated for the stock–bond core. A longer
+duration would make the bond leg more sensitive to yields and strengthen the finding.</p>
+<p><strong>"You matched ex-ante volatility, but realised volatility differs."</strong> Risk parity's realised volatility was 12.6% against
+60/40's 11.6%, because ex-ante estimates lag. The comparison uses Sharpe ratios, which do not depend on the scale, and
+a 10%-target variant gives the same signs.</p>
+<p><strong>"H4 is close to an identity: era Sharpe ratios mechanically determine the era gap."</strong> Partly true. With fixed weights
+and full-era moments, the formula <em>is</em> the gap. What the test checks is that a static two-number summary (the bond/stock
+Sharpe ratio against <em>r*</em>) explains a dynamic, levered, cost-paying backtest with rolling estimates. It is evidence that
+the formula is the right accounting frame, not a forecast. Section 4.5 shows it cannot be used as a forecast with
+trailing estimates.</p>
+<p><strong>"The +0.17 windfall-free premium over the full sample is your most quotable number, and it was not pre-registered."</strong>
+Correct. H3 was about 1981–2020 only. The full-sample windfall-free gap is reported as an exploratory result, its
+interval (+0.02 to +0.33) is not multiple-testing adjusted, and the bonds-only version (+0.15, p = 0.07) is weaker. I
+describe it as a premium that is "small and uncertain", not as established.</p>
+<p><strong>"Many tests."</strong> Each pre-registered family is Holm-corrected. The extra windows (to 2010, 2020–26 without 2022) and the
+windfall variants are descriptive and labelled as such.</p>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>One country.</strong> Two bond bears in the US are a small sample. Other countries' bond markets (for example Japan or the
+  euro area) would be the natural out-of-sample test.</li>
+<li><strong>Pre-1977 leverage is hypothetical</strong>, and the 1930s numbers are not investable.</li>
+<li><strong>Monthly data.</strong> Daily rebalancing and daily risk estimates would react faster, especially in 2022.</li>
+<li><strong>Two or three assets.</strong> Real risk-parity funds hold 10–20 markets, including inflation-linked bonds and commodity
+  futures. Long histories of those are not freely available.</li>
+<li><strong>Gold before 2000 is a monthly average</strong>, which smooths its risk in 1975–2000.</li>
+<li><strong>The financing spread is a constant.</strong> In practice, implied financing in futures varies, and it rose during crises.</li>
+</ul>
+<h2>8. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh        # tests, data checks, backtests, statistics, figures (about 1 minute)
+</code></pre>
+<p><code>data/raw/</code> holds every input file. <code>src/data.py</code> builds <code>data/monthly_panel.csv</code> from them and writes the two data
+checks. Seeds are fixed in <code>src/config.py</code>. The 35 unit tests cover bond pricing, the weights (ERC against its
+definition, the max-Sharpe solver against the closed form), the hurdle (algebraically and against simulated returns),
+the absence of look-ahead, the cost and financing accounting, the windfall removal, the bootstrap, Holm and the
+Newey–West regression.</p>
+<h2>9. Repository layout</h2>
+<pre><code>20-risk-parity-bond-bull/
+├── README.md               this paper
+├── PREREGISTRATION.md      hypotheses, written before the first backtest, with the change log
+├── LINKEDIN_POST.md
+├── run_all.sh  requirements.txt
+├── data/
+│   ├── raw/                every downloaded input file
+│   └── monthly_panel.csv   stocks, rebuilt 10-year bond (carry + price), gold, T-bill, yields, dividend yield
+├── src/
+│   ├── config.py           eras, costs, window, bootstrap settings
+│   ├── data.py             bond rebuilding, data validation
+│   ├── portfolio.py        weights (inverse vol, ERC, max-Sharpe), the hurdle formula, the backtest engine
+│   ├── backtest.py         all strategies, the windfall-free counterfactuals and 16 robustness variants
+│   ├── stats.py            stationary bootstrap, paired Sharpe test, Holm, Newey–West
+│   ├── evaluate.py         every table
+│   └── figures.py
+├── tests/                  pytest suite (35 tests)
+├── results/                every number in this paper, as CSV (summary.csv has the headlines)
+├── figures/
+└── study/                  ESTUDIO_20.pdf (plain-Spanish study notes)
+</code></pre>
+<h2>References</h2>
+<ul>
+<li>Anderson, R., Bianchi, S. &amp; Goldberg, L. (2012). Will my risk parity strategy outperform? <em>Financial Analysts Journal</em> 68(6).</li>
+<li>Asness, C., Frazzini, A. &amp; Pedersen, L. (2012). Leverage aversion and risk parity. <em>Financial Analysts Journal</em> 68(1).</li>
+<li>Black, F. (1972). Capital market equilibrium with restricted borrowing. <em>Journal of Business</em> 45(3).</li>
+<li>Campbell, J., Sunderam, A. &amp; Viceira, L. (2017). Inflation bets or deflation hedges? The changing risks of nominal bonds. <em>Critical Finance Review</em> 6(2).</li>
+<li>Frazzini, A. &amp; Pedersen, L. (2014). Betting against beta. <em>Journal of Financial Economics</em> 111(1).</li>
+<li>Griveau-Billion, T., Richard, J.-C. &amp; Roncalli, T. (2013). A fast algorithm for computing high-dimensional risk parity portfolios. SSRN 2325255.</li>
+<li>Ilmanen, A. (2011). <em>Expected Returns</em>. Wiley.</li>
+<li>Ledoit, O. &amp; Wolf, M. (2008). Robust performance hypothesis testing with the Sharpe ratio. <em>Journal of Empirical Finance</em> 15(5).</li>
+<li>Maillard, S., Roncalli, T. &amp; Teïletche, J. (2010). The properties of equally weighted risk contribution portfolios. <em>Journal of Portfolio Management</em> 36(4).</li>
+<li>Newey, W. &amp; West, K. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. <em>Econometrica</em> 55(3).</li>
+<li>Politis, D. &amp; Romano, J. (1994). The stationary bootstrap. <em>Journal of the American Statistical Association</em> 89(428).</li>
+<li>Qian, E. (2005). Risk parity portfolios: efficient portfolios through true diversification. PanAgora Asset Management.</li>
+<li>Swinkels, L. (2019). Treasury bond return data starting in 1962. <em>Data</em> 4(3).</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/20-risk-parity-bond-bull">20-risk-parity-bond-bull on GitHub</a>.</footer>
+</div>
+</body>
+</html>

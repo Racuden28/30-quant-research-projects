@@ -1,0 +1,6 @@
+y,x,alpha,beta,se_beta,t_beta,r2,n
+sharpe_gap,yield_change_10y,-0.0150,-5.8157,2.2774,-2.5537,0.2164,1048
+ret_gap,yield_change_10y,0.0102,-0.5971,0.2624,-2.2756,0.1219,1048
+sharpe_gap,stock_bond_corr_10y,0.0149,-0.4360,0.1231,-3.5403,0.0939,1048
+ret_gap,stock_bond_corr_10y,0.0136,-0.0489,0.0209,-2.3414,0.0632,1048
+sharpe_gap (non-overlapping),yield_change_10y,-0.0367,-14.0966,5.8710,-2.4011,0.3704,9

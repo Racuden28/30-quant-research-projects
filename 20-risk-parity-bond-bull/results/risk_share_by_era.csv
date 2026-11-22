@@ -1,0 +1,6 @@
+segment,rp_bond_risk_share,b6040_bond_risk_share,rp_bond_weight,rp_stock_weight
+Full sample,0.5440,0.0651,2.1689,0.4451
+E1 1929-1941 (yields fall),0.4913,0.0038,5.4095,0.4443
+E2 1941-1981 (bond bear),0.6784,0.0958,2.5942,0.4157
+E3 1981-2020 (bond bull),0.4689,0.0985,0.8964,0.4756
+E4 2020-2026 (bond bear),0.5284,0.1766,1.0622,0.4458

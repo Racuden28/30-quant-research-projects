@@ -1,0 +1,6 @@
+segment,sharpe_stocks,sharpe_bonds,ratio_r,corr,vol_stocks,vol_bonds,a_6040,hurdle_rstar,rp_should_win,predicted_gap_static,realised_gap_backtest,sign_correct
+Full sample,0.3338,0.2528,0.7574,0.0736,0.1845,0.0638,0.2304,0.5997,True,0.0243,0.1719,True
+E1 1929-1941 (yields fall),0.1206,0.8966,7.4324,0.0143,0.3456,0.0283,0.0547,0.4565,True,0.5449,0.3756,True
+E2 1941-1981 (bond bear),0.5232,0.2353,0.4498,0.2082,0.1417,0.0522,0.2454,0.6837,False,-0.0509,0.2672,False
+E3 1981-2020 (bond bull),0.3772,0.2439,0.6465,-0.0266,0.1538,0.0791,0.3427,0.6082,True,0.0056,0.0150,True
+E4 2020-2026 (bond bear),0.2615,0.0418,0.1597,0.4655,0.1585,0.0749,0.3150,0.8302,False,-0.0556,-0.1397,True

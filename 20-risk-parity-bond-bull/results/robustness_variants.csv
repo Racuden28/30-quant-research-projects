@@ -1,0 +1,16 @@
+variant
+window 12m
+window 24m
+window 60m
+window 120m
+EWMA (half-life 12m)
+spread 0 bp
+spread 50 bp
+spread 100 bp
+spread 200 bp
+costs 0 bp
+costs 20 bp
+bonds from averaged yields only
+pre-1962 bond vol rescaled x1.17
+leverage cap 3x
+RP at 10% vol target

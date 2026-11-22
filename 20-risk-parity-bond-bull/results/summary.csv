@@ -1,0 +1,19 @@
+,value
+gap Full sample,"+0.06 [-0.10, +0.23] p=0.459 holm=nan"
+gap E1 1929-1941 (yields fall),"+0.61 [+0.24, +1.17] p=0.015 holm=0.046"
+gap E2 1941-1981 (bond bear),"-0.18 [-0.42, +0.06] p=0.161 holm=0.290"
+gap E3 1981-2020 (bond bull),"+0.13 [-0.04, +0.29] p=0.145 holm=0.290"
+gap E4 2020-2026 (bond bear),"-0.60 [-0.89, -0.38] p=0.001 holm=0.002"
+hurdle Full sample,r=0.58 r*=0.60 corr=+0.07 pred=-0.00 real=+0.06
+hurdle E1 1929-1941 (yields fall),r=18.05 r*=0.46 corr=+0.01 pred=+0.78 real=+0.61
+hurdle E2 1941-1981 (bond bear),r=-0.33 r*=0.68 corr=+0.21 pred=-0.24 real=-0.18
+hurdle E3 1981-2020 (bond bull),r=1.09 r*=0.61 corr=-0.03 pred=+0.11 real=+0.13
+hurdle E4 2020-2026 (bond bear),r=-1.00 r*=0.83 corr=+0.47 pred=-0.48 real=-0.60
+windfall-free gap Full sample,"+0.17 [+0.02, +0.33] p=0.029 (actual +0.06)"
+windfall-free gap E1 1929-1941 (yields fall),"+0.38 [+0.04, +0.87] p=0.088 (actual +0.61)"
+windfall-free gap E2 1941-1981 (bond bear),"+0.27 [-0.00, +0.56] p=0.063 (actual -0.18)"
+windfall-free gap E3 1981-2020 (bond bull),"+0.02 [-0.15, +0.17] p=0.858 (actual +0.13)"
+windfall-free gap E4 2020-2026 (bond bear),"-0.14 [-0.36, +0.08] p=0.181 (actual -0.60)"
+H5 MVO-expanding-means - RP,"+0.01 [-0.09, +0.12] p=0.788 holm=0.788"
+H5 MVO-10y-means - RP,"+0.08 [-0.04, +0.19] p=0.195 holm=0.390"
+H5 Switch-10y - RP,"+0.07 [-0.00, +0.15] p=0.083 holm=0.250"

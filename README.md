@@ -32,7 +32,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 17 | [The Five-Factor Model's Holdout Exam](17-five-factor-holdout/) | Does the five-factor model's 2013 verdict survive 13 years of data that did not exist when it was chosen? | ✅ Published |
 | 18 | Yield-curve PCA | | ⏳ Planned |
 | 19 | Regime detection with HMMs | | ⏳ Planned |
-| 20 | Risk parity | | ⏳ Planned |
+| 20 | [Was Risk Parity Just a Bond Bull Market?](20-risk-parity-bond-bull/) | Did risk parity beat 60/40 because of a structural premium or because of the 40-year fall in bond yields? | ✅ Published |
 | 21 | Event-driven backtest engine | | ⏳ Planned |
 | 22 | Purged cross-validation | | ⏳ Planned |
 | 23 | Deflated Sharpe ratio | | ⏳ Planned |
