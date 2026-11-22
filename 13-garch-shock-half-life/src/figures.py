@@ -55,10 +55,9 @@ def fig1_decay(nc, nt):
     for w, lab in [("GARCH", "GARCH(1,1)"), ("CGARCH", "component GARCH")]:
         g = cv[cv.world == w]
         ax.fill_between(g.k, g.null_lo, g.null_hi, color=C[w], alpha=0.16, lw=0)
-        ax.plot(g.k, g.null_med, color=C[w], lw=2, ls=(0, (5, 2)),
+        ax.plot(g.k, g.null_med, color=C[w], lw=2, ls=(0, (5, 2)), marker=MK[w], markevery=42, ms=7,
+                markeredgecolor=SURFACE, markeredgewidth=1.2,
                 label=f"If the world were {lab}: same measurement, 100 simulations (median, 90% band)")
-        ax.plot(g.k[::42], g.null_med.values[::42], ls="none", marker=MK[w], ms=7, color=C[w],
-                markeredgecolor=SURFACE, markeredgewidth=1.2)
     d = cv[cv.world == "GARCH"]
     ax.plot(d.k, d.data, color=INK, lw=2.8, label="Real data, 10 equity indices pooled")
     ax.axhline(0.5, color=MUTED, lw=1, ls=":")
