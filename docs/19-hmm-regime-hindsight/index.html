@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Regime You Only See Afterwards: How Much of HMM Regime Timing Is Hindsight?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="How much of an HMM regime-timing backtest is hindsight, and what is left once only past data is used?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 19 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 19</p>
+<h1>The Regime You Only See Afterwards: How Much of HMM Regime Timing Is Hindsight?</h1>
+<p><em>Project 19 of <a href="../">30 Quant Research Projects</a> · 10 equity indices · S&amp;P 500 back to 1928 · ≈425 market-years of daily data · a Gaussian HMM written from scratch</em></p>
+<blockquote>
+<p><strong>Headline.</strong> A two-state hidden Markov model is the textbook way to find "bull" and "bear" regimes, and the textbook backtest looks spectacular: on the S&amp;P 500 since 1934, holding the index only in the calm regime earns a Sharpe ratio of <strong>1.01</strong>, against <strong>0.32</strong> for buy &amp; hold. I take that backtest apart one source of look-ahead at a time, in 10 markets. <strong>Almost all of the edge is hindsight, and nearly all of that hindsight comes from one step: using smoothed rather than filtered regime probabilities.</strong> That step costs a median <strong>0.61</strong> of Sharpe ratio (10/10 markets, all significant after Holm). Using parameters estimated on the full sample instead of in real time is worth almost nothing (median 0.01, 0/10 significant). In real time and after 5 bp costs, the HMM rule <strong>trails buy &amp; hold in 7 of 10 markets</strong> (median −0.07 Sharpe, none significant), and it does no better than a placebo that only looks at volatility and has the same exposure (median difference 0.00). The edge disappears because of what happens on a few days. Hindsight steps out of each sell-off a median <strong>2 trading days</strong> before the real-time filter can, and those days cost 41–103 bp each. The "bear" regime's large negative mean does not survive out of sample either. On the days the real-time model stepped out because it expected losses of 15–63% a year, the index actually <strong>rose in 10 of 10 markets</strong>. The real-time regime probability is still useful as a <strong>risk</strong> forecast: it predicts next-month volatility beyond EWMA volatility in 9 of 10 markets after Holm. It has no value as a <strong>return</strong> forecast (1 of 10). Simulating from each market's own fitted HMM locates the failure: in that model world real-time timing beats buy &amp; hold by a median <strong>+0.52</strong> of Sharpe with the same 1–2 day detection lag, and real data falls below the model's 5th percentile in <strong>10 of 10</strong> markets.</p>
+</blockquote>
+<p><img alt="The hindsight ladder" loading="lazy" src="figures/fig1_hindsight_ladder.png" /></p>
+<hr />
+<h2>1. Question</h2>
+<p>Regime-switching models (Hamilton 1989) are among the most cited tools in empirical finance. In practice they usually appear as a two-state Gaussian hidden Markov model (HMM) fitted to daily index returns. The fit always finds the same picture: a calm state with positive drift and low volatility, and a turbulent state with high volatility and a strongly negative drift. Practitioner papers (Kritzman, Page &amp; Turkington 2012; Nystrup et al. 2015–2018) and countless tutorials then switch exposure on the inferred state and report large gains.</p>
+<p>Every one of those backtests has to answer two questions that are easy to get wrong:</p>
+<ol>
+<li><strong>Which probability?</strong> The forward filter gives $P(s_t \mid r_1,\dots,r_t)$ and only uses the past. The forward–backward smoother gives $P(s_t \mid r_1,\dots,r_T)$ and uses the whole sample, including every return after $t$. The Viterbi path does the same. Most library examples return the smoothed or Viterbi path by default, so a backtest built on them uses the future without saying so.</li>
+<li><strong>Which parameters?</strong> A model fitted once on 1928–2026 knows, in 1935, how volatile the turbulent state will turn out to be and how long its spells last.</li>
+</ol>
+<p><strong>Research question.</strong> If an HMM regime-timing strategy is rebuilt so that it only uses what was knowable at each close, how much of its backtest value survives? Which source of look-ahead accounts for the gap? And is what remains anything more than volatility timing?</p>
+<p><strong>Hypotheses (fixed before the out-of-sample runs, §3).</strong>
+* <strong>H1 (hindsight).</strong> More than half of the Sharpe-ratio advantage of the textbook HMM backtest over buy &amp; hold disappears once both kinds of look-ahead are removed.
+* <strong>H2 (volatility in disguise).</strong> The real-time HMM rule does no better than a placebo that has the same exposure and looks only at current volatility.
+* <strong>H3 (the model's promise).</strong> If the fitted HMM were the true data-generating process, real-time timing would beat buy &amp; hold. Real data falls short of that promise.</p>
+<p>Why it matters. Project <a href="../01-monte-carlo-calibration/">01</a> used a Markov-switching model as a <em>distribution</em> forecaster and found it badly calibrated in the tails. Projects <a href="../03-moving-average-volatility/">03</a> and <a href="../08-correlation-crash-illusion/">08</a> conditioned on volatility regimes defined <em>ex ante</em> from observable volatility. This project asks the question in between: does the <em>latent</em> regime that an HMM infers carry tradeable information beyond what those simpler observable states give you, once you stop using information you could not have had?</p>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Sample evaluated (after a 6-year warm-up)</th>
+<th>Years</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500 (^GSPC)</td>
+<td>1934-01 – 2026-11</td>
+<td>92.6</td>
+</tr>
+<tr>
+<td>Nikkei 225 (^N225)</td>
+<td>1971-03 – 2026-11</td>
+<td>54.3</td>
+</tr>
+<tr>
+<td>Nasdaq Composite (^IXIC)</td>
+<td>1977-02 – 2026-11</td>
+<td>49.8</td>
+</tr>
+<tr>
+<td>TSX (^GSPTSE)</td>
+<td>1985-07 – 2026-11</td>
+<td>41.2</td>
+</tr>
+<tr>
+<td>FTSE 100 (^FTSE)</td>
+<td>1989-12 – 2026-11</td>
+<td>37.0</td>
+</tr>
+<tr>
+<td>DAX (^GDAXI)</td>
+<td>1994-01 – 2026-11</td>
+<td>33.0</td>
+</tr>
+<tr>
+<td>Hang Seng (^HSI)</td>
+<td>1993-02 – 2026-11</td>
+<td>33.1</td>
+</tr>
+<tr>
+<td>CAC 40 (^FCHI)</td>
+<td>1996-03 – 2026-11</td>
+<td>31.0</td>
+</tr>
+<tr>
+<td>ASX 200 (^AXJO)</td>
+<td>1998-11 – 2026-11</td>
+<td>28.1</td>
+</tr>
+<tr>
+<td>Ibovespa (^BVSP, from 1995)</td>
+<td>2001-02 – 2026-11</td>
+<td>25.3</td>
+</tr>
+</tbody>
+</table></div>
+<p>The daily closes are the same file as in project <a href="../03-moving-average-volatility/">03</a> (Yahoo Finance, pulled on 2026-11-18). I reuse them on purpose: the two projects ask the same kind of question ("what does this signal know beyond volatility?") about two different signals, and on identical data their answers can be compared directly (§5.4). The cash rate is the 13-week T-bill (^IRX) for the US indices from 1960. It is zero before 1960 and for the other markets (§8). An S&amp;P 500 total-return version adds Shiller's monthly dividend yield, lagged one month so that it stays real-time (<code>data/shiller_dividends.csv</code>, from the <code>datasets/s-and-p-500</code> repository; it ends in 2023-06 and is carried forward after that).</p>
+<p>Every stress window is covered: 1987, 2000–02, 2008, 2020 and 2022.</p>
+<h2>3. Design</h2>
+<p><strong>Model.</strong> A $K$-state HMM on daily log returns (in %), with $r_t \mid s_t=k \sim \mathcal N(\mu_k,\sigma_k^2)$ and a first-order Markov chain $A$. It is fitted by Baum–Welch EM, written from scratch with numba (<code>src/hmm.py</code>). It is tested against brute-force enumeration of every state path for the likelihood and the smoothed marginals, and it recovers known parameters from simulated data (<code>tests/test_core.py</code>). States are always sorted by variance, so state 0 is "calm" and state $K-1$ is "turbulent". That fixes the label-switching problem across refits. The main specification is $K=2$, the canonical one. $K=3$ is a robustness check. BIC prefers $K=4$ in every market (<code>results/bic.csv</code>), which already says that two Gaussian regimes are a stylisation.</p>
+<p><strong>Rule.</strong> Hold the index over day $t+1$ if the probability of the turbulent state is below 0.5, otherwise hold cash. Costs are 5 bp per one-way trade.</p>
+<p><strong>The hindsight ladder.</strong> The same rule is run on five information sets, each one removing one source of look-ahead:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rung</th>
+<th>Regime probability used for the position held over day $t+1$</th>
+<th>Look-ahead it still has</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>R0</strong></td>
+<td>smoothed $P(s_{t+1}\mid r_{1..T})$, i.e. tomorrow's state applied to tomorrow's return</td>
+<td>state (including tomorrow's return) and parameters</td>
+</tr>
+<tr>
+<td><strong>R1</strong></td>
+<td>smoothed $P(s_{t}\mid r_{1..T})$ propagated one step, $\gamma_t A$</td>
+<td>state (returns after $t$) and parameters</td>
+</tr>
+<tr>
+<td><strong>R2</strong></td>
+<td>filtered $P(s_{t}\mid r_{1..t})\,A$ with full-sample parameters</td>
+<td>parameters only</td>
+</tr>
+<tr>
+<td><strong>R3</strong></td>
+<td>filtered probability, with parameters re-estimated every 21 trading days on an expanding window, starting after 5 years (1,260 days) of data</td>
+<td>none (real time)</td>
+</tr>
+<tr>
+<td><strong>R3 net</strong></td>
+<td>R3 after 5 bp per trade</td>
+<td>none</td>
+</tr>
+</tbody>
+</table></div>
+<p>R0 is what a backtest computes when it multiplies a smoothed or Viterbi state series by the same day's return. R1 is the "careful" version that lags the signal by a day but still uses the smoother. Because Sharpe-ratio differences telescope, the five rungs split the textbook edge exactly into state look-ahead (R0→R1→R2), parameter look-ahead (R2→R3) and costs.</p>
+<p>Each real-time refit starts from the previous fit and from a fixed default start. Every 12th refit also tries 4 random starts, and the highest likelihood wins. A test changes every return after day $t$ and checks that nothing the real-time engine reports up to $t$ changes, including the parameters (<code>test_realtime_has_no_look_ahead</code>).</p>
+<p><strong>Baselines.</strong>
+* Buy &amp; hold.
+* <strong>Volatility placebo.</strong> It is invested iff today's RiskMetrics EWMA volatility ($\lambda=0.94$) is at or below the quantile of its trailing 5-year distribution that matches the fraction of those same 5 years the real-time HMM rule was invested. It has the same average exposure as the HMM rule, it is out in exactly the highest-volatility states, and it never sees the HMM's view of returns. This is the test of H2.
+* The 200-day moving average, from project <a href="../03-moving-average-volatility/">03</a>, as a reference.
+* Two HMM variants: a continuous weight $1-P(\text{turbulent})$, and a "mean rule" that is invested iff the model's predicted next-day mean is above the cash rate.</p>
+<p><strong>Evaluation sample.</strong> Per market, from the first day on which every strategy is defined (6 years after the data start) to 2026-11-16. All strategies use the same dates.</p>
+<p><strong>Inference.</strong> Sharpe differences use the Ledoit–Wolf (2008) HAC test and a stationary block bootstrap (63-day mean blocks, 999 draws, all strategies resampled jointly). I apply Holm across the 10 markets for every comparison and a sign test for consistency. Predictive regressions use Newey–West errors with 42 lags.</p>
+<p><strong>Model world (H3).</strong> For each market, I simulate 40 histories of the same length from that market's full-sample fitted HMM and run the whole ladder on them. Real-time refits are annual in the simulations to keep the run time manageable. §7 shows that annual and monthly refits give the same answer on real data.</p>
+<h2>4. Results: the hindsight ladder</h2>
+<p>Sharpe ratios (annualised, excess over cash). R0–R2 are shown gross, because they are not tradeable anyway. R3 and the baselines are net of 5 bp per trade (<code>results/performance.csv</code>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Market</th>
+<th>R0</th>
+<th>R1</th>
+<th>R2</th>
+<th>R3 net</th>
+<th>Buy &amp; hold</th>
+<th>Vol placebo</th>
+<th>MA200</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500</td>
+<td>1.03</td>
+<td>0.81</td>
+<td>0.23</td>
+<td><strong>0.15</strong></td>
+<td>0.32</td>
+<td>0.24</td>
+<td>0.46</td>
+</tr>
+<tr>
+<td>Nasdaq</td>
+<td>1.82</td>
+<td>1.48</td>
+<td>0.49</td>
+<td><strong>0.54</strong></td>
+<td>0.44</td>
+<td>0.42</td>
+<td>0.61</td>
+</tr>
+<tr>
+<td>TSX</td>
+<td>1.70</td>
+<td>1.32</td>
+<td>0.63</td>
+<td><strong>0.52</strong></td>
+<td>0.48</td>
+<td>0.53</td>
+<td>0.61</td>
+</tr>
+<tr>
+<td>FTSE 100</td>
+<td>0.94</td>
+<td>0.73</td>
+<td>0.19</td>
+<td><strong>0.15</strong></td>
+<td>0.33</td>
+<td>0.14</td>
+<td>0.11</td>
+</tr>
+<tr>
+<td>DAX</td>
+<td>1.43</td>
+<td>1.25</td>
+<td>0.44</td>
+<td><strong>0.39</strong></td>
+<td>0.46</td>
+<td>0.35</td>
+<td>0.57</td>
+</tr>
+<tr>
+<td>CAC 40</td>
+<td>1.04</td>
+<td>0.85</td>
+<td>0.33</td>
+<td><strong>0.25</strong></td>
+<td>0.32</td>
+<td>0.24</td>
+<td>0.40</td>
+</tr>
+<tr>
+<td>Nikkei 225</td>
+<td>1.68</td>
+<td>1.44</td>
+<td>0.40</td>
+<td><strong>0.28</strong></td>
+<td>0.39</td>
+<td>0.31</td>
+<td>0.50</td>
+</tr>
+<tr>
+<td>Hang Seng</td>
+<td>0.59</td>
+<td>0.49</td>
+<td>0.14</td>
+<td><strong>0.10</strong></td>
+<td>0.29</td>
+<td>0.06</td>
+<td>0.39</td>
+</tr>
+<tr>
+<td>ASX 200</td>
+<td>1.34</td>
+<td>1.03</td>
+<td>0.38</td>
+<td><strong>0.31</strong></td>
+<td>0.36</td>
+<td>0.31</td>
+<td>0.31</td>
+</tr>
+<tr>
+<td>Ibovespa</td>
+<td>0.83</td>
+<td>0.66</td>
+<td>0.48</td>
+<td><strong>0.52</strong></td>
+<td>0.47</td>
+<td>0.54</td>
+<td>0.37</td>
+</tr>
+</tbody>
+</table></div>
+<p>The S&amp;P 500 numbers are 0.15 for R3 net and 1.01 for R0 net. The R0 column above is gross, 1.03.</p>
+<p><strong>Decomposition across the 10 markets</strong> (<code>results/ladder_summary.csv</code>; Sharpe differences, 95% stationary-bootstrap CIs per market in <code>results/ladder_tests.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Median</th>
+<th>Range</th>
+<th>Markets &gt; 0</th>
+<th>CI excludes 0</th>
+<th>Holm 5%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>State look-ahead, same day (R0 − R1)</td>
+<td>+0.22</td>
+<td>0.10 to 0.38</td>
+<td>10</td>
+<td>10</td>
+<td>10</td>
+</tr>
+<tr>
+<td>State look-ahead, smoother (R1 − R2)</td>
+<td><strong>+0.61</strong></td>
+<td>0.18 to 1.04</td>
+<td>10</td>
+<td>10</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Parameter look-ahead (R2 − R3)</td>
+<td>+0.01</td>
+<td>−0.15 to 0.05</td>
+<td>8</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Costs (R3 gross − net)</td>
+<td>+0.05</td>
+<td>0.01 to 0.11</td>
+<td>10</td>
+<td>10</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>What is left (R3 net − buy &amp; hold)</strong></td>
+<td><strong>−0.07</strong></td>
+<td>−0.20 to +0.10</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Real-time HMM − vol placebo (net)</td>
+<td>0.00</td>
+<td>−0.08 to +0.12</td>
+<td>5</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Real-time HMM − MA200 (net)</td>
+<td>−0.12</td>
+<td>−0.31 to +0.15</td>
+<td>3</td>
+<td>1</td>
+<td>1 (S&amp;P 500)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>H1 holds, and more strongly than stated.</strong> The whole advantage of the textbook backtest is look-ahead: the median R0 advantage over buy &amp; hold is +0.85, and in real time it is −0.07. Look-ahead about the <em>state</em> accounts for essentially all of it (+0.22 + 0.61). Look-ahead about the <em>parameters</em> is negligible. That is counter-intuitive, because the usual warning about regime models is about "in-sample estimation", and the remedy people reach for is a walk-forward re-estimation. Walk-forward re-estimation fixes the wrong thing. A backtest with perfectly real-time parameters and a smoothed state is still almost entirely hindsight.</p>
+<p><strong>H2 holds.</strong> The real-time HMM rule and the volatility placebo with the same exposure are indistinguishable (median difference 0.00, 5/10 positive, none significant). In real time, the latent regime is a volatility filter.</p>
+<p>The real-time rule also has <em>worse</em> maximum drawdowns than buy &amp; hold in 3 markets (S&amp;P 500 −72% vs −66%, FTSE 100, Hang Seng). It whipsaws: §5.2 shows why.</p>
+<h2>5. Why the edge is hindsight</h2>
+<h3>5.1 The smoother draws clean regimes, the filter flickers</h3>
+<p><img alt="Episodes" loading="lazy" src="figures/fig2_episodes_sp500.png" /></p>
+<p>In real time the filtered probability is very noisy. A single quiet day inside a turbulent spell is enough to push it below 0.5. The smoother sees the high-volatility days on <em>both</em> sides of that quiet day and keeps the state turbulent. Across the 10 markets, the real-time rule starts 1.6–12.4 turbulent spells a year with a median length of 3–4 days. Hindsight finds 1.2–3.1 spells a year with a median length of 8–20 days (<code>results/classification.csv</code>). The two agree on 87–95% of days. The money is made on the other 5–13%.</p>
+<h3>5.2 Where the hindsight edge is earned</h3>
+<p><img alt="Where hindsight earns" loading="lazy" src="figures/fig3_where_hindsight_earns.png" /></p>
+<p>I split every day on which the hindsight rule (R1) and the real-time rule (R3) disagree by <em>why</em> they disagree (<code>results/attribution.csv</code>):</p>
+<ul>
+<li><strong>Late exit.</strong> Hindsight is already out, and the real-time rule has not yet left in this spell. These are only 1.1–3.1% of days, but the index loses <strong>41 to 103 bp a day</strong> on them. This is the largest piece in every market: a median 54% of the hindsight edge, 2.2–5.1 percentage points of return a year.</li>
+<li><strong>Flicker.</strong> Inside a hindsight spell, the real-time rule steps back in for a day or two after a quiet day, and catches the next large move. Worth 0.7–2.4 points a year (in Brazil it goes the other way).</li>
+<li><strong>Late return.</strong> Hindsight is back in at the start of the rebound, and the real-time rule is still out. Worth 0.2–1.8 points a year.</li>
+<li><strong>False alarm.</strong> The real-time rule is out while hindsight says calm. Usually small.</li>
+</ul>
+<p>The mechanism is simple. A turbulent spell is <em>defined</em> by large returns. The smoother can label the first large down-day as turbulent, because it can see the large returns that come after it. The filter can only change its mind <em>after</em> it has seen one or two of them. So hindsight always leaves before the first big loss and comes back before the first big gain, and real time never can.</p>
+<h3>5.3 The filter is only a couple of days late, but they are the worst days</h3>
+<p><img alt="Detection lag" loading="lazy" src="figures/fig4_detection_lag.png" /></p>
+<p>Across the 312 turbulent spells of at least 21 days that hindsight finds in the evaluation samples (<code>results/detection.csv</code>), the real-time rule leaves the market a median <strong>2 trading days</strong> after the hindsight start (interquartile range 1–4, 90th percentile 8). Only 1 spell is never flagged. In 23% of spells the real-time rule was out on or before the day hindsight's spell began (12% strictly before). Detection is fast. It is <em>not</em> fast enough, because in the 239 spells with a trough of 10% or more, the real-time exit comes after a median <strong>39%</strong> of the eventual drawdown from the prior 3-month high has already happened. The hindsight exit comes after 19%. Part of every drawdown happens before <em>either</em> rule could move. This is why the 2-day lag costs so much: it is the fat left tail.</p>
+<h3>5.4 The "bear" regime's negative mean is a hindsight artefact</h3>
+<p><img alt="Belief vs reality" loading="lazy" src="figures/fig9_belief_vs_reality.png" /></p>
+<p>Every fitted HMM agrees on the story. In every one of the 5,230 real-time refits across the 10 markets, the turbulent state has a negative mean, typically −20% to −50% a year (<code>results/full_sample_params.csv</code>, <code>results/realtime_fits.csv</code>). So the model steps out because it expects to lose money. On the days it actually did step out, the model's own predicted mean was −15% to −63% a year. What the index earned on those days (<code>results/belief_vs_reality.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>S&amp;P 500</th>
+<th>Nasdaq</th>
+<th>TSX</th>
+<th>FTSE</th>
+<th>DAX</th>
+<th>CAC</th>
+<th>Nikkei</th>
+<th>Hang Seng</th>
+<th>ASX</th>
+<th>Ibovespa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model expected (% a year)</td>
+<td>−25</td>
+<td>−27</td>
+<td>−21</td>
+<td>−20</td>
+<td>−17</td>
+<td>−26</td>
+<td>−15</td>
+<td>−47</td>
+<td>−20</td>
+<td>−63</td>
+</tr>
+<tr>
+<td>Index earned (% a year)</td>
+<td><strong>+21</strong></td>
+<td>+7</td>
+<td>+8</td>
+<td><strong>+21</strong></td>
+<td>+15</td>
+<td>+15</td>
+<td>+10</td>
+<td><strong>+32</strong></td>
+<td>+9</td>
+<td>+7</td>
+</tr>
+</tbody>
+</table></div>
+<p>In <strong>10 of 10</strong> markets the realised mean is positive, the opposite sign to the model's belief, and in 3 the 95% Newey–West CI excludes zero. The negative mean of the turbulent state is not a forecast. It is a <em>label</em>: the smoother puts the crash days into the turbulent state because they are large, and their negative sum becomes the state's mean. Out of sample, high volatility is followed by ordinary-to-high returns, which is the old risk–return trade-off and the rebound effect. Project <a href="../03-moving-average-volatility/">03</a> found the same thing for the 200-day rule's volatility component. The HMM regime is a risk forecast that the fitting procedure dresses up as a return forecast.</p>
+<h3>5.5 What the real-time regime probability does know</h3>
+<p><img alt="Beyond volatility" loading="lazy" src="figures/fig8_beyond_volatility.png" /></p>
+<p>Regressions of next-month outcomes on the real-time turbulence probability, controlling for log EWMA volatility (<code>results/regressions.csv</code>):</p>
+<ul>
+<li><strong>Next-month log realised volatility.</strong> The coefficient on $P(\text{turbulent})$ is positive in 10/10 markets, 0.10 to 0.25, and significant after Holm in <strong>9/10</strong> (not Ibovespa). Going from $P=0$ to $P=1$ means about 10–28% more volatility next month than EWMA predicts. The HMM probability reacts faster than EWMA after a burst, so the regime model is a better <em>risk</em> model than RiskMetrics.</li>
+<li><strong>Next-month risk-adjusted return.</strong> No relation in 9/10 markets. The exception is the Hang Seng, where the coefficient is <em>positive</em> (higher turbulence probability, higher subsequent return) and significant after Holm. That is the opposite of what the regime story says.</li>
+</ul>
+<p>That is the same split project <a href="../03-moving-average-volatility/">03</a> found for the moving average: risk everywhere, returns almost nowhere. The difference is that the 200-day rule's information beyond volatility was worth +0.12 of Sharpe over the HMM here (median, 7/10 markets), while the HMM's information beyond volatility is not worth anything as a timing signal.</p>
+<h3>5.6 What the real-time model believed</h3>
+<p><img alt="Parameter paths" loading="lazy" src="figures/fig6_parameter_paths_sp500.png" /></p>
+<p>The parameters themselves are not the problem. After about 1960, the real-time S&amp;P 500 estimates sit close to the full-sample values. Only the 1930s estimates, fitted on the Depression alone, are far off (calm volatility near 20%, turbulent near 55%). The expected turbulent spell length stays at about 20–28 days throughout. This is why parameter look-ahead (R2→R3) costs nothing: what the filter lacks is not knowledge of the parameters but knowledge of the next few returns.</p>
+<h2>6. The model's own promise (H3)</h2>
+<p>If returns really came from each market's fitted two-state HMM, would real-time regime timing work? I simulate 40 histories per market from the full-sample fit, with the same length as the real data, and run the same ladder on them (<code>results/model_world.csv</code>, <code>results/model_vs_real.csv</code>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Median across the 10 markets (Sharpe minus buy &amp; hold)</th>
+<th>Model world</th>
+<th>Real data</th>
+<th>Real below the model's 5th percentile</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1 hindsight</td>
+<td>+0.82</td>
+<td>+0.60</td>
+<td>4/10</td>
+</tr>
+<tr>
+<td>R2 filtered, full-sample parameters</td>
+<td>+0.57</td>
+<td>+0.01</td>
+<td>10/10</td>
+</tr>
+<tr>
+<td><strong>R3 real time, net</strong></td>
+<td><strong>+0.52</strong></td>
+<td><strong>−0.07</strong></td>
+<td><strong>10/10</strong></td>
+</tr>
+<tr>
+<td>Volatility placebo, net</td>
+<td>+0.36</td>
+<td>−0.08</td>
+<td>9/10</td>
+</tr>
+<tr>
+<td>R3 minus volatility placebo</td>
+<td>+0.14</td>
+<td>0.00</td>
+<td>3/10</td>
+</tr>
+<tr>
+<td>Median detection lag (days)</td>
+<td>1–2</td>
+<td>1–5.5</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>H3 holds, and it locates the failure.</strong> In the model world, real-time timing is worth about half a Sharpe point. Smoothing is worth only +0.26 more than filtering, and the detection lag is the same 1–2 days as in real data. So the filter's lateness is not what breaks the strategy: a true HMM is just as late and still pays. What breaks it is that real markets do not have the turbulent state's negative mean (§5.4). In a true HMM, being out during turbulence avoids a −30% a year drift. In real data there is no such drift to avoid, so real-time timing only removes volatility and keeps paying for the late exits. The hindsight ladder looks the way it does in real data (+0.61 for the smoother instead of +0.26) because the smoother is the only part of the pipeline that can still find the crash days once the drift is gone.</p>
+<p><img alt="Model world" loading="lazy" src="figures/fig5_model_world.png" /></p>
+<h2>7. Robustness</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Median R3 − B&amp;H (net)</th>
+<th>Markets above B&amp;H</th>
+<th>Median turnover / yr</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main (K=2, monthly refit, expanding window)</td>
+<td>−0.07</td>
+<td>3/10</td>
+<td>12.4</td>
+</tr>
+<tr>
+<td>K=3 states (out if P(most turbulent) &gt; 0.5)</td>
+<td>+0.01</td>
+<td>5/10</td>
+<td>4.8</td>
+</tr>
+<tr>
+<td>Quarterly refit</td>
+<td>−0.08</td>
+<td>3/10</td>
+<td>12.3</td>
+</tr>
+<tr>
+<td>Annual refit</td>
+<td>−0.06</td>
+<td>3/10</td>
+<td>12.4</td>
+</tr>
+<tr>
+<td>Rolling 10-year window</td>
+<td>−0.09</td>
+<td>3/10</td>
+<td>13.6</td>
+</tr>
+<tr>
+<td>Cost 0 bp</td>
+<td>−0.01</td>
+<td>4/10</td>
+<td>12.4</td>
+</tr>
+<tr>
+<td>Cost 10 bp</td>
+<td>−0.11</td>
+<td>1/10</td>
+<td>12.4</td>
+</tr>
+<tr>
+<td>Cost 20 bp</td>
+<td>−0.22</td>
+<td>1/10</td>
+<td>12.4</td>
+</tr>
+<tr>
+<td>S&amp;P 500 with dividends</td>
+<td>−0.13</td>
+<td>0/1</td>
+<td>11.3</td>
+</tr>
+<tr>
+<td>Common sample 2001–2026</td>
+<td>−0.08</td>
+<td>1/10</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>More states.</strong> With $K=3$, the rule only exits in the most extreme state. That cuts turnover from 12 to 5 trades a year, and the rule ties buy &amp; hold (median +0.01, 5/10). Hindsight is still worth +0.28 of Sharpe at R1, so the ladder's conclusion does not depend on $K$.</li>
+<li><strong>Refit frequency and window.</strong> Monthly, quarterly or annual refits and a rolling 10-year window all give the same answer (median −0.06 to −0.09).</li>
+<li><strong>Dividends.</strong> On the S&amp;P 500 total-return series the real-time rule still trails buy &amp; hold (−0.13, against −0.16 on the price index), and the hindsight rungs barely move (R1 +0.57 instead of +0.49). Dividends do not drive the result.</li>
+<li><strong>Costs.</strong> Even at zero cost the median real-time rule does not beat buy &amp; hold (−0.01, 4/10). At 10 bp it trails in 9/10.</li>
+<li><strong>Common modern sample (2001–2026, all 10 markets).</strong> Hindsight R1 beats buy &amp; hold by +0.73. The real-time rule trails it by −0.08 and beats it in only 1/10.</li>
+</ul>
+<h2>8. Stress windows</h2>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig7_stress_windows.png" /></p>
+<p>Cumulative excess return from the S&amp;P 500's pre-crash high to its trough, median across markets (<code>results/stress_windows.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Buy &amp; hold</th>
+<th>HMM hindsight (R1)</th>
+<th>HMM real time (R3, net)</th>
+<th>Vol placebo</th>
+<th>MA200</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1987 crash (4 markets)</td>
+<td>−22%</td>
+<td>−1%</td>
+<td>−5%</td>
+<td>−12%</td>
+<td>−6%</td>
+</tr>
+<tr>
+<td>2000–02 dot-com (9 markets)</td>
+<td>−54%</td>
+<td>−17%</td>
+<td>−40%</td>
+<td>−42%</td>
+<td>−19%</td>
+</tr>
+<tr>
+<td>2008 GFC (10 markets)</td>
+<td>−55%</td>
+<td>−3%</td>
+<td>−21%</td>
+<td>−24%</td>
+<td>−9%</td>
+</tr>
+<tr>
+<td>2020 COVID (10 markets)</td>
+<td>−19%</td>
+<td>−1%</td>
+<td>−4%</td>
+<td>−9%</td>
+<td>−9%</td>
+</tr>
+<tr>
+<td>2022 bear (10 markets)</td>
+<td>−16%</td>
+<td>−2%</td>
+<td>−11%</td>
+<td>−13%</td>
+<td>−7%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The real-time HMM rule does what a volatility filter does, a little better than the placebo in every window. It protects best in the sudden crashes where volatility explodes at the start of the fall: −5% in 1987 and −4% in 2020, against −22% and −19% for buy &amp; hold. It protects only partly in the long bear markets of 2000–02 (−40% vs −54%), 2008 (−21% vs −55%) and 2022 (−11% vs −16%). In those, volatility comes and goes while prices keep falling, and the rule keeps stepping back in. Those slow markets are where the 200-day moving average earns its keep (−19% and −9% in 2000–02 and 2008). Hindsight looks excellent in every window, between −1% and −17%.</p>
+<h2>9. Limitations</h2>
+<ul>
+<li><strong>Price indices, not total returns</strong>, except for the S&amp;P 500 check in §7. In principle missing dividends favour timing, because cash days do not lose them. On the S&amp;P 500, adding them changes the real-time gap from −0.16 to −0.13, so the effect is small.</li>
+<li><strong>No local cash rate outside the US.</strong> The timing rules earn zero while out of the market instead of local T-bill rates. In high-rate markets (Brazil especially) that understates timing, but the real-time rule is out on only 3–40% of days, and the hindsight and placebo comparisons are unaffected because they share the same cash leg.</li>
+<li><strong>Gaussian emissions and $K=2$.</strong> BIC prefers $K=4$. Student-t emissions, time-varying transition probabilities (Diebold, Lee &amp; Weinbach 1994) or a GARCH inside each state are all richer models. None of them can remove the smoother's look-ahead, which is the main finding. They might change the "what is left" row, so it should be read as a statement about the canonical model.</li>
+<li><strong>The volatility control is EWMA.</strong> A GARCH forecast (project 13) may absorb some of the HMM probability's extra risk information in §5.5.</li>
+<li><strong>Model world.</strong> 40 histories per market, with annual refits for speed. The comparison is between distributions, so a moderate number of paths is enough to place the real data. It is not enough to estimate tails of the simulated distribution precisely.</li>
+<li><strong>Daily frequency.</strong> Weekly or monthly regime models filter out more noise and flicker less. They would also be even later to detect a crash.</li>
+<li><strong>Multiple testing.</strong> The headline comparisons are pre-registered. The attribution (§5.2) and belief-vs-reality (§5.4) analyses were added after seeing the ladder, to explain it, and are labelled as such. Their direction is the same in 10/10 markets.</li>
+</ul>
+<h2>10. Referee-style self-review: what it changed</h2>
+<p>I reviewed the first complete draft as a referee would, and changed the following before publishing.</p>
+<ol>
+<li><strong>The 2008 window started too late.</strong> It first ran from 2008-09-01, when every market was already in the turbulent state, so the real-time rule looked as if it lost nothing. It now runs from the S&amp;P 500's high on 2007-10-09, and the real-time rule loses a median 21% (buy &amp; hold: 55%). The text and figure were rewritten to match.</li>
+<li><strong>"The filter is late by construction" overstated the lag.</strong> The median lag is 2 trading days, which is fast. The finding is that those 2 days are the worst ones (§5.3), and the model world shows that a <em>true</em> HMM is just as late and still pays (§6). The headline now says that, and puts the failure where the evidence puts it: in the turbulent state's mean (§5.4).</li>
+<li><strong>The first attribution only said <em>which</em> rule was out.</strong> I replaced it with a split by mechanism (late exit, flicker, late return, false alarm). That is what showed that the late exit is the largest piece in every market. A plotting bug drew Brazil's negative flicker bar on top of its positive bar; negative pieces are now drawn to the left of zero.</li>
+<li><strong>A claim about dividends was wrong.</strong> The draft said that missing dividends must flatter timing. The S&amp;P 500 total-return run shows a small effect in the other direction (−0.13 vs −0.16). The text now reports the number instead of the presumption.</li>
+<li><strong>Numerical robustness.</strong> Some random starts for $K=3$ collapsed a state and crashed EM. Those starts are now discarded (the default and warm starts always run), and the smoother guards against underflow. The HMM is tested against brute-force path enumeration and against parameter recovery, and the real-time engine is tested for look-ahead by changing the future.</li>
+<li><strong>Units.</strong> A figure showed state means and volatilities multiplied by 100 twice. Fixed, and every number in the text was checked against the CSVs in <code>results/</code>.</li>
+<li><strong>Post-hoc analyses are labelled.</strong> The ladder, the placebo test and the model world were planned. The attribution and belief-vs-reality analyses came after the first results, to explain them. Their direction is the same in all 10 markets.</li>
+</ol>
+<p>Open points a referee could still raise: a GARCH volatility control instead of EWMA (project 13), Student-t emissions, and more simulated histories. The bootstrap CIs on the ladder also treat the full-sample fit as given and so ignore its estimation error. That matters little for the hindsight rungs, whose CIs exclude zero by a wide margin in every market, but it makes the CIs on the parameter step (R2 − R3) somewhat too narrow.</p>
+<h2>11. Conclusion</h2>
+<p>An HMM regime backtest is only as honest as the probability it trades on. With smoothed probabilities, or a Viterbi path, it is a lesson in hindsight: it exits two days before the filter could, keeps a clean regime the filter cannot hold, and comes back before the rebound. It also assigns the crash days to a "bear" state whose negative mean is then believed. Remove that, and the regime model is a volatility filter with a better-than-EWMA risk forecast and no return forecast. It does not beat buy &amp; hold, a volatility placebo, or a 200-day moving average. For practitioners the checklist is short: use the filtered probability, report the detection lag, and compare against a volatility placebo with the same exposure. Re-estimating the parameters walk-forward is necessary, but it is not the fix that matters.</p>
+<p><strong>Links to other projects.</strong> <a href="../01-monte-carlo-calibration/">01</a> (Markov-switching return distributions), <a href="../03-moving-average-volatility/">03</a> (same data, the 200-day rule's information beyond volatility), <a href="../08-correlation-crash-illusion/">08</a> (volatility-regime conditioning without hindsight), <a href="../10-market-terminal/">10</a> (which screen signals forecast volatility). Next: 13 (GARCH as the volatility control), 22 (purged cross-validation, the general version of the look-ahead problem), 23 (deflated Sharpe: R0 is a textbook case of an inflated one).</p>
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh      # tests, all experiments, all figures (about 8 minutes on 4 cores)
+</code></pre>
+<p><code>src/hmm.py</code> is the HMM (EM, filter, smoother, Viterbi, simulation). <code>src/core.py</code> has the data, the real-time engine, strategies and statistics. <code>src/build.py</code> builds every daily series for one market. <code>src/run_experiments.py</code> writes every CSV in <code>results/</code>, and <code>src/figures.py</code> draws every figure. Real-time fits are cached in <code>results/cache/</code> (git-ignored); <code>run_all.sh</code> rebuilds them from scratch.</p>
+<h2>References</h2>
+<ul>
+<li>Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. <em>Econometrica</em> 57(2).</li>
+<li>Baum, L. E., Petrie, T., Soules, G. &amp; Weiss, N. (1970). A maximization technique occurring in the statistical analysis of probabilistic functions of Markov chains. <em>Annals of Mathematical Statistics</em> 41(1).</li>
+<li>Ang, A. &amp; Bekaert, G. (2002). International asset allocation with regime shifts. <em>Review of Financial Studies</em> 15(4).</li>
+<li>Kritzman, M., Page, S. &amp; Turkington, D. (2012). Regime shifts: implications for dynamic strategies. <em>Financial Analysts Journal</em> 68(3).</li>
+<li>Nystrup, P., Hansen, B. W., Madsen, H. &amp; Lindström, E. (2015). Regime-based versus static asset allocation: letting the data speak. <em>Journal of Portfolio Management</em> 42(1).</li>
+<li>Diebold, F. X., Lee, J.-H. &amp; Weinbach, G. (1994). Regime switching with time-varying transition probabilities. In <em>Nonstationary Time Series Analysis and Cointegration</em>.</li>
+<li>Ledoit, O. &amp; Wolf, M. (2008). Robust performance hypothesis testing with the Sharpe ratio. <em>Journal of Empirical Finance</em> 15(5).</li>
+<li>Politis, D. &amp; Romano, J. (1994). The stationary bootstrap. <em>JASA</em> 89(428).</li>
+<li>Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scandinavian Journal of Statistics</em> 6(2).</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/19-hmm-regime-hindsight">19-hmm-regime-hindsight on GitHub</a>.</footer>
+</div>
+</body>
+</html>
