@@ -46,7 +46,7 @@ def heading(fig, t, sub, y=0.995):
 
 def fig1_ladder():
     perf = pd.read_csv(RES / "performance.csv").set_index(["index", "strategy", "returns"]).sharpe
-    fig, ax = plt.subplots(figsize=(11, 6.4))
+    fig, ax = plt.subplots(figsize=(12, 7.2))
     xs = np.arange(len(RUNGS))
     M = np.array([[perf[(n, s, k)] - perf[(n, "Buy & hold", "net")] for s, k, _ in RUNGS] for n in INDICES])
     pl = np.array([perf[(n, "Vol placebo", "net")] - perf[(n, "Buy & hold", "net")] for n in INDICES])
@@ -55,22 +55,26 @@ def fig1_ladder():
     # labels at the right end, nudged apart so they do not overlap
     order = np.argsort(M[:, -1])
     ys = M[order, -1].copy()
+    gap = 0.06
     for j in range(1, len(ys)):
-        ys[j] = max(ys[j], ys[j - 1] + 0.032)
+        ys[j] = max(ys[j], ys[j - 1] + gap)
+    ys -= max(0.0, (ys.mean() - M[:, -1].mean()) * 0.5)   # re-centre the column on the points
     for j, i in enumerate(order):
-        ax.text(xs[-1] + 0.1, ys[j], LABEL[INDICES[i]], fontsize=7.5, color=MUTED, va="center")
+        ax.plot([xs[-1] + 0.04, xs[-1] + 0.3], [M[i, -1], ys[j]], color=AXIS, lw=0.7, zorder=1)
+        ax.text(xs[-1] + 0.33, ys[j], LABEL[INDICES[i]], fontsize=8, color=INK2, va="center")
     med = np.median(M, axis=0)
     ax.plot(xs, med, color=BLUE, lw=3, marker="o", ms=9, mec=SURFACE, mew=1.5, zorder=3,
             label="HMM timing rule, median of the 10 markets (grey lines: each market)")
     for x, m in zip(xs, med):
-        ax.text(x, m + 0.06, f"{m:+.2f}", ha="center", va="bottom", fontsize=10, color=BLUE, fontweight="bold")
+        ax.text(x - 0.07, m + 0.07, f"{m:+.2f}", ha="right", va="bottom", fontsize=10, color=BLUE, fontweight="bold",
+                bbox=dict(fc=SURFACE, ec="none", pad=1.5), zorder=4)
     ax.scatter([xs[-1] + 0.0] * 0 , [], s=0)
     ax.axhline(0, color=INK, lw=1.2, zorder=2)
     ax.text(-0.35, 0.02, "Buy & hold", fontsize=9, color=INK, va="bottom")
-    ax.scatter(np.full(len(pl), xs[-1] + 0.78), pl, marker="s", s=36, color=ORANGE, edgecolor=SURFACE, zorder=3,
+    ax.scatter(np.full(len(pl), xs[-1] + 1.35), pl, marker="s", s=36, color=ORANGE, edgecolor=SURFACE, zorder=3,
                label="Volatility-only placebo with the same exposure, net (one square per market)")
     ax.set_xticks(xs, [r[2] for r in RUNGS])
-    ax.set_xlim(-0.45, xs[-1] + 1.0)
+    ax.set_xlim(-0.45, xs[-1] + 1.55)
     ax.set_ylabel("Sharpe ratio minus buy & hold's\n(annualised, excess over cash)")
     ax.grid(axis="x", visible=False)
     ax.legend(loc="upper right", fontsize=9)
