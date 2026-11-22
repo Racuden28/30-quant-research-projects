@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Three Factors Explain the Curve. They Don&#x27;t Hedge It.</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does yield-curve PCA actually hedge better than a desk&#x27;s model-free bucketing out of sample?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 18 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 18</p>
+<h1>Three Factors Explain the Curve. They Don&#x27;t Hedge It.</h1>
+<p><strong>Fifty years of out-of-sample tests of yield-curve PCA as a hedging tool, against the desk's model-free baseline</strong></p>
+<p><em>Project 18 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Two uses of the same PCA" loading="lazy" src="figures/fig1_two_uses_of_pca.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Every fixed-income course teaches the same fact: three principal components (level, slope and curvature)
+explain about 99% of the movement of the Treasury yield curve (Litterman &amp; Scheinkman, 1991). The usual
+next step is the "PCA hedge": choose as many hedge instruments as factors, and size them so that the book
+has zero exposure to each factor. This project asks: <strong>does that hedge, or any hedge built from yield-curve
+PCA, leave less risk out of sample than what a desk does without a model?</strong></p>
+<p>I run a walk-forward hedging experiment on the daily US Treasury constant-maturity curve. Panel A covers
+1Y–10Y from 1976 to 2026, hedged with the 2Y, 5Y and 10Y. Panel B covers 1Y–30Y from 2006 to 2026, hedged
+with the 2Y, 5Y, 10Y and 30Y. Every month the models are re-estimated on the previous two years of data and
+frozen for the next 21 days. There are 12,046 out-of-sample days in Panel A and 4,631 in Panel B. The books
+are 500 random DV01-neutral curve positions and 500 random outright positions in the maturities that are
+not hedge instruments. The baseline is <strong>key-rate bucketing</strong>: each maturity's DV01 is split between its
+two neighbouring hedge points by linear interpolation, with no model at all. Two contrasts test the
+mechanism: the same experiment on the Federal Reserve's <em>fitted</em> GSW zero curve, and on the total returns
+of five traded Treasury ETFs.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The "99%" overstates what the model captures for a hedger.</strong> On daily changes, 3 PCs explain 98.2% of
+   all variance (Panel A). But a curve trade is exposed to the <em>non-parallel</em> part of the move, and 3 PCs
+   leave 15.9% of that unexplained in sample and 15.2% out of sample (median trailing window). On the Fed's
+   fitted curve over the same dates the gap is only 4.4%. Curve smoothing hides about three quarters of the
+   risk that PCA misses.</li>
+<li><strong>The textbook PCA-neutral hedge is the worst hedge tested.</strong> With three factors and the 2Y/5Y/10Y it
+   leaves a median of <strong>20×</strong> the residual variance of bucketing per month, and it beats bucketing in only
+   11% of months (sign test, Holm p &lt; 0.0001). With four factors in Panel B the median is 45×. In 87% of
+   months it asks for a gross hedge more than 2× the book's DV01 (median 7×).</li>
+<li><strong>The cause is geometry, not unstable factors.</strong> Across 574 monthly rebalances, the PCA hedge's failure
+   is almost perfectly ranked by the size of the hedge it asks for (correlation of logs 0.96), and <em>not</em> by
+   how much the factors rotate over the next year (−0.21). Sampled at 2Y/5Y/10Y, the empirical curvature
+   factor looks too much like the slope factor, so the 3×3 system is badly conditioned. The one regime
+   where the hedge works is the zero lower bound: with the front end pinned, the loadings separate, and the
+   PCA hedge beats bucketing in 63% of those months.</li>
+<li><strong>The same PCA used as a risk model beats bucketing.</strong> A minimum-variance hedge under the PCA covariance
+   leaves 24% (Panel A, 3 factors) and 32% (Panel B) less variance than bucketing (95% CIs 0.72–0.80 and
+   0.62–0.74). It wins in 83–86% of months. About two thirds of that gain comes from the 1Y point, which lies
+   outside the hedge range. On the interior maturities alone the gain is 7–12%.</li>
+<li><strong>For hedging, the best number of factors is all of them.</strong> Keeping every component, which is the plain
+   sample covariance or OLS, beats stopping at three by 2.8% in Panel A and 10.1% in Panel B with 4 hedges
+   (Holm p &lt; 0.0001). The components the "99%" discards are small, but they are hedgeable. This holds for
+   every window length from 6 months to 5 years.</li>
+<li><strong>Scaling by volatility helps only the one-instrument duration hedge.</strong> Running the PCA on
+   EWMA-standardised changes cuts residual variance by 6% in Panel B's single-instrument hedge (Holm p =
+   0.0004) and by 8–10% in the ETF hedges. With two or more instruments it never helps, and in the SVB shock
+   (March 2023) it was the worst hedge.</li>
+<li><strong>The ranking survives in traded returns.</strong> On Treasury ETF total returns (2009–2026), the PCA-neutral
+   hedge with SHY/IEF/TLT blows up again (median month 19× OLS), and the 3-factor risk model is within 2% of
+   OLS.</li>
+</ol>
+<hr />
+<h2>1. Why this question</h2>
+<p>PCA of the yield curve is the most-taught model in fixed income, and the reason it is taught is hedging.
+Litterman &amp; Scheinkman (1991) introduced it to argue that duration hedges miss the slope and curvature
+risk. Tuckman &amp; Serrat (2011, ch. 6) teach the "PCA hedge": with as many instruments as factors, choose
+positions that cancel the book's exposure to each factor. Risk systems report "level, slope and curvature"
+exposures, and interview questions ask how many factors "explain the curve".</p>
+<p>Two things are rarely checked, and this project tests both:</p>
+<ul>
+<li><strong>"Explains 99%" is an in-sample statement about total variance.</strong> A hedged book has already removed most of
+  the level move, so what matters is how much of the <em>rest</em> the factors capture. The usual figure is also
+  often computed on yield <em>levels</em>, on monthly data or on a fitted curve. Each of these makes it look higher
+  (§4.1).</li>
+<li><strong>Neutralising factors and minimising variance are different hedges.</strong> A factor-neutral hedge treats the
+  factors as the only risks and ignores everything else. A minimum-variance hedge under the PCA covariance
+  uses the same estimate but weighs every risk by its size. Out of sample they behave very differently.</li>
+</ul>
+<p>The comparison that matters to a desk is with <strong>key-rate bucketing</strong>: map each bond's DV01 onto the
+neighbouring hedge points by maturity and hedge those. It needs no estimation, which is a strength when
+correlations shift. A model has to beat it to earn its place.</p>
+<h3>Pre-specified hypotheses</h3>
+<ul>
+<li><strong>H1.</strong> Three PCs leave a material share of non-parallel variance unexplained, and more on raw data than
+  on a fitted curve.</li>
+<li><strong>H2.</strong> The textbook PCA-neutral hedge does not beat bucketing out of sample.</li>
+<li><strong>H3.</strong> PCA used as a covariance model (minimum variance) beats bucketing.</li>
+<li><strong>H4.</strong> Truncating that covariance at 3 factors is worse than keeping all of them.</li>
+<li><strong>H5.</strong> Volatility-scaled PCA improves on plain PCA, especially in regime changes (the zero lower bound
+  and 2022).</li>
+</ul>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Set</th>
+<th>Source</th>
+<th>Sample</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Treasury constant-maturity yields (CMT), 1M–30Y</td>
+<td>FRED (DGS series), daily</td>
+<td>1962-01 → 2026-11-19</td>
+<td>Panels A and B</td>
+</tr>
+<tr>
+<td>Gürkaynak–Sack–Wright (GSW) Nelson–Siegel–Svensson parameters</td>
+<td>Federal Reserve, <code>feds200628</code></td>
+<td>1961-06 → 2026-11-13</td>
+<td>Panel G: fitted zero curve, same maturities</td>
+</tr>
+<tr>
+<td>iShares SHY, IEI, IEF, TLH, TLT adjusted closes</td>
+<td>Yahoo Finance</td>
+<td>2007-01 → 2026-11-20</td>
+<td>Panel E: traded total returns</td>
+</tr>
+</tbody>
+</table></div>
+<p>All three were downloaded on 2026-11-22 in a browser, because the cloud container cannot reach FRED, the Fed
+or Yahoo. They are committed in <code>data/</code>. The GSW zero yields are rebuilt from the six daily parameters, and
+they match the published SVENY columns to 3×10⁻⁴ percentage points.</p>
+<ul>
+<li><strong>Panel A:</strong> CMT 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, June 1976 to November 2026 (12,613 daily changes). It is the
+  longest sample in which all six maturities are quoted, and it includes the Volcker years, 1987, 1994,
+  1998, the GFC, two zero-lower-bound spells, 2022 and SVB. Out of sample from September 1978.</li>
+<li><strong>Panel B:</strong> CMT 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, 20Y, 30Y, February 2006 to November 2026 (5,198 changes). It starts
+  when the 30Y was reintroduced. Out of sample from May 2008, so it covers the GFC.</li>
+<li><strong>Panel G:</strong> GSW zero yields at 1Y, 2Y, 3Y, 5Y, 7Y, 10Y, same span as Panel A.</li>
+<li><strong>Panel E:</strong> daily total log returns. Books hold IEI and TLH and are hedged with SHY, IEF and TLT. Out of
+  sample from April 2009.</li>
+</ul>
+<p>Bills (1M–6M) are excluded from the hedging panels. Bill yields are driven by money-market supply and policy
+expectations, sit at zero for years, and are not hedged with notes in practice. CMT yields are quoted to
+1 bp, so 11% of daily changes in Panel A are exactly zero. The rounding noise (variance 1/12 bp²) is about 0.2%
+of a typical daily variance. It does inflate the higher components slightly. §7 discusses how much.</p>
+<h2>3. Method</h2>
+<h3>3.1 Books, hedges and P&amp;L</h3>
+<p>A book holds DV01 exposures <em>w</em> (dollars per basis point) at the target maturities: 1Y, 3Y and 7Y in Panel
+A, and 1Y, 3Y, 7Y and 20Y in Panel B. The hedge holds <em>h</em> at the hedge maturities. The daily hedged P&amp;L is
+−(Δy_T′w + Δy_H′h), with Δy in bp. Every model below returns a matrix <em>A</em> with <em>h</em> = −<em>Aw</em>, so one
+"residual design" e_t = Δy_T,t − Δy_H,t A serves every possible book. The hedge sets by number of instruments
+<em>K</em> are:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>K</th>
+<th>Panel A</th>
+<th>Panel B</th>
+<th>Panel E</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>10Y</td>
+<td>10Y</td>
+<td>IEF</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2Y, 10Y</td>
+<td>2Y, 10Y</td>
+<td>SHY, TLT</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2Y, 5Y, 10Y</td>
+<td>2Y, 10Y, 30Y</td>
+<td>SHY, IEF, TLT</td>
+</tr>
+<tr>
+<td>4</td>
+<td>—</td>
+<td>2Y, 5Y, 10Y, 30Y</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p>With one instrument, bucketing puts the whole DV01 on the 10Y, which is a plain duration hedge. For a
+DV01-neutral curve book that means no hedge at all, so the K = 1 rows compare the models with an unhedged
+curve book.</p>
+<p><strong>Books.</strong> There are 500 random "outright" books (i.i.d. normal exposures) and 500 random "curve" books
+(exposures summing to zero, so they are DV01-neutral). Each has unit norm, and the seed is 18. Curve books
+are the headline, because a curve book is exactly what PCA is supposed to help with. Three named trades
+(bullet, steepener, butterfly) are reported too.</p>
+<h3>3.2 Hedging models</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>What it does</th>
+<th>Estimated?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bucketing</strong> (baseline)</td>
+<td>Splits each target DV01 between the two neighbouring hedges, linear in maturity, flat beyond the ends</td>
+<td>No</td>
+</tr>
+<tr>
+<td><strong>Nelson–Siegel neutral</strong></td>
+<td>Zero exposure to NS level, slope and curvature (Diebold–Li decay λ = 0.0609/month). K = 4 adds a Svensson hump</td>
+<td>No</td>
+</tr>
+<tr>
+<td><strong>PCA neutral</strong> (textbook)</td>
+<td>Zero exposure to the first K PCs of the trailing covariance of Δy</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>PCA neutral, vol-scaled</strong></td>
+<td>Same, on EWMA-standardised changes (λ = 0.97); loadings rescaled by today's EWMA vols</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>PCA risk model, j factors</strong> (fm<em>j</em>)</td>
+<td>Minimum-variance hedge under Σ = V_j Λ_j V_j′ + Ψ, with Ψ diagonal</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>… vol-scaled</strong> (fmv<em>j</em>)</td>
+<td>Same, on the EWMA-standardised correlation, rescaled by today's vols</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>OLS</strong></td>
+<td>Minimum-variance regression of the book on the hedges; equals fm<em>j</em> with every component kept</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Hindsight bound</strong></td>
+<td>OLS fitted on the 21 holding days themselves</td>
+<td>Uses the future, reference only</td>
+</tr>
+</tbody>
+</table></div>
+<p>The window is the trailing 504 days (two years). Hedges are re-estimated every 21 trading days and held
+fixed in between. The EWMA volatility for day <em>t</em> uses data up to <em>t</em>−1, with a 0.25 bp floor so that
+zero-lower-bound days cannot explode the standardisation. A unit test checks that changing the future never
+changes the past volatility. Nothing a model uses is dated after the rebalance close.</p>
+<h3>3.3 Loss, inference and multiple testing</h3>
+<p>For a family of books the daily loss is the mean squared hedged P&amp;L. It is divided by the trailing 252-day
+mean of the unhedged loss, which is known ex ante. Without that scaling the 1979–82 years would dominate a
+50-year average. Models are compared by the ratio of mean losses. The 95% CIs come from a moving-block
+bootstrap of days (63-day blocks, 1,000 resamples), and the tests are HAC Diebold–Mariano. Because one
+blow-up month can dominate a mean, every comparison also reports the <strong>median monthly ratio</strong>, the <strong>share
+of months won</strong>, and a binomial sign test over months. The planned comparisons (PCA vs bucketing, OLS vs
+bucketing, fm3 vs OLS, fmv3 vs fm3, vol-scaled vs plain PCA, NS vs bucketing, for each panel, K and book
+family: 102 tests) are Holm-adjusted together.</p>
+<h2>4. Results</h2>
+<h3>4.1 Where the "99%" comes from (H1)</h3>
+<p><img alt="Where the 99% comes from" loading="lazy" src="figures/fig2_where_the_99_comes_from.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Data, 1Y–10Y, 1976–2026</th>
+<th>Share of all variance, 3 PCs (CMT)</th>
+<th>Non-parallel variance left by 3 PCs: CMT</th>
+<th>… GSW fitted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Yield levels</td>
+<td>99.99%</td>
+<td>0.6%</td>
+<td>0.2%</td>
+</tr>
+<tr>
+<td>Monthly changes</td>
+<td>99.60%</td>
+<td>4.9%</td>
+<td>1.9%</td>
+</tr>
+<tr>
+<td>Weekly changes</td>
+<td>99.14%</td>
+<td>9.7%</td>
+<td>2.7%</td>
+</tr>
+<tr>
+<td>Daily changes</td>
+<td>98.22%</td>
+<td><strong>15.9%</strong></td>
+<td>4.4%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The headline number depends almost entirely on what is decomposed. On levels three factors capture
+99.99%, but levels are dominated by fifty years of trend. On daily changes, which is what a daily hedge
+faces, they capture 98.2% of the total. They capture only 84% of the part of the move that a DV01-neutral
+book is exposed to. Out of sample, using the trailing window's PCs on the next 21 days, the median share
+left is 15.2% in Panel A and 11.8% in Panel B. <strong>H1 holds.</strong> The fitted GSW curve shows only about a quarter
+of this residual. Its eigenvalues fall off a cliff after PC3 (panel B of the figure), because a six-parameter
+curve cannot express anything else. Studies run on fitted curves therefore find that PCA works better than
+it does on market yields.</p>
+<h3>4.2 The horse race (H2, H3)</h3>
+<p>Ratios of out-of-sample residual variance to bucketing, curve books (outright books in brackets):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Panel A, K = 3</th>
+<th>Panel B, K = 4</th>
+<th>Median month (A / B)</th>
+<th>Months better than bucketing (A / B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nelson–Siegel neutral</td>
+<td>2.53 (2.32)</td>
+<td>2.08 (2.14)</td>
+<td>2.57 / 2.15</td>
+<td>4% / 6%</td>
+</tr>
+<tr>
+<td><strong>PCA neutral (textbook)</strong></td>
+<td><strong>2,771 (2,067)</strong></td>
+<td><strong>6,373 (6,049)</strong></td>
+<td><strong>20.4 / 44.7</strong></td>
+<td><strong>11% / 12%</strong></td>
+</tr>
+<tr>
+<td>PCA neutral, vol-scaled</td>
+<td>108,272</td>
+<td>45,983</td>
+<td>62.6 / 173</td>
+<td>0% / 0%</td>
+</tr>
+<tr>
+<td>Bucketing</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>—</td>
+</tr>
+<tr>
+<td>PCA risk model, 3 factors</td>
+<td>0.76 [0.72, 0.80] (0.72)</td>
+<td>0.68 [0.62, 0.74] (0.64)</td>
+<td>0.73 / 0.66</td>
+<td>83% / 86%</td>
+</tr>
+<tr>
+<td>PCA risk model, all factors (OLS)</td>
+<td><strong>0.74 [0.70, 0.78]</strong> (0.70)</td>
+<td><strong>0.62 [0.55, 0.68]</strong> (0.59)</td>
+<td>0.71 / 0.57</td>
+<td>87% / 94%</td>
+</tr>
+<tr>
+<td>Hindsight bound</td>
+<td>0.53</td>
+<td>0.42</td>
+<td>0.52 / 0.39</td>
+<td>99% / 100%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The pooled ratios for the factor-neutral hedges are driven by blow-up months, and their bootstrap
+intervals are correspondingly wide. With such heavy tails the DM test cannot reject equality (Holm p = 1),
+even at 2,771×. The monthly evidence is unambiguous: the textbook hedge loses to bucketing in 89% of months
+in Panel A (sign test, Holm p &lt; 10⁻⁴). <strong>H2 holds, more strongly than stated.</strong> The PCA-neutral hedge is
+not merely no better. It is the worst model tested. With fewer instruments it is less fragile. With K = 2
+in Panel A it is roughly level with bucketing (1.19, CI 0.95–1.52; median month 0.87). With K = 2 in Panel B
+it is better (0.79). With a single instrument (a PCA-weighted duration hedge) it beats bucketing by 28–36%.
+The trouble starts with the third factor.</p>
+<p>The <strong>risk-model</strong> use of the same PCA beats bucketing in every panel, at every K ≥ 2 and in both book
+families (Holm p &lt; 10⁻⁴ for OLS vs bucketing in all 14 A/B cells). <strong>H3 holds.</strong> How big the gain is
+depends on where the book sits:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Curve books, without any 1Y exposure</th>
+<th>Panel A</th>
+<th>Panel B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PCA risk model, 3 factors</td>
+<td>0.93</td>
+<td>0.93</td>
+</tr>
+<tr>
+<td>OLS</td>
+<td>0.91</td>
+<td>0.88</td>
+</tr>
+<tr>
+<td>PCA neutral</td>
+<td>378 (median month 1.39)</td>
+<td>34 (median month 1.82)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Bucketing maps the 1Y flat onto the 2Y. A desk would do the same, but the 1Y moves less than the 2Y in most
+regimes, and the estimated hedges learn that beta. On maturities between hedge points the advantage of
+estimation is 7–12%, which is real but modest (<code>results/robustness_without_1y.csv</code>).</p>
+<p><strong>Named trades</strong> (Panel A, K = 3, daily residual volatility in bp of DV01): a 7Y bullet goes from 7.61
+unhedged to 1.50 with bucketing and 1.43 with OLS. A 3s7s steepener goes from 3.34 to 2.44 and 2.33. For the
+1s3s7s butterfly, bucketing barely helps (2.79 → 2.76), OLS gets to 2.55, and the PCA-neutral hedge turns it
+into a 345 bp-per-day position. Panel B is similar: the 7s20s steepener goes 2.60 → 1.30 (bucketing) → 1.21
+(OLS).</p>
+<h3>4.3 Why the textbook hedge fails: geometry, not rotation</h3>
+<p><img alt="Geometry not rotation" loading="lazy" src="figures/fig4_geometry_not_rotation.png" /></p>
+<p>The usual explanation for poor PCA hedges is that the factors are unstable. They do move. The median angle
+between a two-year window's PC and the next year's is 5° for level, 12° for slope and 19° for curvature
+(Panel A). The loadings in figure 5 show the level factor turning into a long-end factor at the zero lower
+bound. But rotation does not explain the failures. Month by month, the log loss ratio of the PCA-neutral
+hedge has correlation −0.21 with the largest principal angle, and <strong>0.96 with the log of the gross hedge
+it requires</strong>.</p>
+<p>The mechanism is conditioning. With K instruments the neutral hedge solves L_H′h = −L_T′w, where L_H is the
+K×K matrix of factor loadings at the hedge maturities. On 1Y–10Y data the third PC is usually a front-end
+shape: its median loadings at 2Y/5Y/10Y are (+0.44, +0.09, −0.31). Over those three points that is almost a
+rescaled slope, so L_H is badly conditioned (median condition number 11, above 20 in a quarter of months,
+and above 300 in the worst ones). To neutralise it the hedge has to take large,
+offsetting positions. These are exact in the estimation window and are blown up by any small change
+afterwards. The Panel B rows with 2Y/10Y/30Y show the same thing with a different instrument set (145×).</p>
+<p><strong>A simple ex-ante rule exposes it.</strong> If a desk only trusts the PCA hedge when its gross size is at most 2× the
+book's DV01, it trusts it in 13% of months in Panel A. In those months it beats bucketing in 78% of cases
+(median ratio 0.54). In the other 87% of months it beats bucketing in 0.4% of cases (median 28×). The months
+that pass are mostly at the zero lower bound. With the 2Y yield below 0.5%, the front end barely moves, the
+PCs separate, the median gross hedge is 0.7×, and the textbook hedge beats bucketing in 63% of months.</p>
+<h3>4.4 How many factors to keep (H4)</h3>
+<p><img alt="How many factors" loading="lazy" src="figures/fig3_how_many_factors.png" /></p>
+<p>If PCA is used as a covariance model, the number of factors <em>j</em> is a separate choice from the number of
+instruments. The residual variance falls almost monotonically in <em>j</em>. Stopping at 3 costs <strong>+2.8%</strong> in Panel A
+(K = 3) and <strong>+10.1%</strong> in Panel B (K = 4) relative to keeping all factors (Holm p &lt; 10⁻⁴; months won by fm3
+32% and 19%). In Panel E it costs +2.3% (Holm p = 1 for curve books, p = 0.005 for outright books). For one
+or two instruments the cost is below 0.5%, because those hedges mostly need the first two factors. <strong>H4
+holds wherever it can matter.</strong> The discarded components are small, but they carry structure such as the
+1Y–2Y spread, the 20Y anomaly in Panel B and the belly's idiosyncratic moves, and a minimum-variance hedge
+uses it. On the GSW fitted curve truncation costs +30%. There the higher components are exact,
+deterministic features of the fitting function, so they are perfectly hedgeable.</p>
+<p>There is no regularisation benefit to offset this. With 6–8 maturities and a 126-day window the sample
+covariance is already well determined, and the ranking holds for windows of 126, 252, 504 and 1,260 days
+(<code>results/robustness.csv</code>).</p>
+<h3>4.5 Volatility scaling (H5)</h3>
+<p>Volatility-scaled PCA was meant to adapt the factor shapes to regimes such as the zero lower bound or 2022.
+It helps where the hedge is a single duration ratio. In Panel B with K = 1 it cuts residual variance by 5.8%
+(fmv3 vs fm3, Holm p = 0.0004; plain-PCA version −8.1%, p &lt; 10⁻⁴). On ETFs with K = 1–2 it cuts 8–10%
+relative to OLS. In Panel A the gain is −2.2% and not significant after Holm. With two or more instruments it
+never helps significantly, and in Panel B with K = 3–4 it is 6–7% worse (not significant). <strong>H5 is supported
+only for one-instrument hedges.</strong> As a neutral hedge it is the worst model of all: rescaling the
+loadings by today's volatilities does nothing to fix the conditioning problem of §4.3, and in these data it
+made the hedges larger still.</p>
+<h3>4.6 Stress windows</h3>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig6_stress_windows.png" /></p>
+<p>Hedge effectiveness (1 − residual / unhedged variance), curve books:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Days</th>
+<th>Bucketing</th>
+<th>Risk model, 3f</th>
+<th>Vol-scaled, 3f</th>
+<th>OLS</th>
+<th>Hindsight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Panel A (K = 3)</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Volcker 1979–82</td>
+<td>763</td>
+<td>0.38</td>
+<td>0.40</td>
+<td>0.37</td>
+<td>0.41</td>
+<td>0.55</td>
+</tr>
+<tr>
+<td>1987 crash</td>
+<td>40</td>
+<td>0.53</td>
+<td>0.55</td>
+<td>0.44</td>
+<td>0.47</td>
+<td>0.80</td>
+</tr>
+<tr>
+<td>1994 bond massacre</td>
+<td>229</td>
+<td>0.46</td>
+<td>0.51</td>
+<td>0.53</td>
+<td>0.52</td>
+<td>0.64</td>
+</tr>
+<tr>
+<td>1998 LTCM</td>
+<td>82</td>
+<td>0.46</td>
+<td>0.44</td>
+<td>0.44</td>
+<td>0.45</td>
+<td>0.60</td>
+</tr>
+<tr>
+<td>GFC 2008–09</td>
+<td>144</td>
+<td>0.41</td>
+<td>0.53</td>
+<td>0.50</td>
+<td>0.53</td>
+<td>0.64</td>
+</tr>
+<tr>
+<td>Taper tantrum 2013</td>
+<td>106</td>
+<td>0.78</td>
+<td>0.91</td>
+<td>0.90</td>
+<td>0.92</td>
+<td>0.93</td>
+</tr>
+<tr>
+<td>COVID 2020</td>
+<td>50</td>
+<td>0.54</td>
+<td>0.52</td>
+<td>0.35</td>
+<td>0.54</td>
+<td>0.76</td>
+</tr>
+<tr>
+<td>2022 hiking cycle</td>
+<td>199</td>
+<td>0.40</td>
+<td>0.56</td>
+<td>0.44</td>
+<td>0.57</td>
+<td>0.67</td>
+</tr>
+<tr>
+<td><strong>SVB, March 2023</strong></td>
+<td>18</td>
+<td><strong>0.74</strong></td>
+<td>0.57</td>
+<td><strong>−0.37</strong></td>
+<td>0.50</td>
+<td>0.82</td>
+</tr>
+<tr>
+<td>2023 term-premium sell-off</td>
+<td>64</td>
+<td>0.53</td>
+<td>0.75</td>
+<td>0.81</td>
+<td>0.79</td>
+<td>0.87</td>
+</tr>
+<tr>
+<td>Zero lower bound (both spells)</td>
+<td>2,256</td>
+<td>0.63</td>
+<td>0.82</td>
+<td>0.81</td>
+<td>0.82</td>
+<td>0.88</td>
+</tr>
+<tr>
+<td><strong>Panel B (K = 4)</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>GFC 2008–09</td>
+<td>144</td>
+<td>0.51</td>
+<td>0.50</td>
+<td>0.55</td>
+<td>0.58</td>
+<td>0.74</td>
+</tr>
+<tr>
+<td>COVID 2020</td>
+<td>50</td>
+<td>0.70</td>
+<td>0.71</td>
+<td>0.65</td>
+<td>0.71</td>
+<td>0.83</td>
+</tr>
+<tr>
+<td>2022 hiking cycle</td>
+<td>199</td>
+<td>0.58</td>
+<td>0.66</td>
+<td>0.55</td>
+<td>0.68</td>
+<td>0.77</td>
+</tr>
+<tr>
+<td>SVB, March 2023</td>
+<td>18</td>
+<td><strong>0.86</strong></td>
+<td>0.85</td>
+<td>0.39</td>
+<td>0.74</td>
+<td>0.91</td>
+</tr>
+</tbody>
+</table></div>
+<p>The estimated hedges win clearly in the GFC, 2022 and the 2023 term-premium sell-off. 2022 is the stress
+that matters most for rates: there OLS removed 57% of curve risk against 40% for bucketing. The exception is
+the front-end shock. In March 2023 the 2Y yield fell 102 bp in three trading days (8 to 13 March, CMT data)
+while the long end moved far less. Every estimated hedge carried a 1Y-vs-2Y and 2Y-vs-5Y beta learned during
+a hiking cycle, and every one did worse than bucketing. The vol-scaled version, whose volatilities were still
+those of calm February, did worse than no hedge at all in Panel A. The 1987 crash also favours the
+model-free baseline over OLS, and in COVID the two tie. In short, an estimated hedge buys about a quarter less risk in normal months
+and in slow-moving stress, at the price of being wrong-footed when the front end breaks away from the rest
+of the curve.</p>
+<h3>4.7 Traded instruments</h3>
+<p><img alt="ETFs" loading="lazy" src="figures/fig7_treasury_etfs.png" /></p>
+<p>Yield changes at constant maturity are not P&amp;L. They ignore carry, roll-down, convexity and the
+cheapest-security basis. Panel E repeats the test on ETF total returns, with OLS as the baseline, since
+bucketing needs durations the ETFs do not publish historically. With SHY/IEF/TLT the PCA-neutral hedge
+blows up again: pooled 154,495× OLS, median month 19×, and it beats OLS in 0.5% of months. The 3-factor risk
+model is within 2.3% of OLS. Vol-scaled versions help with one or two hedges (−8 to −10%; Holm-adjusted
+p = 0.0002 to 0.002 for the plain-PCA version and 0.22 to 0.85 for the risk-model version). The conclusions of
+§4.2–4.5 carry over to traded returns.</p>
+<h3>4.8 Robustness</h3>
+<ul>
+<li><strong>Window length</strong> (126 / 252 / 504 / 1,260 days): OLS vs bucketing is 0.73–0.76 in Panel A (K = 3) and
+  0.62–0.65 in Panel B (K = 4). fm3 is never better than OLS. The PCA-neutral hedge blows up at every window
+  (pooled 974× to 13,589× in Panel A).</li>
+<li><strong>EWMA decay</strong> (0.94 / 0.97 / 0.99): it changes the vol-scaled models by ±3% and the ranking not at all.</li>
+<li><strong>Transaction costs</strong> (0.25 bp per unit of DV01 traded at each rebalance): negligible for every model
+  except PCA-neutral, whose turnover is 21× the book's DV01 per month (costs 0.39 bp/day in Panel A).</li>
+<li><strong>Outright books</strong> give the same ranking with slightly larger gains (OLS 0.70 and 0.59).</li>
+<li><strong>Books without the 1Y</strong> (§4.2): the gains shrink to 7–12%, and the PCA-neutral hedge still fails.</li>
+</ul>
+<h2>5. What this changes in practice</h2>
+<ol>
+<li><strong>Do not quote "three factors explain 99%" for hedging.</strong> Quote the share of <em>non-parallel daily</em>
+   variance on market yields: about 85% for the 1Y–10Y curve. Never quote it from a fitted curve.</li>
+<li><strong>Do not neutralise PCA factors with as many instruments as factors.</strong> Beyond two factors the hedge is
+   ill-conditioned for standard instrument sets. If you must, check the gross hedge size first: anything
+   above 2× the book's DV01 is a warning, not a hedge.</li>
+<li><strong>Use PCA as a risk model and hedge to minimum variance.</strong> Keep every component: with fewer than about
+   ten maturities and two years of data, truncation adds bias and no stability.</li>
+<li><strong>Keep bucketing as a fallback for front-end shocks.</strong> The model-free hedge cannot learn a beta that later
+   breaks. A desk that blends the two, or shrinks the estimated hedge towards bucketing when front-end
+   volatility jumps, should do better in SVB-type events. That is untested here and left for project 25
+   (Kalman hedge ratios).</li>
+</ol>
+<h2>6. Connections to other projects</h2>
+<ul>
+<li><strong>08 · Correlation:</strong> owns the PCA and eigenvalue terms. Its finding that a slow, shrunk covariance beats
+  a fast one matches §4.4: here the full sample covariance already beats a truncated one.</li>
+<li><strong>09 · Beta horse race:</strong> the same lesson on a different asset. A regression hedge estimated on the right
+  horizon beats the textbook one, and the hedge ratio, not the factor story, is what matters.</li>
+<li><strong>10 · Market terminal:</strong> used the Kaiser rule to count widget factors. Here the count that matters for
+  hedging is "all", not the Kaiser count.</li>
+<li><strong>13 · GARCH:</strong> the EWMA scaling here is the simplest volatility filter. A GARCH filter is a natural test
+  for §4.5.</li>
+<li><strong>19 · Regime detection:</strong> the zero lower bound is the regime in which the textbook hedge works. An HMM
+  could switch between neutral and minimum-variance hedges.</li>
+<li><strong>24 · PCA statistical arbitrage:</strong> trades the residuals that PCA throws away. §4.4 shows that in rates
+  those residuals have structure.</li>
+<li><strong>25 · Kalman hedge ratio:</strong> the natural fix for the SVB failure, letting the hedge ratio update daily.</li>
+</ul>
+<h2>7. Limitations and what would change the conclusion</h2>
+<ul>
+<li><strong>Constant-maturity yields are not bonds.</strong> P&amp;L is DV01 × Δy at fixed maturity, which ignores carry,
+  roll-down, convexity and on-the-run/off-the-run spreads. CMT yields are themselves interpolated by the
+  Treasury from on-the-run securities, so they are smoother than individual bonds. Panel E (ETFs) is the
+  traded check, and it agrees. A bond-level test with CUSIP data would be stronger.</li>
+<li><strong>Rounding.</strong> CMT yields are rounded to 1 bp. Rounding noise adds about 1/12 bp² per maturity per day,
+  which is 8% of the variance that 3 PCs leave (1.06 bp² per maturity per day in Panel A). So about 1.3 of
+  the 15.9 points in §4.1 are rounding. Rounding cannot be hedged by any model, so it does not change the
+  ranking.</li>
+<li><strong>Instrument choice.</strong> The textbook failure depends on where the hedges sit relative to the factor shapes.
+  I tested 2Y/5Y/10Y and 2Y/10Y/30Y, the two standard sets. Some other set could condition the 3-factor
+  system better, and the gross-hedge rule in §4.3 is the practical test for any set.</li>
+<li><strong>The GSW contrast mixes two changes.</strong> GSW yields are fitted <em>zero</em> yields and CMT yields are <em>par</em>
+  yields. Part of the gap in §4.1 could come from zero vs par rather than from smoothing. The eigenvalue
+  cliff after PC3 (figure 2B) is the direct evidence that smoothing is the main cause.</li>
+<li><strong>Linear bucketing in maturity</strong> is one desk convention. Bucketing by duration or by cash-flow mapping
+  would differ in detail.</li>
+<li><strong>The 1Y point drives a large part of the risk-model advantage</strong> (§4.2). Desks that hedge the 1Y with bills
+  or SOFR futures would see a smaller gain from estimation.</li>
+<li><strong>Monthly rebalancing.</strong> Daily rebalancing would favour the estimated hedges in fast regimes, and the
+  model-free hedge does not care. It was not tested.</li>
+<li><strong>Heavy tails make pooled means fragile</strong> for the neutral hedges. Conclusions about them rest on medians
+  and sign tests. The CIs on the risk-model ratios are tight and do not have this problem.</li>
+<li><strong>Single country.</strong> Bund, gilt or JGB curves (the JGB spent a decade at zero) are the natural out-of-sample
+  test of §4.3's zero-lower-bound result.</li>
+</ul>
+<h2>8. Referee-style self-review: what it changed</h2>
+<p>I reviewed the first complete draft as a hostile referee would. Changes made:</p>
+<ol>
+<li><strong>Bills removed from the hedging experiment.</strong> The first draft used 3M–10Y and hedged bills with notes.
+   The PCA-neutral hedge then extrapolated far outside the hedge range, and every model looked bad for
+   reasons that have nothing to do with PCA. Bills are now excluded and Panel A starts in 1976 instead of
+   1982, which adds the Volcker years.</li>
+<li><strong>The "fair" PCA hedge added.</strong> A draft that only showed the textbook hedge blowing up would have been a
+   straw man. The minimum-variance risk-model version (fm<em>j</em>) uses the same PCA and gives it its best chance.
+   That changed the headline from "PCA fails" to "one use of PCA fails, another works".</li>
+<li><strong>Medians and sign tests added.</strong> The pooled 2,771× is driven by a handful of months, and DM tests cannot
+   reject at that level of kurtosis. The monthly median, months won and binomial sign tests now carry the
+   claims about the neutral hedge.</li>
+<li><strong>The 1Y caveat quantified.</strong> I suspected the risk-model gain came partly from the extrapolated 1Y. It
+   does (about two thirds), and that result is now in §4.2 and the abstract rather than buried.</li>
+<li><strong>The mechanism tested, not assumed.</strong> The draft said the hedge failed because "factors are unstable".
+   The rotation-vs-gross test in §4.3 showed that this was wrong, and the text now says conditioning.</li>
+<li><strong>A traded-instrument check added</strong> (Panel E), because constant-maturity P&amp;L is an approximation.</li>
+<li><strong>Over-claiming removed.</strong> "Volatility scaling helps in regime changes" became "helps one-instrument
+   hedges", and "estimated hedges always win" became the SVB exception.</li>
+</ol>
+<h2>9. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh      # audit, 10 unit tests, backtests incl. robustness grid, analysis, figures (~2 min on 4 cores)
+</code></pre>
+<p>Seeds are fixed. Every number above is in <code>results/</code>. Unit tests (<code>tests/test_models.py</code>) check that
+bucketing preserves DV01, that factor-neutral hedges are exactly neutral, that the minimum-variance hedge
+equals OLS on the sample covariance, that the factor covariance keeps the diagonal and is full rank, the PCA
+sign convention, that the EWMA volatility has no look-ahead, the Nelson–Siegel limits and NSS formula, the
+principal angles, and the multiple-testing helpers.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/data.py</code></td>
+<td>CMT panels, GSW rebuild from NSS parameters, ETF returns, data audit</td>
+</tr>
+<tr>
+<td><code>src/models.py</code></td>
+<td>bucketing, NS, PCA-neutral, PCA risk models, OLS, EWMA, angles</td>
+</tr>
+<tr>
+<td><code>src/backtest.py</code></td>
+<td>walk-forward engine; residual designs and hedge matrices per rebalance</td>
+</tr>
+<tr>
+<td><code>src/analysis.py</code></td>
+<td>variance decomposition, horse race, planned tests, factor count, stress, rotation, robustness</td>
+</tr>
+<tr>
+<td><code>src/stats.py</code></td>
+<td>HAC Diebold–Mariano, moving-block bootstrap, Holm</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>all figures</td>
+</tr>
+</tbody>
+</table></div>
+<h2>References</h2>
+<p>Diebold, F. X. &amp; Li, C. (2006). Forecasting the term structure of government bond yields. <em>Journal of Econometrics</em> 130, 337–364.
+Diebold, F. X. &amp; Mariano, R. S. (1995). Comparing predictive accuracy. <em>Journal of Business &amp; Economic Statistics</em> 13, 253–263.
+Gürkaynak, R. S., Sack, B. &amp; Wright, J. H. (2007). The U.S. Treasury yield curve: 1961 to the present. <em>Journal of Monetary Economics</em> 54, 2291–2304.
+Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scandinavian Journal of Statistics</em> 6, 65–70.
+Künsch, H. R. (1989). The jackknife and the bootstrap for general stationary observations. <em>Annals of Statistics</em> 17, 1217–1241.
+Litterman, R. &amp; Scheinkman, J. (1991). Common factors affecting bond returns. <em>Journal of Fixed Income</em> 1(1), 54–61.
+Nelson, C. R. &amp; Siegel, A. F. (1987). Parsimonious modeling of yield curves. <em>Journal of Business</em> 60, 473–489.
+Svensson, L. E. O. (1994). Estimating and interpreting forward interest rates: Sweden 1992–1994. NBER Working Paper 4871.
+Tuckman, B. &amp; Serrat, A. (2011). <em>Fixed Income Securities</em>, 3rd ed. Wiley.</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/18-yield-curve-pca">18-yield-curve-pca on GitHub</a>.</footer>
+</div>
+</body>
+</html>
