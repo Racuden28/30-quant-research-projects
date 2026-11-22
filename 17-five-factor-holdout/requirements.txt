@@ -1,0 +1,6 @@
+numpy>=2.0
+pandas>=2.2
+scipy>=1.13
+matplotlib>=3.9
+pytest>=8.0
+linearmodels>=6.0   # optional: only for the 2017-vintage comparison (section 6.7)

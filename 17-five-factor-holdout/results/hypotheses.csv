@@ -1,0 +1,6 @@
+H,claim,estimate,unit,p,supported if,p Holm,verdict
+H1a,"HML alpha on Mkt,SMB,RMW,CMA = 0 in holdout",0.0393134,%/month,0.87702,not rejected,1,not rejected
+H1b,HML spanning alpha unchanged IS -> HO,0.0472075,%/month,0.864031,not rejected,1,not rejected
+H2,FF5-HML holdout Sharpe not below FF5,-0.000726273,Sharpe (FF5-HML minus FF5),0.4102,not rejected,1,not rejected
+H3,FF5 OOS A|a| below FF3 on 75 portfolios (holdout),-0.0137248,%/month (FF5 minus FF3),0.2262,rejected,1,not supported
+H4,Real-time selector Sharpe not below always-FF6,0.00318541,Sharpe,0.657,not rejected,1,not rejected

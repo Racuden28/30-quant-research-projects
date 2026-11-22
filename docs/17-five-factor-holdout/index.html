@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Five-Factor Model&#x27;s Holdout Exam</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does the five-factor model&#x27;s 2013 verdict survive 13 years of data that did not exist when it was chosen?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 17 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 17</p>
+<h1>The Five-Factor Model&#x27;s Holdout Exam</h1>
+<p><strong>Thirteen years of returns that did not exist when Fama and French chose their model: does the verdict survive?</strong></p>
+<p><em>Project 17 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="The holdout exam" loading="lazy" src="figures/fig1_holdout_report_card.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Fama and French (2015) chose their five-factor model, and declared the value factor HML redundant,
+using US stock returns from July 1963 to December 2013. Every later comparison of factor models
+re-uses those same fifty years. This project treats the 153 months since then (January 2014 to
+September 2026) as what they are: <strong>a true holdout that nobody could have fitted to</strong>, and it
+pre-registers the tests (<a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/17-five-factor-holdout/PREREGISTRATION.md">PREREGISTRATION.md</a>) before looking at it. Seven models
+(CAPM, FF3, Carhart, FF5, FF5 without HML, FF6 = FF5 + momentum, FF6 without HML) are judged three
+ways: what each factor adds beyond the others (spanning regressions), the Sharpe ratio of each model's
+best factor mix with weights frozen in 2013, and out-of-sample pricing errors on 75 sorted portfolios
+with betas estimated only from past data. A real-time walk-forward (1984–2026) asks whether choosing
+the model as you go would have helped. Data are the official Ken French files, CRSP vintage 202609.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>HML stayed redundant, but the exam could not have failed it.</strong> HML's alpha on Mkt, SMB, RMW and
+   CMA was −0.01% a month in-sample and +0.04% (t = 0.16) in the holdout. The holdout standard error
+   is so wide that the smallest alpha it could detect with 80% power is <strong>0.71% a month, almost twice
+   HML's entire historical premium</strong>. "Not rejected" here means "not testable yet".</li>
+<li><strong>What changed is that the other factors became redundant too.</strong> SMB's spanning alpha fell from
+   +0.36% to −0.31% a month (change p = 0.005) and RMW's from +0.44% to +0.06% (p = 0.018); CMA fell
+   from +0.26% to +0.03%. Only the market kept its premium (0.99% a month); jointly, the five
+   non-market premia shifted (Wald χ²(5) = 12.0, p = 0.035).</li>
+<li><strong>The 2013 factor mix kept about 30% of its Sharpe ratio.</strong> With weights frozen at the end of 2013,
+   the FF5 tangency portfolio earned a holdout Sharpe ratio of 0.35 (95% CI −0.17 to 0.90), against a
+   bias-adjusted in-sample value of 1.12 (one-sided p = 0.007, counting the sampling error of both
+   estimates). FF6 went from 1.28 to 0.47. An
+   equal-weight mix of the same factors lost just as much (FF5: 1.01 to 0.33), so this is premia decay,
+   not optimizer error. The market alone earned 0.79. Dropping HML changed the holdout Sharpe by
+   0.001 (CI −0.006 to 0.008).</li>
+<li><strong>FF5 did not price better than FF3 out of sample, and the holdout mostly cannot tell.</strong> On the
+   75 size–B/M, size–profitability and size–investment portfolios, with betas from the previous 60
+   months, FF5's average absolute alpha was 0.014% a month lower than FF3's (CI −0.057 to +0.014,
+   p = 0.23). Net of sampling noise, FF5's in-sample edge on the size–profitability sorts (0.05% vs
+   0.14%) is gone (0.15% vs 0.16%), but most holdout pricing errors are no bigger than their own noise,
+   and no GRS test rejects any model in the holdout, the CAPM included.</li>
+<li><strong>HML's redundancy is a post-1999 fact, and choosing the model in real time adds nothing.</strong> In
+   real time, HML's spanning alpha had a t-statistic between 1.7 and 2.3 every year from 1985 to 1998;
+   it fell to 0.5 by 2000, has hovered around zero since 2010 and has been negative since 2018. A selector that picks the model with the
+   best bias-adjusted in-sample Sharpe ratio every December always picks a six- or five-factor model
+   with momentum and ends up equal to always holding FF6 (Sharpe 0.951 vs 0.947, p = 0.66).</li>
+</ol>
+<p><strong>Pre-registered verdicts</strong> (Holm-adjusted across five tests): H1 (HML stays redundant) not rejected;
+H2 (dropping HML is free) not rejected; H3 (FF5 prices better than FF3) <strong>not supported</strong>; H4 (real-time
+selection adds nothing) not rejected. All verdicts are unchanged in nine robustness variants.</p>
+<p><strong>Practical reading.</strong> The five-factor model was not falsified after 2013; it was barely tested,
+because a decade of returns cannot distinguish alphas smaller than about 0.5% a month. What the holdout
+does show clearly is the size of the in-sample optimism: a multifactor portfolio that looked like a
+Sharpe ratio above 1 in 2013 delivered about a third of that. Plan with the haircut, not with the
+backtest.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>Factor-model comparisons have a data problem nobody can fix: there is only one history of US stock
+returns, and the same 1963–2013 sample that suggested the five-factor model is also the sample used
+to test it (Fama and French 2015, 2018; Barillas and Shanken 2017, 2018; Hou, Xue and Zhang 2015).
+Every new factor is found by looking at those years, so every in-sample comparison is contaminated by
+the search. International samples help, but they are not independent of the US experience.</p>
+<p>Time solves this slowly. The five-factor working paper was circulated in late 2013; since then the
+CRSP files have grown by 153 months that played no part in choosing the model. That is short, but it
+is the only clean test there is, and it is now long enough to ask three precise questions:</p>
+<ul>
+<li><strong>Redundancy.</strong> Fama and French's most quoted conclusion was that HML adds nothing once RMW and
+  CMA are in the model. Asness (2014) argued the opposite once momentum is included. Does the
+  holdout side with either?</li>
+<li><strong>Model ranking.</strong> In-sample, more factors always look better. Does the five-factor model's
+  advantage over FF3 and the CAPM survive when the weights and betas come from the past?</li>
+<li><strong>Real-time choice.</strong> An investor in 1990 or 2005 had to pick a model from the data available
+  then. Would picking it by the best in-sample criterion have paid?</li>
+</ul>
+<p>What is new here is the combination: a pre-registered holdout that did not exist when the model was
+chosen, power calculations so that "not rejected" is never sold as "confirmed", a real-time history
+of the redundancy claim, and a placebo comparison of the holdout against every earlier window of the
+same length.</p>
+<h2>2. Data</h2>
+<p>Official Ken French Data Library files, downloaded on 2026-11-22, <strong>CRSP vintage 202609</strong> (the header
+of every file says so, and <code>tests/</code> checks it). Monthly, July 1963 to September 2026, 759 months.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fama/French 5 Factors (2×3)</td>
+<td>Mkt−RF, SMB, HML, RMW, CMA, RF</td>
+</tr>
+<tr>
+<td>Momentum Factor (UMD)</td>
+<td>the sixth factor</td>
+</tr>
+<tr>
+<td>25 Portfolios formed on Size and Book-to-Market (5×5)</td>
+<td>test assets</td>
+</tr>
+<tr>
+<td>25 Portfolios formed on Size and Operating Profitability (5×5)</td>
+<td>test assets</td>
+</tr>
+<tr>
+<td>25 Portfolios formed on Size and Investment (5×5)</td>
+<td>test assets</td>
+</tr>
+<tr>
+<td>10 Portfolios formed on Prior (12−2) Return</td>
+<td>extra test assets (momentum)</td>
+</tr>
+<tr>
+<td>49 Industry Portfolios</td>
+<td>extra test assets (not sorted on any characteristic)</td>
+</tr>
+<tr>
+<td>Fama/French 3 Factors</td>
+<td>data-vintage comparison only</td>
+</tr>
+</tbody>
+</table></div>
+<p>Portfolio returns are value-weighted, in excess of the one-month T-bill. The cloud environment that
+built this project cannot reach the Ken French server, so the files were fetched in a browser and
+their first table extracted verbatim (<code>src/fetch_data.js</code>, which also logs each zip's SHA-256; the
+hashes are listed in that file). The 49-industry and three-factor zips are byte-identical to the
+ones project #09 used.</p>
+<p><strong>Samples.</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Months</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In-sample (IS), 1963-07 to 2013-12</td>
+<td>606</td>
+<td>the sample of Fama and French (2015)</td>
+</tr>
+<tr>
+<td>Holdout (HO), 2014-01 to 2026-09</td>
+<td>153</td>
+<td>data that did not exist when the model was chosen</td>
+</tr>
+<tr>
+<td>Real time (RT), 1984-01 to 2026-09</td>
+<td>513</td>
+<td>walk-forward, decisions every December from 1983-12</td>
+</tr>
+</tbody>
+</table></div>
+<h2>3. Models</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Factors</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CAPM</td>
+<td>Mkt</td>
+</tr>
+<tr>
+<td>FF3</td>
+<td>Mkt, SMB, HML</td>
+</tr>
+<tr>
+<td>C4 (Carhart)</td>
+<td>Mkt, SMB, HML, UMD</td>
+</tr>
+<tr>
+<td>FF5</td>
+<td>Mkt, SMB, HML, RMW, CMA</td>
+</tr>
+<tr>
+<td>FF5−HML</td>
+<td>Mkt, SMB, RMW, CMA</td>
+</tr>
+<tr>
+<td>FF6</td>
+<td>Mkt, SMB, HML, RMW, CMA, UMD</td>
+</tr>
+<tr>
+<td>FF6−HML</td>
+<td>Mkt, SMB, RMW, CMA, UMD</td>
+</tr>
+</tbody>
+</table></div>
+<h2>4. Method</h2>
+<p><strong>Spanning regressions.</strong> Each factor is regressed on the others of its model; the intercept is what
+the factor adds to an investor who already holds the others (Barillas and Shanken 2017). Newey–West
+standard errors with 6 lags. The change between IS and HO is tested in one pooled regression with a
+holdout dummy on the intercept and on every slope, so a change in betas cannot masquerade as a change
+in alpha. The minimum detectable effect (MDE) is the alpha a two-sided 5% test would find with 80%
+probability: 2.8 standard errors.</p>
+<p><strong>Tangency portfolios with frozen weights.</strong> For each model the tangency weights Σ⁻¹μ are estimated on
+the in-sample period, scaled to 10% annual ex-ante volatility, and held unchanged through the holdout.
+The in-sample Sharpe ratio is reported raw and bias-adjusted (the squared Sharpe ratio estimator
+((T−N−2)/T)·Sh² − N/T of Kan and Zhou 2007, which removes the in-sample optimism of an N-asset
+tangency portfolio). Holdout confidence intervals and differences use the stationary bootstrap
+(Politis and Romano 1994; mean block 6 months, 10,000 draws), resampling months jointly so that the
+correlation between models is kept. Equal-weight factor mixes (no estimated weights at all) are the
+control for weight-estimation error.</p>
+<p><strong>Out-of-sample pricing errors.</strong> For each test portfolio and month <em>t</em>, betas are estimated on months
+<em>t</em>−60 to <em>t</em>−1 only, and the out-of-sample alpha is α̂ₜ = rₜ − β̂ₜ₋₁′fₜ. The pricing error of a model
+is A|α|, the average across portfolios of the absolute time-series mean of α̂ (Fama and French 2015
+use the same statistic in-sample). This avoids the mechanical advantage of bigger models in in-sample
+regressions, where more regressors always shrink residuals. Differences between models are
+bootstrapped over months. Standard in-sample GRS tests (Gibbons, Ross and Shanken 1989) are also
+reported for each period.</p>
+<p><strong>Real time.</strong> Every December from 1983, using all data to that date, each model's bias-adjusted
+squared Sharpe ratio is computed; the selector holds the tangency portfolio of the winning model for
+the next twelve months. Each fixed model's real-time tangency portfolio is also held, re-estimated
+every December. The real-time t-statistic of each factor's spanning alpha is recorded every year.</p>
+<p><strong>Placebo holdouts.</strong> Every real-time window of 153 months (the holdout's length), starting each
+January from 1984, gives one draw of "how did multifactor models do against the market alone over a
+period this long?" The holdout is then placed in that distribution.</p>
+<p><strong>Multiple testing.</strong> The five pre-registered tests (H1a, H1b, H2, H3, H4) are Holm-adjusted together.
+Everything else is descriptive and labelled as such.</p>
+<h2>5. Pre-registered hypotheses</h2>
+<p>Written before any holdout statistic was computed (see <a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/17-five-factor-holdout/PREREGISTRATION.md">PREREGISTRATION.md</a>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Claim</th>
+<th>Estimate</th>
+<th>p</th>
+<th>p (Holm)</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1a</td>
+<td>HML's alpha on Mkt, SMB, RMW, CMA is zero in the holdout</td>
+<td>+0.039%/month</td>
+<td>0.88</td>
+<td>1.00</td>
+<td>not rejected</td>
+</tr>
+<tr>
+<td>H1b</td>
+<td>...and unchanged from in-sample</td>
+<td>+0.047%/month</td>
+<td>0.86</td>
+<td>1.00</td>
+<td>not rejected</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>FF5−HML's holdout Sharpe is not below FF5's</td>
+<td>−0.001</td>
+<td>0.41</td>
+<td>1.00</td>
+<td>not rejected</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>FF5's out-of-sample A|α| is below FF3's (75 portfolios)</td>
+<td>−0.014%/month</td>
+<td>0.23</td>
+<td>1.00</td>
+<td><strong>not supported</strong></td>
+</tr>
+<tr>
+<td>H4</td>
+<td>The real-time selector's Sharpe is not below always-FF6</td>
+<td>+0.003</td>
+<td>0.66</td>
+<td>1.00</td>
+<td>not rejected</td>
+</tr>
+</tbody>
+</table></div>
+<p>H1, H2 and H4 are "nothing changed" claims and survive if their null is not rejected; H3 is a claim of
+superiority and survives only if it is rejected. Three of the four "nothing changed" claims are
+supported in the weakest possible sense: section 6.2 shows how little the holdout could have rejected.</p>
+<h2>6. Results</h2>
+<h3>6.1 Only the market kept its premium</h3>
+<p><img alt="Factor premia" loading="lazy" src="figures/fig3_factor_premia.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>% per month</th>
+<th>Mkt</th>
+<th>SMB</th>
+<th>HML</th>
+<th>RMW</th>
+<th>CMA</th>
+<th>UMD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In-sample 1963–2013</td>
+<td>0.50</td>
+<td>0.28</td>
+<td>0.38</td>
+<td>0.27</td>
+<td>0.32</td>
+<td>0.70</td>
+</tr>
+<tr>
+<td>Holdout 2014–2026</td>
+<td><strong>0.99</strong></td>
+<td>−0.21</td>
+<td>−0.07</td>
+<td>0.16</td>
+<td>−0.07</td>
+<td>0.24</td>
+</tr>
+<tr>
+<td>Change p (Newey–West)</td>
+<td>0.14</td>
+<td>0.06</td>
+<td>0.22</td>
+<td>0.60</td>
+<td>0.07</td>
+<td>0.17</td>
+</tr>
+</tbody>
+</table></div>
+<p>No single change is significant at 5%, but jointly the five non-market premia moved (cross-equation
+Newey–West Wald test, χ²(5) = 12.0, p = 0.035). The holdout is the period of the "value drought"
+(Fama and French 2021) and of the mega-cap growth rally. It is not uniform: HML lost 0.31% a month in
+2014–2019 and earned 0.15% in 2020–2026, mostly in 2022 (<code>results/holdout_split.csv</code>).</p>
+<h3>6.2 HML stayed redundant, and so did almost everything else</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Spanning alpha, %/month (t)</th>
+<th>In-sample</th>
+<th>Holdout</th>
+<th>Change p</th>
+<th>Holdout MDE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SMB on Mkt, HML, RMW, CMA</td>
+<td>+0.36 (2.6)</td>
+<td>−0.31 (−1.6)</td>
+<td><strong>0.005</strong></td>
+<td>0.55</td>
+</tr>
+<tr>
+<td>HML on Mkt, SMB, RMW, CMA</td>
+<td>−0.01 (−0.1)</td>
+<td>+0.04 (0.2)</td>
+<td>0.86</td>
+<td>0.71</td>
+</tr>
+<tr>
+<td>RMW on Mkt, SMB, HML, CMA</td>
+<td>+0.44 (4.8)</td>
+<td>+0.06 (0.5)</td>
+<td><strong>0.018</strong></td>
+<td>0.37</td>
+</tr>
+<tr>
+<td>CMA on Mkt, SMB, HML, RMW</td>
+<td>+0.26 (4.0)</td>
+<td>+0.03 (0.2)</td>
+<td>0.14</td>
+<td>0.39</td>
+</tr>
+<tr>
+<td>HML on FF5 others + UMD</td>
+<td>+0.08 (0.8)</td>
+<td>+0.10 (0.4)</td>
+<td>0.93</td>
+<td>0.73</td>
+</tr>
+<tr>
+<td>UMD on the five FF5 factors</td>
+<td>+0.75 (3.2)</td>
+<td>+0.41 (1.7)</td>
+<td>0.32</td>
+<td>0.68</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two readings of the same table. The literal one: HML's redundancy held, exactly as Fama and French
+predicted. The honest one: the holdout could only have detected an HML alpha of 0.71% a month, and
+HML's whole in-sample premium was 0.38%. The test that "confirmed" redundancy could not have rejected
+it even if HML had been as valuable as it ever was. What the holdout <em>can</em> see is large changes, and
+it sees two: SMB and RMW lost alphas that were 2.6 and 4.8 standard errors from zero in-sample. In the
+holdout, an investor already holding the market gained nothing measurable from any of the other
+factors.</p>
+<p>Asness (2014) argued that HML becomes useful again once momentum is in the model, because value and
+momentum are negatively correlated. The data agree in direction (HML's alpha is +0.08 in-sample and
++0.10 in the holdout with UMD in the regression, versus −0.01 and +0.04 without it), but neither number
+is distinguishable from zero.</p>
+<h3>6.3 The 2013 factor mix kept a third of its Sharpe ratio</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>IS Sharpe</th>
+<th>IS Sharpe, bias-adjusted</th>
+<th>HO Sharpe, 2013 weights (95% CI)</th>
+<th>HO/IS</th>
+<th>p (HO ≥ adj. IS), bootstrap</th>
+<th>p, two-sample</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CAPM</td>
+<td>0.39</td>
+<td>0.36</td>
+<td><strong>0.79</strong> (0.34, 1.32)</td>
+<td>2.04</td>
+<td>0.95</td>
+<td>0.91</td>
+</tr>
+<tr>
+<td>FF3</td>
+<td>0.75</td>
+<td>0.70</td>
+<td>0.26 (−0.29, 0.87)</td>
+<td>0.34</td>
+<td>0.053</td>
+<td>0.077</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>1.07</td>
+<td>1.03</td>
+<td>0.44 (−0.14, 1.11)</td>
+<td>0.42</td>
+<td>0.026</td>
+<td>0.033</td>
+</tr>
+<tr>
+<td>FF5</td>
+<td>1.17</td>
+<td>1.12</td>
+<td>0.35 (−0.17, 0.90)</td>
+<td>0.30</td>
+<td><strong>0.001</strong></td>
+<td><strong>0.007</strong></td>
+</tr>
+<tr>
+<td>FF5−HML</td>
+<td>1.17</td>
+<td>1.13</td>
+<td>0.35 (−0.17, 0.90)</td>
+<td>0.30</td>
+<td><strong>0.001</strong></td>
+<td><strong>0.007</strong></td>
+</tr>
+<tr>
+<td>FF6</td>
+<td>1.33</td>
+<td>1.28</td>
+<td>0.47 (−0.04, 1.03)</td>
+<td>0.36</td>
+<td><strong>0.001</strong></td>
+<td><strong>0.006</strong></td>
+</tr>
+<tr>
+<td>FF6−HML</td>
+<td>1.32</td>
+<td>1.28</td>
+<td>0.47 (−0.02, 1.02)</td>
+<td>0.36</td>
+<td><strong>0.000</strong></td>
+<td><strong>0.006</strong></td>
+</tr>
+<tr>
+<td>FF3, equal weights</td>
+<td>0.67</td>
+<td>–</td>
+<td>0.34</td>
+<td>0.51</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>FF5, equal weights</td>
+<td>1.01</td>
+<td>–</td>
+<td>0.33</td>
+<td>0.32</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>FF6, equal weights</td>
+<td>1.25</td>
+<td>–</td>
+<td>0.48</td>
+<td>0.39</td>
+<td>–</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p>The bootstrap p treats the in-sample value as known; the two-sample p also counts its own sampling
+error, using Lo's (2002) standard error for a Sharpe ratio, and is the one quoted in the abstract.</p>
+<p>The FF5 tangency portfolio, frozen at its 2013 weights (15% Mkt, 13% SMB, 0% HML, 30% RMW, 41% CMA in
+gross-weight terms), delivered a Sharpe ratio significantly below what even the bias-adjusted
+in-sample estimate promised. The bias adjustment removes the optimism of <em>fitting the weights</em>; it
+cannot remove the optimism of <em>having chosen the factors</em> from the same data, and that is what the
+holdout measures. The equal-weight rows settle the question of where the loss came from: a portfolio
+with no estimated weights lost the same two-thirds, so the factors' premia shrank; the optimizer was
+not the problem.</p>
+<p>Two more numbers keep this in proportion. First, re-fitting the weights <em>inside</em> the holdout gives FF5
+a Sharpe of 0.96 and FF6 1.05 (<code>results/tangency_holdout.csv</code>), more than the market's 0.79: in
+hindsight, a multifactor mix still looks better, which is exactly the trap. Second, the market's own
+holdout Sharpe (0.79) is twice its in-sample value; part of the CAPM's "win" is that 2014–2026 was an
+unusually good period for the market. Dropping HML from FF5 changed the holdout Sharpe by 0.001 (CI
+−0.006 to 0.008): with a near-zero weight on HML in 2013, the two portfolios are almost identical.</p>
+<h3>6.4 Out-of-sample pricing: FF5's edge over FF3 is gone, and most errors are noise</h3>
+<p><img alt="Out-of-sample pricing errors" loading="lazy" src="figures/fig5_oos_pricing.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>A|α|, %/month, betas from the previous 60 months</th>
+<th>FF3 IS</th>
+<th>FF3 HO</th>
+<th>FF5 IS</th>
+<th>FF5 HO</th>
+<th>FF6 IS</th>
+<th>FF6 HO</th>
+<th>Noise, HO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>25 Size–B/M</td>
+<td>0.10</td>
+<td>0.15</td>
+<td>0.09</td>
+<td>0.14</td>
+<td>0.08</td>
+<td>0.14</td>
+<td>0.15</td>
+</tr>
+<tr>
+<td>25 Size–OP</td>
+<td>0.13</td>
+<td>0.17</td>
+<td>0.06</td>
+<td>0.17</td>
+<td>0.07</td>
+<td>0.15</td>
+<td>0.19</td>
+</tr>
+<tr>
+<td>25 Size–Inv</td>
+<td>0.11</td>
+<td>0.13</td>
+<td>0.10</td>
+<td>0.11</td>
+<td>0.10</td>
+<td>0.11</td>
+<td>0.14</td>
+</tr>
+<tr>
+<td>10 Momentum</td>
+<td>0.32</td>
+<td>0.21</td>
+<td>0.28</td>
+<td>0.25</td>
+<td>0.13</td>
+<td>0.22</td>
+<td>0.23</td>
+</tr>
+<tr>
+<td>49 Industries</td>
+<td>0.19</td>
+<td>0.34</td>
+<td>0.21</td>
+<td>0.33</td>
+<td>0.19</td>
+<td>0.31</td>
+<td>0.40</td>
+</tr>
+</tbody>
+</table></div>
+<p>(In-sample here means 1968–2013, because the first five years are needed for betas. "Noise" is the
+root-mean-square Newey–West standard error of a portfolio's mean alpha in the holdout, for FF5; it is
+about half as large in-sample.)</p>
+<p><strong>The pre-registered test.</strong> Pooled over the 75 primary portfolios, FF5 minus FF3 is −0.014% a month
+in the holdout (95% CI −0.057 to +0.014, one-sided p = 0.23): H3 is not supported.</p>
+<p><strong>What the referee pass added.</strong> The last column changes how this table should be read. A|α| averages
+<em>absolute</em> mean alphas, and a mean of 153 noisy monthly alphas is itself noisy: if every true alpha
+were zero, the holdout A|α| would still be about 0.8 × the noise column, roughly 0.11–0.15% a month
+for the 25-portfolio sorts. The holdout A|α| values of the multifactor models sit right at that level.
+So the apparent rise in pricing errors after 2013 is mostly the shorter sample, not the models getting
+worse. The fix (used in Fama and French 2015 in-sample) is to subtract each alpha's sampling variance
+from its square before averaging; <code>results/pricing_oos.csv</code> reports this "RMS α net of noise" and
+Figure 5 plots it. Net of noise:</p>
+<ul>
+<li>FF5's in-sample advantage on the size–profitability sort, the one RMW was built to explain, is gone:
+  0.05% vs FF3's 0.14% in 1968–2013, 0.15% vs 0.16% in the holdout. This is the clearest single change,
+  but it is fragile: FF6's holdout error on the same portfolios is within noise.</li>
+<li>For the five-factor models on size–investment and the industries, and for FF5−HML on size–B/M,
+  the holdout error is no larger than its own noise. Nothing can be learned from those cells.</li>
+<li>The CAPM's errors on the sorted portfolios are the only ones clearly above noise in both periods.</li>
+</ul>
+<p>The in-sample-style GRS test (betas re-estimated within each period) rejects every model on every
+family in 1963–2013 at p &lt; 0.015 (the one exception is the CAPM on the 49 industries, p = 0.075), and
+rejects <strong>none</strong> in the holdout, CAPM included (the smallest p is 0.08, CAPM on Size–B/M;
+<code>results/pricing_grs.csv</code>). With 153 months and 25 assets the test has very little power, so this is
+not evidence that the models started working.</p>
+<p>Dropping HML from FF5 lowered the pooled holdout A|α| by 0.013% a month (one-sided p = 0.0499;
+descriptive, not one of the corrected tests, and of the same size as the noise discussed above).</p>
+<h3>6.5 When did HML become redundant?</h3>
+<p><img alt="Real-time redundancy" loading="lazy" src="figures/fig2_realtime_redundancy.png" /></p>
+<p>An investor in 1995 running the same spanning regression on the data then available would have found
+HML's alpha 2.1 standard errors above zero. Between 1985 and 1998 the t-statistic was 1.7 to 2.3 every
+year. It collapsed in 1999–2000 (the dot-com run-up and crash hit value, profitability and investment
+at the same time), reached zero in 2010 and has been negative every year since 2018. The redundancy result in Fama and
+French (2015) is therefore a statement about 1999–2013 as much as about 1963–2013. With momentum in
+the model (dotted line), HML's t-statistic has stayed positive throughout.</p>
+<p>The real-time model selector, choosing every December by the bias-adjusted squared Sharpe ratio,
+picked FF6 in 29 of 43 years and FF6−HML in 14 (2010–2015 and 2018–2025). It never picked FF5, FF3 or
+the CAPM. Its real-time Sharpe ratio over 1984–2026 is 0.951 (95% CI 0.64 to 1.29) against 0.947 for
+always holding FF6 and 0.58 for the market alone. Selecting the model adds nothing because the
+selection is almost always "use the most factors".</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Real-time Sharpe, re-estimated every December</th>
+<th>1984–2026</th>
+<th>Holdout years only</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CAPM</td>
+<td>0.58</td>
+<td>0.79</td>
+</tr>
+<tr>
+<td>FF3</td>
+<td>0.50</td>
+<td>0.32</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>0.74</td>
+<td>0.50</td>
+</tr>
+<tr>
+<td>FF5</td>
+<td>0.82</td>
+<td>0.37</td>
+</tr>
+<tr>
+<td>FF6</td>
+<td>0.95</td>
+<td>0.51</td>
+</tr>
+<tr>
+<td>FF6−HML</td>
+<td>0.97</td>
+<td>0.53</td>
+</tr>
+<tr>
+<td>Selector</td>
+<td>0.95</td>
+<td>0.52</td>
+</tr>
+</tbody>
+</table></div>
+<h3>6.6 Was the holdout just a bad draw?</h3>
+<p><img alt="Placebo windows" loading="lazy" src="figures/fig4_placebo_windows.png" /></p>
+<p>Over every 153-month window since 1984 (real-time weights), FF5's Sharpe ratio exceeded the market's
+in 24 of 31 windows, often by 0.3 to 1.2. The holdout is the worst of the 31 windows for FF5 (−0.42).
+For FF6 it is the second worst (−0.28; the window starting in 2009 was −0.42). But the windows overlap
+heavily, so they contain only about three independent draws, and the gap has been shrinking steadily
+since the windows that start around 2002. The holdout is the end of a trend that began inside the
+original sample, not an isolated accident. Whether that trend is post-publication decay (McLean and
+Pontiff 2016), crowding, or a run of bad luck cannot be separated with this much data.</p>
+<h3>6.7 Stress windows</h3>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig6_stress_windows.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Cumulative return, %</th>
+<th>Mkt</th>
+<th>HML</th>
+<th>RMW</th>
+<th>CMA</th>
+<th>UMD</th>
+<th>CAPM*</th>
+<th>FF5*</th>
+<th>FF6*</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GFC, 2007-10 to 2009-03</td>
+<td>−46.1</td>
+<td>−15.9</td>
+<td>+25.4</td>
+<td>−1.3</td>
+<td>+21.2</td>
+<td>−32.7</td>
+<td>−13.6</td>
+<td>−9.5</td>
+</tr>
+<tr>
+<td>COVID, 2020-02 to 2020-04</td>
+<td>−9.6</td>
+<td>−18.2</td>
+<td>−0.3</td>
+<td>−2.4</td>
+<td>+1.9</td>
+<td>−6.0</td>
+<td>−8.5</td>
+<td>−9.8</td>
+</tr>
+<tr>
+<td>Inflation, 2022-01 to 2022-10</td>
+<td>−19.4</td>
+<td>+28.1</td>
+<td>+1.7</td>
+<td>+20.0</td>
+<td>+16.5</td>
+<td>−12.6</td>
+<td>+11.9</td>
+<td>+18.4</td>
+</tr>
+</tbody>
+</table></div>
+<p>* Real-time tangency portfolios, weights estimated before the window, scaled to 10% ex-ante volatility.</p>
+<p>Whatever their average return, the multifactor portfolios were good crash insurance in two of the
+three windows: in 2008 FF6 lost less than a third of what the equally risky market portfolio lost, and in 2022
+it gained 18% while the market fell 19%, because value and investment had their best year in decades.
+In the COVID crash the protection failed: value fell 18% in three months and FF5 and FF6 lost more than
+the equally risky market portfolio (−8.5% and −9.8% against −6.0%). The holdout's weak average hides one very good year (2022) inside a weak
+decade.</p>
+<h3>6.8 Data vintage</h3>
+<p>Ken French revises the whole history when CRSP or Compustat data change. Comparing the early-2017
+vintage shipped with the <code>linearmodels</code> package with the 2026 vintage over their common months
+(1963-07 to 2017-03): the market factor is essentially unchanged (correlation 1.0000, tracking error
+0.02% a month), but <strong>HML has a monthly tracking error of 0.30% and one month differs by 2.2
+percentage points</strong> (correlation 0.994); SMB's tracking error is 0.17%. The in-sample average of HML
+is identical in both vintages (0.381% vs 0.382%), so the conclusions here are not vintage artefacts,
+but month-by-month replications of older papers will not match exactly (Akey, Robertson and Simutin
+document the same problem). This project freezes the 202609 vintage.</p>
+<h3>6.9 Robustness</h3>
+<p>All five verdicts are unchanged in each of nine variants (<code>results/robustness.csv</code>): Newey–West lags
+3 or 12; bootstrap mean block 3 or 12 months; beta window 36 or 120 months; real-time start 1973 or
+1993; and a holdout that starts in January 2015, the year of publication. The H3 p-value ranges from
+0.10 (36-month betas) to 0.43 (120-month betas); no other p-value moves below 0.40.</p>
+<h2>7. What this means in practice</h2>
+<ul>
+<li><strong>Treat in-sample factor Sharpe ratios as upper bounds, even after the usual bias correction.</strong>
+  The correction handles fitted weights, not chosen factors. Over 2014–2026 the realised haircut for
+  five- and six-factor mixes was about 65–70%. Project #23 (deflated Sharpe ratio) formalises the
+  correction for the number of strategies tried.</li>
+<li><strong>Do not read "not rejected" as "confirmed" on short samples.</strong> With about thirteen years of
+  monthly data, a spanning or pricing test cannot see alphas below roughly 0.4–0.7% a month. State the
+  minimum detectable effect next to every null result.</li>
+<li><strong>If you have to pick a model, include momentum.</strong> Every real-time choice since 1983 included UMD,
+  and the momentum-inclusive models had the best real-time record and the best 2008 protection.
+  Whether HML is in or out makes no measurable difference.</li>
+<li><strong>Expect the market factor to dominate in some decades.</strong> The CAPM's best-in-class holdout result
+  is a reminder that factor tilts are long-horizon bets with decade-long droughts.</li>
+</ul>
+<h2>8. Referee notes (self-review)</h2>
+<p>Before release the project was reviewed as a referee would review it. What was attacked, and what
+changed:</p>
+<ol>
+<li><strong>"A|α| rises in the holdout" was mostly sampling noise.</strong> The first draft read the higher holdout
+   A|α| as models pricing worse. Absolute values of noisy means are biased upward, and the bias is
+   about twice as large in a 153-month sample as in a 546-month one. Fixed: a noise-net RMS alpha
+   (Newey–West sampling variance subtracted) is now reported and plotted, and section 6.4 says which
+   cells are indistinguishable from noise. The pre-registered H3 test still uses A|α| differences, as
+   registered; a paired difference between models cancels the part of the noise they share, though
+   not all of it, so it is less affected than the levels.</li>
+<li><strong>The Sharpe-decline test treated the in-sample Sharpe as known.</strong> Fixed: a two-sample test with
+   Lo's (2002) standard errors for both estimates is now the headline (p = 0.007 instead of 0.001).</li>
+<li><strong>The first vintage comparison mixed definitions.</strong> The 2017 file's SMB is the three-factor SMB; it
+   was first compared with the five-factor SMB, which is built differently and showed a spurious
+   tracking error of 0.56% a month. Fixed: the comparison now uses the 2026 three-factor file.</li>
+<li><strong>H2 was a weak test.</strong> In 2013 the FF5 tangency portfolio put almost no weight on HML (−0.6%), so
+   FF5 and FF5−HML were nearly the same portfolio and "dropping HML is free" was close to guaranteed.
+   It is kept because it was pre-registered, but no weight is put on it in the conclusions.</li>
+<li><strong>The real-time selector was always going to pick a big model.</strong> The bias-adjusted squared Sharpe
+   ratio corrects for the number of factors but still rewards any factor with a positive in-sample
+   premium. H4 therefore tests "does selection beat the largest model", which is the relevant question
+   for a practitioner, not "does selection find a parsimonious model".</li>
+<li><strong>Pre-registration does not erase prior knowledge.</strong> It fixes the tests, not what the author knew:
+   that value had a weak decade was public knowledge before the data were opened. The pre-registered
+   hypotheses (H1, H2, H4) were "nothing changed" claims, which is the direction that knowledge would
+   argue against, so it did not tilt the design toward the reported failures.</li>
+</ol>
+<h2>9. Limitations</h2>
+<ul>
+<li><strong>153 months is short.</strong> This is the central limitation and the reason power is reported
+  everywhere. The holdout can detect large changes (SMB, RMW) but not the small ones that the
+  redundancy debate is about.</li>
+<li><strong>One holdout, one country.</strong> The placebo windows give context, but they overlap and share the same
+  market. International factor data would add independent evidence, at the cost of less clean
+  timing (several countries' data were already used in Fama and French 2017).</li>
+<li><strong>Factors are not tradeable as published.</strong> The Ken French factors are long-short, rebalanced
+  annually (monthly for UMD), with no transaction costs, shorting costs or capacity limits. The
+  momentum results in particular would shrink after costs (project #12).</li>
+<li><strong>The holdout is not fully untouched.</strong> The model was frozen in 2013 but the data were revised
+  afterwards (section 6.8), and the methodology for some breakpoints has changed slightly over
+  vintages. The in-sample averages are unaffected, so this is unlikely to matter here.</li>
+<li><strong>Portfolios, not stocks.</strong> Test assets are sorted portfolios; the conclusions about pricing errors
+  apply to them, not to individual stocks.</li>
+<li><strong>Not tested:</strong> the q-factor model (Hou, Xue and Zhang 2015) and other non-French factors, because
+  their files are not in the French library; conditional or time-varying factor models; Bayesian
+  model comparison with informative priors.</li>
+</ul>
+<h2>10. Connections to other projects</h2>
+<ul>
+<li><strong>#09 The Beta You Hedge With</strong> showed that no estimate of the market beta makes the security
+  market line steep enough. This project adds the other factors and finds that, after 2013, they
+  stopped adding to the market too.</li>
+<li><strong>#05 Where Does the Efficient Frontier Break?</strong> found that estimated means carry most of the
+  value in mean–variance portfolios and that nothing beats 1/N after correction. Here, the equal-weight
+  factor mix lost exactly as much as the optimised one: the problem was the means themselves.</li>
+<li><strong>#03 Not a Volatility Filter</strong> used the same pre-registration discipline.</li>
+<li><strong>#12 Momentum with costs</strong> asks whether the UMD premium survives trading costs; <strong>#23 Deflated
+  Sharpe ratio</strong> formalises the in-sample optimism measured in section 6.3; <strong>#20 Risk parity</strong>
+  and <strong>#24 PCA stat arb</strong> build portfolios from the same factor returns.</li>
+</ul>
+<h2>11. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh        # ~1 minute: analysis, robustness, figures, tests
+</code></pre>
+<p>Every number above is in <code>results/*.csv</code>; every figure is produced by <code>src/figures.py</code>. The raw files
+are committed under <code>data/raw/</code>; <code>src/fetch_data.js</code> refreshes them from the Ken French site.</p>
+<h2>12. Repository layout</h2>
+<pre><code>17-five-factor-holdout/
+├── README.md                this paper
+├── PREREGISTRATION.md       hypotheses and tests, written before the holdout was examined
+├── data/raw/                first table of each Ken French file, CRSP vintage 202609
+├── src/
+│   ├── fetch_data.js        browser script that downloads and extracts the raw files (with SHA-256)
+│   ├── data.py              parsing, samples, model definitions, stress windows
+│   ├── stats.py             Newey–West OLS, GRS, tangency, adjusted Sh², stationary bootstrap, Holm, Wald
+│   ├── analysis.py          every statistic in the paper
+│   ├── robustness.py        nine sensitivity variants of the five pre-registered tests
+│   └── figures.py
+├── tests/test_core.py       estimator correctness, test size, unbiasedness, no look-ahead
+├── results/   figures/
+├── study/ESTUDIO_17.pdf     Spanish study guide (not part of the paper)
+└── run_all.sh  requirements.txt  LINKEDIN_POST.md
+</code></pre>
+<h2>References</h2>
+<ul>
+<li>Akey, P., Robertson, A. and Simutin, M. "Noisy Factors." Working paper, University of Toronto.</li>
+<li>Asness, C. (2014). "Our Model Goes to Six and Saves Value From Redundancy Along the Way." AQR Cliff's Perspective.</li>
+<li>Barillas, F. and Shanken, J. (2017). "Which Alpha?" <em>Review of Financial Studies</em> 30(4).</li>
+<li>Barillas, F. and Shanken, J. (2018). "Comparing Asset Pricing Models." <em>Journal of Finance</em> 73(2).</li>
+<li>Carhart, M. (1997). "On Persistence in Mutual Fund Performance." <em>Journal of Finance</em> 52(1).</li>
+<li>Fama, E. and French, K. (1993). "Common Risk Factors in the Returns on Stocks and Bonds." <em>Journal of Financial Economics</em> 33(1).</li>
+<li>Fama, E. and French, K. (2015). "A Five-Factor Asset Pricing Model." <em>Journal of Financial Economics</em> 116(1).</li>
+<li>Fama, E. and French, K. (2017). "International Tests of a Five-Factor Asset Pricing Model." <em>Journal of Financial Economics</em> 123(3).</li>
+<li>Fama, E. and French, K. (2018). "Choosing Factors." <em>Journal of Financial Economics</em> 128(2).</li>
+<li>Fama, E. and French, K. (2021). "The Value Premium." <em>Review of Asset Pricing Studies</em> 11(1).</li>
+<li>Gibbons, M., Ross, S. and Shanken, J. (1989). "A Test of the Efficiency of a Given Portfolio." <em>Econometrica</em> 57(5).</li>
+<li>Holm, S. (1979). "A Simple Sequentially Rejective Multiple Test Procedure." <em>Scandinavian Journal of Statistics</em> 6(2).</li>
+<li>Hou, K., Xue, C. and Zhang, L. (2015). "Digesting Anomalies: An Investment Approach." <em>Review of Financial Studies</em> 28(3).</li>
+<li>Lo, A. (2002). "The Statistics of Sharpe Ratios." <em>Financial Analysts Journal</em> 58(4).</li>
+<li>Kan, R. and Zhou, G. (2007). "Optimal Portfolio Choice with Parameter Uncertainty." <em>Journal of Financial and Quantitative Analysis</em> 42(3).</li>
+<li>McLean, R. D. and Pontiff, J. (2016). "Does Academic Research Destroy Stock Return Predictability?" <em>Journal of Finance</em> 71(1).</li>
+<li>Newey, W. and West, K. (1987). "A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix." <em>Econometrica</em> 55(3).</li>
+<li>Politis, D. and Romano, J. (1994). "The Stationary Bootstrap." <em>Journal of the American Statistical Association</em> 89(428).</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/17-five-factor-holdout">17-five-factor-holdout on GitHub</a>.</footer>
+</div>
+</body>
+</html>
