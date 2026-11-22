@@ -80,6 +80,7 @@ def fig1_report_card():
         a2.text(j - 0.22, r["IS Sharpe adj"], f"{r['IS Sharpe adj']:.2f}", fontsize=8.5, color=INK2,
                 va="center", ha="right")
     a2.axhline(0, color=AXIS, lw=1)
+    a2.set_xlim(-0.65, len(models) - 0.45)
     a2.set_xticks(x)
     a2.set_xticklabels(["CAPM\n(Mkt)", "FF3", "Carhart 4", "FF5", "FF6\n(FF5+UMD)"])
     a2.set_ylabel("annualised Sharpe ratio of the model's tangency portfolio")
