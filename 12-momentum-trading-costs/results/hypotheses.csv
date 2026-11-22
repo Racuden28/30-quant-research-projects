@@ -1,0 +1,8 @@
+hypothesis,description,estimate,p_raw,p_holm
+H1,"A, 12-1 textbook: cost-timing multiplier kappa > 1","kappa = 1.081 [1.050, 1.113]",0.0004998,0.003498
+H2-partial50,"A, 12-1: marginal break-even of textbook over partial50 < its average break-even","marginal 24 bps [12, 36] vs average 71",0.0004998,0.003498
+H2-band50,"A, 12-1: marginal break-even of textbook over band50 < its average break-even","marginal 44 bps [29, 60] vs average 71",0.004498,0.008996
+H2-hold3,"A, 12-1: marginal break-even of textbook over hold3 < its average break-even","marginal 32 bps [17, 47] vs average 71",0.001499,0.004498
+H3-10bps,"A, 12-1: vol-scaled net Sharpe > textbook net Sharpe at 10 bps","diff +0.18 [+0.09, +0.28]",0.0004998,0.003498
+H3-30bps,"A, 12-1: vol-scaled net Sharpe > textbook net Sharpe at 30 bps","diff +0.17 [+0.08, +0.26]",0.0004998,0.003498
+H4,"B, 12-1 textbook: gross premium > 0","-0.54%/yr [-6.20, +4.95]",0.5512,0.5512

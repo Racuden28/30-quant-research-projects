@@ -1,0 +1,5 @@
+universe,signal,cost_bps,months,n_switches,sharpe_selected,sharpe_textbook,best_fixed_in_hindsight,sharpe_best_fixed,diff_selected_minus_textbook,diff_lo,diff_hi,p_selected_better,most_chosen,share_most_chosen
+A,12-1,10,945,1,0.5452,0.5575,base,0.5575,-0.01227,-0.03305,0.002157,0.9015,base,0.8984
+A,12-1,20,945,7,0.4535,0.4788,base,0.4788,-0.02526,-0.05773,0.001435,0.9415,base,0.6317
+A,12-1,30,945,11,0.3872,0.4002,hold2,0.4297,-0.01297,-0.05638,0.02862,0.7106,smooth2,0.4952
+A,12-1,50,945,3,0.3044,0.2437,partial50,0.3228,0.0607,0.01221,0.1077,0.005997,partial50,0.7079

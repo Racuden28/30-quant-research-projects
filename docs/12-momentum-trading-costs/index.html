@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Last Trade Is the Cheapest to Skip</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does momentum&#x27;s average break-even cost tell you how fast to trade it, or do its last trades earn far less?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 12 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 12</p>
+<h1>The Last Trade Is the Cheapest to Skip</h1>
+<p><strong>Average versus marginal break-even costs of momentum, US industries 1928–2026 and country ETFs 1998–2026</strong></p>
+<p><em>Project 12 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Momentum's turnover frontier" loading="lazy" src="figures/fig1_turnover_frontier.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Every paper on momentum and trading costs reports one number: the <strong>break-even cost</strong>, the one-way
+cost per dollar traded at which the strategy's net return falls to zero. That number is an <em>average</em>:
+total gross premium divided by total turnover. It answers "should I run momentum at all?" It does
+not answer the question an implementer actually faces, which is <strong>"how fast should I trade it?"</strong> That
+question is about the <em>marginal</em> trade: the premium that the last, most frequent rebalancing trades
+add, per extra dollar they turn over. If momentum's alpha were spread evenly across its trades, the
+two numbers would be equal. They are not.</p>
+<p>This project measures both, on the same signals, with exact turnover accounting. Universe A is the
+49 Fama–French US industries, daily, January 1928 to September 2026 (1,185 months). Universe B is 42
+single-country equity ETFs, the version of the strategy a private investor can actually trade, from
+1998 to October 2026. Each universe runs three signals (12-1, 6-1 and 1-0 months) through 21 ways of
+implementing the same signal: the textbook full monthly rebalance, 16 slower variants from four
+families (partial rebalancing, banding, overlapping holding periods, rank smoothing), volatility
+scaling, and a long-only version. That makes 126 backtests. Costs scale with each asset's own recent
+volatility, as microstructure theory predicts. Inference uses paired stationary-bootstrap confidence
+intervals and Holm correction over a confirmatory family of seven tests.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The textbook's last trades earn a third of what its average trade earns.</strong> Textbook industry
+   momentum (12-1, top and bottom 30%, monthly) breaks even at <strong>71 bps</strong> per dollar traded (95% CI
+   46–98). Its marginal trades, the ones a half-speed partial rebalance (θ = 0.5) skips, break even at
+   <strong>24 bps</strong> (CI 12–36). Skipping them cuts turnover by 38% and gives up only 13% of the gross premium.
+   The gap between marginal and average holds for 14 of the 16 slower designs (p &lt; 0.05). For the
+   three confirmatory designs it survives Holm correction (adjusted p ≤ 0.009).</li>
+<li><strong>The reason is how slowly the signal ages.</strong> A 1-to-3-month-old ranking kept <strong>71%</strong> of a fresh
+   ranking's premium (CI 54–84%), and 82% in 1963–1999. The event-time decay curve alone predicts the
+   gross premium of every overlapping-hold design to within 0.1 percentage points a year. It predicts
+   every partial-rebalance design to within 1.2 points; most of that gap comes from weight drift
+   between trades.</li>
+<li><strong>After 2000 the frontier straightened out.</strong> Over 2000–2026 the textbook's average break-even
+   fell to 35 bps (CI −4 to 79), and its marginal trades earn about the same (26 bps, CI 9–46). Every
+   slower design lies on the same ray through the origin, so slowing down no longer buys a higher
+   break-even. Gross premia are weak in this era (t = 1.4), so this is a point estimate and not yet a
+   proven regime change.</li>
+<li><strong>Cost timing is real but small.</strong> Momentum does trade more, and trades more volatile industries,
+   when trading is expensive. In the worst crisis windows (1932–33, 2008, 2009) its monthly cost runs 3–7 times its average. But
+   crises are rare, so a backtest with a constant cost understates the true cost by only <strong>8%</strong>
+   (multiplier κ = 1.081, CI 1.050–1.113). <strong>Volatility-scaled momentum reverses the sign</strong>
+   (κ = 0.96): it shrinks its book when volatility, and so cost, is high. It trades 65% more than the
+   textbook overall and still raises net Sharpe by +0.17 to +0.19 at every cost from 0 to 30 bps
+   (Holm-adjusted p = 0.003).</li>
+<li><strong>Knowing the right speed in hindsight is not the same as finding it in real time.</strong> An investor
+   who picks the design with the best past net return each January does no better than the textbook
+   at 10–30 bps (Sharpe difference −0.01 to −0.03). The frontier is flat near its optimum, so getting
+   the speed wrong by a factor of two costs little. Choosing in real time only helps at 50 bps, where
+   it settles on θ = 0.5 (+0.06 Sharpe, CI 0.01–0.11).</li>
+<li><strong>In the tradable universe there is nothing to pay costs with.</strong> Country-ETF momentum has no
+   gross premium in 1998–2026: −0.5% a year for 12-1 (CI −6.2 to +5.0; Holm p = 0.55). Pre-2001 tick
+   sizes alone cost the textbook 7 bps a month in 1998–2008. The popular estimators that read spreads
+   off daily prices (Corwin–Schultz, Abdi–Ranaldo) put SPY's spread at 20–27 bps since 2020, about
+   <strong>100 times</strong> its one-cent quote. They cannot stand in for measured costs on ETFs.</li>
+</ol>
+<p><strong>Practical rule.</strong> Report two break-evens, not one. The average break-even tells you whether a
+strategy is worth running. The marginal break-even, the slope of the turnover frontier at your
+design, tells you whether your trading speed is right. For industry momentum before 2000, trading
+slower paid for anyone whose all-in cost exceeded about 20–25 bps. Volatility scaling paid at every
+cost level.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>Momentum is the anomaly most exposed to trading costs, because it turns over a large part of its
+book every month. The literature has argued about whether it survives costs for twenty years.
+Lesmond, Schill and Zhou (2004) call its profits "illusory". Korajczyk and Sadka (2004) estimate how
+much capital it can absorb. Frazzini, Israel and Moskowitz (2018) use a large institution's live
+trades and find costs an order of magnitude below earlier estimates. Novy-Marx and Velikov (2016)
+show that cost-mitigation rules such as buy/hold spreads cut the drag substantially. All of them
+summarise an anomaly by its break-even cost, and they disagree mainly about which cost to compare it
+with.</p>
+<p>That framing hides an asymmetry. A strategy's trades are not equally valuable. The trades that move
+a winner from rank 15 to rank 16, or that re-sell a loser that has just bounced, carry much less of
+the premium than the trades that put the strongest new winners into the book. If the low-value
+trades are also the most frequent, the average break-even overstates what the marginal dollar of
+turnover earns. An investor can then keep most of the premium at a fraction of the turnover. The
+right summary is a <strong>turnover frontier</strong>: gross premium against turnover across many ways of running
+the same signal. Its <em>slope</em> at the chosen design is the marginal break-even cost.</p>
+<p>Three secondary questions follow, and each is a hypothesis fixed before the confirmatory tests were
+run (§5).</p>
+<ul>
+<li><strong>Cost timing (H1).</strong> Costs rise with volatility. If momentum's trades cluster in volatile months
+  (turning points, crashes) or in volatile assets (extreme past performers), a constant-cost backtest
+  understates its true cost. By how much?</li>
+<li><strong>Volatility scaling (H3).</strong> Barroso and Santa-Clara (2015) show that scaling momentum to a
+  constant volatility nearly doubles its Sharpe ratio. Scaling adds trading, since the book is
+  resized every month, and critics of volatility-managed portfolios argue that this trading eats the
+  gain. Does it, once costs move with volatility?</li>
+<li><strong>Tradability (H4).</strong> Universe A cannot be traded as such. Does the same analysis on a universe a
+  private investor can trade, single-country ETFs, leave anything to pay costs with?</li>
+</ul>
+<p>This project builds on earlier projects rather than repeating them. Project <a href="../03-moving-average-volatility/">03</a>
+showed that a time-series trend rule's value is mostly a volatility forecast. Project <a href="../10-market-terminal/">10</a>
+found that 12-1 momentum, used as a screen signal, does not forecast an ETF's own next-month return.
+This project is about the <em>cross-section</em>, ranking assets against each other, and about
+implementation rather than prediction.</p>
+<h2>2. Data</h2>
+<p><strong>Universe A: 49 US industries.</strong> These are Ken French's value-weighted industry portfolios, daily
+excess returns from July 1926 to September 2026 (CRSP vintage 202609). It is the panel built by
+project <a href="../09-beta-horse-race/">09</a>, copied here unchanged so the project is self-contained. The
+same 49 industries also appear in project <a href="../05-efficient-frontier/">05</a>. Reusing them is deliberate:
+industry momentum (Moskowitz and Grinblatt, 1999) has a century-long record, and a value-weighted
+industry is dominated by large, liquid stocks, so its implementation cost is close to large-cap cost.
+An industry joins the ranking once it has 12 full months of history; 39 to 49 are ranked at any time
+(46 on average).</p>
+<p><strong>Universe B: 42 country ETFs.</strong> These are all US-listed single-country equity ETFs with history on
+Yahoo Finance: the 17 original iShares WEBS from March 1996, then Brazil, Taiwan and Korea (2000),
+South Africa (2003), China (2004), and 20 more listed from 2007 to 2015, including VanEck Vietnam and
+Global X Greece and Argentina. EWUS is excluded because it duplicates the UK. The data are daily
+OHLCV plus the dividend-adjusted close, to 17 November 2026. The sample is used to October 2026, and
+returns are in excess of the 3-month T-bill (^IRX, from project 03). Two data-quality problems are
+handled explicitly:</p>
+<ul>
+<li><strong>Stale early quotes.</strong> In their first three years, the WEBS funds show no trade (zero volume or
+  high = low) on up to 64% of days (Austria). A fund is ranked only if it traded on at least 80% of
+  the previous 63 sessions.</li>
+<li><strong>Survivorship.</strong> Country ETFs that were delisted (iShares Russia, frozen in 2022; Market Vectors
+  Egypt; Global X Nigeria, Colombia and Pakistan) are not on Yahoo. The universe is therefore biased
+  toward funds that survived. That should flatter momentum if anything, and the result is still null.</li>
+</ul>
+<p>Both data files and the scripts that rebuild them are in <code>data/</code> and <code>src/fetch_data.py</code>.</p>
+<h2>3. Strategies</h2>
+<p><strong>Signals.</strong> At each month-end, an asset's signal is its cumulative log excess return over months
+<em>m−11…m−1</em> (12-1, skipping the most recent month), <em>m−5…m−1</em> (6-1), or month <em>m</em> alone (1-0,
+short-term industry momentum). The textbook book is long the top 30% and short the bottom 30%,
+equally weighted within each leg: $1 long and $1 short per $1 of capital.</p>
+<p><strong>Twenty-one implementations of each signal</strong> (<code>src/designs.py</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Designs</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Textbook</td>
+<td>base</td>
+<td>Rebalance fully to the new top/bottom 30% every month</td>
+</tr>
+<tr>
+<td>Partial rebalance</td>
+<td>θ = 0.75, 0.5, 0.33, 0.25, 0.15</td>
+<td>Trade only θ of the gap between the current and the target book (Gârleanu and Pedersen, 2013)</td>
+</tr>
+<tr>
+<td>Banding</td>
+<td>exit at 35, 40, 50, 60%</td>
+<td>Enter at the top/bottom 30%, but keep a name until it leaves a wider band (Novy-Marx and Velikov, 2016)</td>
+</tr>
+<tr>
+<td>Overlapping hold</td>
+<td>K = 2, 3, 6, 12 months</td>
+<td>Hold the average of the last K monthly selections (Jegadeesh and Titman, 1993)</td>
+</tr>
+<tr>
+<td>Rank smoothing</td>
+<td>2, 3, 6 months</td>
+<td>Rank on the average percentile of the last K months</td>
+</tr>
+<tr>
+<td>Volatility scaling</td>
+<td>alone, with band 50%, with θ = 0.33</td>
+<td>Scale the book to 15% annual volatility, estimated from its own past 126 daily returns; leverage capped at 2 (Barroso and Santa-Clara, 2015)</td>
+</tr>
+<tr>
+<td>Long-only</td>
+<td>top leg only</td>
+<td>$1 long the top 30%, judged against the equal-weight universe</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Accounting</strong> (<code>src/engine.py</code>). Everything is decided at the close of month <em>m</em> from data up to
+that close. The book is bought at that close and held, buy-and-hold, through month <em>m+1</em>, so weights
+drift with prices. Turnover at <em>m</em> is Σ|w_new − w_drifted|, the dollars traded per dollar of capital.
+Price moves alone therefore never count as trading. A test (<code>tests/test_engine.py::test_no_look_ahead</code>)
+rewrites every return after a date and checks that nothing decided before it changes.</p>
+<p><strong>Cost model.</strong> A one-way trade of |Δw_i| in asset <em>i</em> at month <em>m</em> costs</p>
+<p>c × |Δw_i| × σ_i,m / σ̄,</p>
+<p>where σ_i,m is the asset's annualised 21-day realised volatility at the trade date and σ̄ is the
+average of σ across assets and months in the evaluation window. So <em>c</em> is the one-way cost for an
+asset of average volatility, in bps per dollar traded. Proportionality to volatility is what the
+standard microstructure models predict for both the half-spread and price impact (inventory and
+adverse-selection models; the square-root impact law, Tóth et al., 2011). It is also what makes cost
+timing measurable. Every result is reported as a break-even, so the level of <em>c</em> is never assumed.
+Every constant-cost version is also in <code>results/summary.csv</code>. Universe B adds a <strong>measured</strong> floor:
+half a tick divided by the fund's price ($1/8 before June 1997, $1/16 until AMEX decimalisation in
+April 2001, $0.01 after). No trade can cross a quoted spread narrower than one tick.</p>
+<h2>4. Measures</h2>
+<ul>
+<li><strong>Average break-even</strong>, c̄ = mean gross return / mean volatility-weighted turnover, in bps.</li>
+<li><strong>Marginal break-even</strong> of the textbook over a slower design <em>d</em>,
+  c_marg = (gross_base − gross_d) / (turnover_base − turnover_d). It is the cost per dollar of the
+  trades the textbook does and <em>d</em> skips. With c below c_marg the extra trades pay; above it, they do
+  not.</li>
+<li><strong>Cost-timing multiplier</strong> κ = Σ_m Σ_i |Δw_i,m| σ_i,m / (Σ_m τ_m · σ̄). Here κ = 1 means the strategy
+  trades the average asset in the average month. It splits exactly into κ_time (<em>when</em> it trades:
+  the turnover-weighted average of each month's mean volatility) and κ_cross (<em>what</em> it trades,
+  within a month).</li>
+<li><strong>Event-time decay</strong> α_k: the mean return earned in month <em>m+1</em> by the textbook book formed at the
+  end of <em>m−k</em>, for signal ages k = 0…24.</li>
+</ul>
+<p>Uncertainty comes from a stationary bootstrap (Politis and Romano, 1994) of months, with mean block
+12 and 2,000 draws. The same resampled months are used for every design, so differences between
+designs are paired.</p>
+<h2>5. Hypotheses and the confirmatory family</h2>
+<p>The family below was fixed before these tests were run and is Holm-corrected as a whole
+(<code>results/hypotheses.csv</code>). In the interest of full disclosure: H2 was framed after a first
+exploratory pass over a smaller grid of eight designs. That is why §6.1 reports all 16 slower
+designs and every era, and not only the three in the family.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Hypothesis</th>
+<th>Estimate (95% CI)</th>
+<th>p (raw)</th>
+<th>p (Holm)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Cost-timing multiplier of textbook 12-1 &gt; 1 (A, 1928–2026)</td>
+<td>κ = 1.081 [1.050, 1.113]</td>
+<td>0.0005</td>
+<td>0.003</td>
+</tr>
+<tr>
+<td>H2a</td>
+<td>Marginal break-even (textbook vs θ = 0.5) &lt; average</td>
+<td>24 bps [12, 36] vs 71</td>
+<td>0.0005</td>
+<td>0.003</td>
+</tr>
+<tr>
+<td>H2b</td>
+<td>Marginal break-even (textbook vs band 50%) &lt; average</td>
+<td>44 bps [29, 60] vs 71</td>
+<td>0.004</td>
+<td>0.009</td>
+</tr>
+<tr>
+<td>H2c</td>
+<td>Marginal break-even (textbook vs hold 3) &lt; average</td>
+<td>32 bps [17, 47] vs 71</td>
+<td>0.0015</td>
+<td>0.004</td>
+</tr>
+<tr>
+<td>H3a</td>
+<td>Vol-scaled net Sharpe &gt; textbook at 10 bps</td>
+<td>+0.18 [+0.09, +0.28]</td>
+<td>0.0005</td>
+<td>0.003</td>
+</tr>
+<tr>
+<td>H3b</td>
+<td>Vol-scaled net Sharpe &gt; textbook at 30 bps</td>
+<td>+0.17 [+0.08, +0.26]</td>
+<td>0.0005</td>
+<td>0.003</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>Country-ETF textbook 12-1 has a positive gross premium (B)</td>
+<td>−0.54%/yr [−6.20, +4.95]</td>
+<td>0.55</td>
+<td>0.55</td>
+</tr>
+</tbody>
+</table></div>
+<p>A p-value of 0.0005 is the floor with 2,000 bootstrap draws.</p>
+<h2>6. Results</h2>
+<h3>6.1 The turnover frontier: average versus marginal</h3>
+<p>Figure 1 plots each slower design's gross premium against its turnover, era by era. The dashed ray
+through the origin has the textbook's average break-even as its slope. A design above the ray earns
+more per dollar traded than the textbook does.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Universe A, 12-1, 1928–2026</th>
+<th>Gross premium (%/yr)</th>
+<th>Turnover (/month)</th>
+<th>Average break-even (bps)</th>
+<th>Share of turnover saved</th>
+<th>Share of premium lost</th>
+<th>Marginal break-even of the skipped trades (bps)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Textbook</td>
+<td>7.72 [5.40, 9.96]</td>
+<td>0.84</td>
+<td><strong>71</strong> [46, 98]</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Partial θ = 0.75</td>
+<td>7.30</td>
+<td>0.68</td>
+<td>83</td>
+<td>19%</td>
+<td>5%</td>
+<td>20 [8, 32]</td>
+</tr>
+<tr>
+<td>Partial θ = 0.5</td>
+<td>6.73</td>
+<td>0.52</td>
+<td>101 [62, 142]</td>
+<td>38%</td>
+<td>13%</td>
+<td><strong>24</strong> [12, 36]</td>
+</tr>
+<tr>
+<td>Partial θ = 0.33</td>
+<td>5.98</td>
+<td>0.40</td>
+<td>118</td>
+<td>53%</td>
+<td>22%</td>
+<td>30 [15, 46]</td>
+</tr>
+<tr>
+<td>Band 30/50</td>
+<td>5.81</td>
+<td>0.48</td>
+<td>89 [53, 128]</td>
+<td>40%</td>
+<td>25%</td>
+<td>44 [29, 60]</td>
+</tr>
+<tr>
+<td>Hold 3</td>
+<td>6.40</td>
+<td>0.51</td>
+<td>95 [56, 136]</td>
+<td>38%</td>
+<td>17%</td>
+<td>32 [17, 47]</td>
+</tr>
+<tr>
+<td>Hold 12</td>
+<td>2.81</td>
+<td>0.27</td>
+<td>74</td>
+<td>65%</td>
+<td>64%</td>
+<td>70 [47, 92]</td>
+</tr>
+</tbody>
+</table></div>
+<p>(Turnover in the table is in dollars; the break-evens use volatility-weighted turnover, as defined
+in §4. All 16 designs are in <code>results/marginal_breakeven.csv</code>.)</p>
+<p>The first trades to go are nearly free to skip. The textbook's last 19% of turnover carries 5% of
+its premium, and its last 38% carries 13%. The marginal break-even rises as the design slows down:
+20 → 24 → 30 → 37 → 50 bps along the partial-rebalance family. That rise is the concave frontier.
+Partial rebalancing and overlapping holds trace the upper edge of the frontier: for the same turnover
+they keep more premium than banding or rank smoothing. At 0.55 turnover, for example, θ = 0.5 keeps
+6.7% a year against 5.8% for band 30/50. Banding keeps holding names whose signal has already
+weakened.</p>
+<p><strong>By era.</strong> In 1963–1999 the textbook's average break-even was 97 bps, and its marginal trades (vs
+θ = 0.5) earned 23 bps (CI 3–43). All 16 slower designs have a marginal break-even significantly
+below the average. In 1928–1962, 8 of 16 do. In <strong>2000–2026, none does</strong>: the average break-even
+fell to 35 bps, and every design sits close to the same ray, with marginal break-evens of 11–57 bps
+spread around the average. In this era the premium per dollar traded is roughly the same for every
+trade, so slowing down gives up premium in proportion to the turnover it saves. The post-2000 gross
+premium is itself only marginally significant (3.8%/yr, t = 1.40), so the honest reading is that the
+frontier <em>looks</em> straight after 2000. The data do not reject a bend.</p>
+<h3>6.2 Why the frontier bends: signal decay</h3>
+<p><img alt="Event-time decay" loading="lazy" src="figures/fig2_signal_decay.png" /></p>
+<p>A slower design is a mixture of older rankings. Partial rebalancing at rate θ holds a ranking of age
+k with weight θ(1−θ)^k, and a K-month hold gives weight 1/K to ages 0…K−1. Ignoring weight drift,
+the decay curve α_k therefore <em>predicts</em> every design's gross premium (<code>results/decay_prediction.csv</code>).
+The prediction matches the overlapping-hold backtests to within 0.10 percentage points a year in every
+era. It matches the partial-rebalance backtests to within 1.2 points. The largest gaps are in the
+volatile 1928–1962 era, where the slow partial designs do up to 1.2 points <em>better</em> than predicted.
+Between trades, a partially rebalanced book lets its winners' weights grow and its losers' weights
+shrink, and that drift is a small dose of momentum for free. After 2000, when the signal itself
+decays faster, the same drift costs up to 0.6 points.</p>
+<p>The decay curve explains the frontier. In 1963–1999 a ranking that was one to three months old kept
+82% of the fresh ranking's premium (CI 69–97%). Skipping a month of rebalancing lost little, so
+trading slower was cheap. Over 1928–2026 the figure is 71% (CI 54–84%). After 2000 the point estimate
+is 40%, and the CI is uninformative, because the fresh premium itself is barely distinguishable from
+zero. Every era shows the long-horizon reversal at ages 9–18 months. That is why a 12-month hold
+earns little, and why its marginal break-even is close to the average.</p>
+<h3>6.3 Cost timing, and why volatility scaling wins net of costs</h3>
+<p><img alt="Cost timing" loading="lazy" src="figures/fig4_cost_timing.png" /></p>
+<p>Momentum does trade at expensive moments. In the 1932 and 1933 rebounds, the textbook's monthly cost
+at 30 bps ran <strong>5.8 and 6.8 times</strong> its full-sample average: turnover doubled, and volatility was
+three times normal. In the 2008 crisis the multiple was 3.8, and in the March–May 2009 momentum crash
+it was 3.0 (<code>results/stress_windows.csv</code>). Averaged over a century, though, these episodes are short.
+The cost-timing multiplier is κ = 1.081 (CI 1.050–1.113). About half comes from <em>when</em> momentum
+trades (κ_time = 1.04) and half from <em>what</em> it trades (κ_cross = 1.03: past extreme performers are
+volatile). κ was largest in 1928–1962 (1.14) and is negligible after 2000 (1.02, CI 1.00–1.05).
+<strong>A constant-cost backtest understates momentum's true cost by about 8%</strong>. That is a correction
+worth making, but it is not a reason to doubt such backtests.</p>
+<p><img alt="Net Sharpe vs cost" loading="lazy" src="figures/fig3_net_sharpe_vs_cost.png" /></p>
+<p>Volatility scaling flips the sign of the timing effect: κ = 0.96 (CI 0.94–0.99). The scaled book is
+small exactly when volatility, and so cost, is high. In the 2009 crash it traded half as much as the
+textbook and paid half the cost (1.2% vs 2.5% at 30 bps), on top of a much smaller gross loss (−15%
+vs −31%). Over the full sample it trades 65% more than the textbook (1.38 vs 0.84 per month; its
+average leverage is 1.6). But its premium rises even faster, so its average break-even is higher
+(85 vs 71 bps). Its net Sharpe beats the textbook at every cost level:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Net Sharpe, A, 12-1</th>
+<th>0 bps</th>
+<th>10 bps</th>
+<th>30 bps</th>
+<th>50 bps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Textbook</td>
+<td>0.59</td>
+<td>0.51</td>
+<td>0.34</td>
+<td>0.17</td>
+</tr>
+<tr>
+<td>Partial θ = 0.5</td>
+<td>0.53</td>
+<td>0.48</td>
+<td>0.37</td>
+<td>0.27</td>
+</tr>
+<tr>
+<td>Vol-scaled</td>
+<td><strong>0.78</strong></td>
+<td><strong>0.69</strong></td>
+<td><strong>0.51</strong></td>
+<td><strong>0.32</strong></td>
+</tr>
+<tr>
+<td>Difference, vol-scaled − textbook</td>
+<td>+0.19 [+0.10, +0.29]</td>
+<td>+0.18 [+0.09, +0.28]</td>
+<td>+0.17 [+0.08, +0.26]</td>
+<td>+0.15 [+0.06, +0.24]</td>
+</tr>
+</tbody>
+</table></div>
+<p>The gain holds in 1928–1962 (+0.26 at 10 bps) and in 2000–2026 (+0.18, CI 0.02–0.34). It is not
+significant in 1963–1999 (+0.04, CI −0.02 to +0.11), a calm era with few momentum crashes to avoid.
+Slower trading overtakes the textbook in Sharpe terms only above about 20 bps (Figure 3). That is
+consistent with the 20–24 bps marginal break-even of §6.1. Combining the two (vol-scaled with
+θ = 0.33) has the highest break-even of all, 144 bps, and a net Sharpe of 0.52 at 30 bps.</p>
+<h3>6.4 Can the right speed be found in real time?</h3>
+<p>The frontier in §6.1 is drawn in hindsight. Here, each January from 1948, an investor paying <em>c</em>
+picks among the 17 unscaled long-short designs the one with the best net mean return so far
+(expanding window; the cost normalisation is expanding too). Switching between designs is charged a
+full textbook rebalance, which overstates the true switching cost (<code>src/select_speed.py</code>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Cost</th>
+<th>Sharpe, chosen in real time</th>
+<th>Sharpe, textbook</th>
+<th>Difference [95% CI]</th>
+<th>Most-chosen design</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 bps</td>
+<td>0.55</td>
+<td>0.56</td>
+<td>−0.01 [−0.03, +0.00]</td>
+<td>textbook (90% of years)</td>
+</tr>
+<tr>
+<td>20 bps</td>
+<td>0.45</td>
+<td>0.48</td>
+<td>−0.03 [−0.06, +0.00]</td>
+<td>textbook (63%)</td>
+</tr>
+<tr>
+<td>30 bps</td>
+<td>0.39</td>
+<td>0.40</td>
+<td>−0.01 [−0.06, +0.03]</td>
+<td>smooth 2 (50%)</td>
+</tr>
+<tr>
+<td>50 bps</td>
+<td>0.30</td>
+<td>0.24</td>
+<td><strong>+0.06 [+0.01, +0.11]</strong></td>
+<td>θ = 0.5 (71%)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Near its optimum the frontier is flat, so learning the speed in real time neither helps nor hurts
+much at realistic costs. The marginal break-even is still the right <em>diagnostic</em>. As a trading rule,
+"slow down if your cost is above the marginal break-even" matters only when the cost is far above
+it.</p>
+<h3>6.5 Robustness: signals, long-only, constant costs</h3>
+<ul>
+<li><strong>Other signals.</strong> Faster signals have far lower break-evens: 18 bps for 6-1 (CI −3 to 39) and
+  11 bps for 1-0 (CI 4 to 19). For these signals, partial rebalancing roughly triples the
+  break-even: θ = 0.33 gives 55 bps for 6-1 and 26 bps for 1-0. Short-term industry momentum (1-0)
+  has a genuine gross premium (3.9%/yr, t = 3.5). At 10 bps the textbook keeps a net Sharpe of only
+  0.04, but θ = 0.33 keeps 0.26. Its net value depends entirely on how it is traded.</li>
+<li><strong>Long-only.</strong> Holding only the winners leg against the equal-weight universe earns 3.7% a year
+  active (t = 5.5) at half the textbook's turnover, with a break-even of 75 bps (CI 47–104). After
+  2000 it earns 1.8% (t = 1.2, break-even 35 bps).</li>
+<li><strong>Constant costs.</strong> All break-evens and Sharpe ratios under a constant cost per dollar are in
+  <code>results/summary.csv</code> (<code>be_const_*</code>, <code>sharpe_netconst_*</code>). They differ from the volatility-scaled
+  numbers by the factor κ (1.0 to 1.2 across designs and eras), and no ranking of designs changes.</li>
+</ul>
+<h3>6.6 The tradable test: country ETFs</h3>
+<p><img alt="Country ETFs" loading="lazy" src="figures/fig5_etf_test.png" /></p>
+<p>The same 21 designs on the 42 country ETFs find <strong>no momentum premium to protect</strong>. Textbook 12-1
+earns −0.5% a year gross (CI −6.2 to +5.0; average break-even −8 bps), with −0.1% in 1998–2008 and
+−0.8% in 2009–2026. 6-1 earns +1.4% (t = 0.5) and 1-0 earns −1.4%. No design's gross premium is
+significant. Volatility scaling again does best (12-1: +2.0%/yr, Sharpe 0.13 gross), but at 10 bps its
+net Sharpe is 0.00. The long-only winners leg beats the equal-weight universe by 0.9% a year
+(t = 0.7). These are null results with wide intervals: 344 months of 10–42 funds is a small sample.
+What they show is that the industry premium of §6.1 is not available, net or gross, in the country
+universe an individual can trade.</p>
+<p>Two cost facts in this universe are measured, not modelled:</p>
+<ul>
+<li><strong>The tick floor.</strong> Before decimalisation, half of a $1/16 tick on a $10–20 fund is 15–30 bps
+  per trade. Charging only that floor costs the textbook 12-1 book <strong>7.4 bps a month (0.9% a year)</strong>
+  in 1998–2008, and 1.6 bps a month after 2009.</li>
+<li><strong>Spreads cannot be read off daily prices for ETFs.</strong> The Corwin–Schultz and Abdi–Ranaldo
+  estimators are widely used to put costs into backtests when no quote data exist. For SPY, whose
+  quoted spread is almost always one cent, they give a median of 20 and 27 bps in 2020–2026,
+  <strong>100 and 116 times</strong> the one-tick spread of 0.22 bps (<code>results/spread_estimator_summary.csv</code>).
+  They also go <em>below</em> the tick floor in 1993–2001 (Corwin–Schultz median 0.63 ticks for the country
+  ETFs), which no real spread can do. The estimators read the high–low range as spread. On a fund
+  whose price keeps moving during US hours while its home market is closed, most of that range is
+  price discovery, not cost. A backtest that charges these estimates would conclude that country
+  momentum costs 15–30 bps a trade for reasons that have nothing to do with trading costs.</li>
+</ul>
+<h2>7. What this means in practice</h2>
+<ol>
+<li><strong>Report two break-evens.</strong> The average tells you whether to run the strategy. The marginal,
+   from two or three slower variants of the same signal, tells you whether you are trading it at the
+   right speed. For industry momentum they differ by a factor of three.</li>
+<li><strong>Slow down with partial rebalancing or overlapping holds, not bands.</strong> For the same turnover,
+   trading a fraction of the gap to the target keeps more of the premium than banding or rank
+   smoothing.</li>
+<li><strong>Scale by volatility.</strong> It trades more on average but less when trading is expensive. It was the
+   only change that raised net Sharpe at every cost level, by about 0.18.</li>
+<li><strong>Do not trust constant-cost backtests by more than about 10%</strong>, and do not put high–low spread
+   estimates into an ETF backtest at all.</li>
+<li><strong>Check the universe before optimising the speed.</strong> In country ETFs since 1998 there was no
+   premium for any speed to protect.</li>
+</ol>
+<h2>8. Limitations</h2>
+<ul>
+<li><strong>The cost level is not measured for universe A.</strong> The cost model fixes how costs vary across
+  assets and over time (proportional to volatility), but not their level. That is why the paper
+  reports break-evens. For orientation only: Jones (2002) puts one-way costs (half-spread plus
+  commission) for large NYSE stocks at roughly 0.5–1% for most of the century before the 1975
+  commission deregulation, falling toward 0.1–0.2% by 2000. Large institutions now report costs of
+  about 10 bps or less (Frazzini, Israel and Moskowitz, 2018). Read the break-evens against those
+  orders of magnitude. They are not precise era-specific inputs.</li>
+<li><strong>Industry-level volatility is a proxy for stock-level cost.</strong> Trading an industry means trading
+  its stocks. The cost state here is the industry's volatility, not its constituents' spreads, and
+  the costs of rebalancing <em>within</em> an industry (index changes, new listings) are not charged.</li>
+<li><strong>Long-short frictions are ignored.</strong> Shorting costs (borrow fees, recall risk) are not modelled.
+  The short leg of industry momentum would in practice be run through stocks or sector ETFs, each
+  with its own costs.</li>
+<li><strong>No capacity analysis.</strong> Universe A has no volume data, so price impact as a function of fund size
+  is not modelled. In universe B there is no premium whose capacity could be measured.</li>
+<li><strong>The design grid was refined after a first look.</strong> See §5. Every design in the grid is reported,
+  and the confirmatory tests are Holm-corrected, but H2 is not a pre-registered hypothesis in the
+  strict sense. Project <a href="../">23</a> (deflated Sharpe) is the right tool to quantify that.</li>
+<li><strong>Post-2000 conclusions are weak.</strong> The gross premium is not significant after 2000 (t = 1.4), so
+  the "straight frontier" of §6.1 and the faster decay of §6.2 are point estimates.</li>
+<li><strong>Universe B survivorship.</strong> Delisted country ETFs are missing (§2). Some early WEBS prices are
+  stale even after the 80% screen.</li>
+<li><strong>Volatility-scaled leverage.</strong> The scaled book runs at 1.6 times average leverage (cap 2). Its
+  Sharpe comparison is leverage-free, but an investor whose leverage is capped at 1 would get a
+  smaller version of the same gain.</li>
+</ul>
+<h2>9. Referee notes (self-review)</h2>
+<p>A harsh referee pass was run before submission. The points raised, and what was done:</p>
+<ol>
+<li><em>"The decay prediction of partial designs is off by more than 1 point in 1928–1962."</em> The first
+   version compared the prediction with the backtest over different months, because ages up to 24
+   need two years of history. Both now use the same months. The remaining gap is weight drift, and
+   it is explained in §6.2.</li>
+<li><em>"Your vol-scaled book is mechanically more levered; is the net gain just leverage?"</em> Sharpe
+   ratios are leverage-free, and the cost charged scales with the larger book's turnover (1.38 vs
+   0.84). The gain survives.</li>
+<li><em>"Isn't κ just measuring that crashes are volatile?"</em> Partly, and that is the point. The κ_time /
+   κ_cross split shows half the effect is which assets momentum holds, not when it trades.</li>
+<li><em>"Speed choice in hindsight is overfit."</em> Added the real-time selection test (§6.4). It removes
+   the hindsight gain at 10–30 bps, and that result is reported.</li>
+<li><em>"High–low estimators are standard; why not use them for ETFs?"</em> Added the SPY check (§6.6),
+   which shows they overstate a known one-cent spread about 100 times.</li>
+<li><em>"The country-ETF null could be a stale-price artefact."</em> Added the 80%-traded screen and the
+   tick floor. The null holds with and without the screen's earliest years (1998–2008 and 2009–2026
+   reported separately).</li>
+<li><em>"A 12-month hold has a marginal break-even almost equal to the average; doesn't that contradict
+   H2?"</em> No. It skips the profitable fresh trades along with the cheap ones, because ages 9–18 carry
+   a negative premium (reversal). H2 is a statement about the <em>first</em> trades skipped, which is why
+   the family uses the three mildest slowdowns.</li>
+</ol>
+<h2>10. Connections to other projects</h2>
+<ul>
+<li><a href="../03-moving-average-volatility/">03</a>: a time-series trend rule's edge is mostly a volatility
+  forecast. Here, too, the robust gain comes from volatility scaling.</li>
+<li><a href="../05-efficient-frontier/">05</a> and <a href="../09-beta-horse-race/">09</a> use the same 49 industries, for
+  portfolio construction and for beta.</li>
+<li><a href="../10-market-terminal/">10</a>: 12-1 momentum as a screen signal does not forecast an ETF's own
+  return. This project asks the cross-sectional question, with the same null for ETFs.</li>
+<li>Later projects: 13 (GARCH) can replace the 126-day volatility estimate behind volatility scaling;
+  17 (Fama–French factors) is where UMD, the stock-level version of this premium, is studied; 21
+  (backtest engine) generalises the turnover accounting used here; 23 (deflated Sharpe) addresses
+  the design-grid multiple testing; 29 (optimal execution) models the price impact that §8 leaves
+  out.</li>
+</ul>
+<h2>11. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh          # under 2 minutes on 4 cores; every CSV in results/ and every figure
+</code></pre>
+<p><code>src/fetch_data.py</code> re-downloads the ETF data (Yahoo blocks some cloud machines;
+<code>src/fetch_yahoo_browser.js</code> does the same from a browser console).</p>
+<h2>12. Repository layout</h2>
+<pre><code>12-momentum-trading-costs/
+├── README.md                 this paper
+├── run_all.sh                one-command reproduction
+├── data/                     industries_daily.csv.gz (A), country_etf_daily.csv.gz (B), irx_daily.csv
+├── src/
+│   ├── data.py               loaders, stale-quote checks
+│   ├── engine.py             signals, designs, drift-exact turnover, cost model, kappa
+│   ├── designs.py            the 21 designs, eras, stress windows
+│   ├── backtest.py           126 runs -&gt; results/runs.csv.gz
+│   ├── evaluate.py           break-evens, marginal break-evens, hypotheses, stress windows
+│   ├── decay.py              event-time decay and the frontier it predicts
+│   ├── select_speed.py       real-time choice of trading speed
+│   ├── costs_check.py        spread estimators vs the tick floor
+│   ├── figures.py
+│   ├── stats.py              stationary bootstrap, Holm
+│   ├── fetch_data.py         rebuild the ETF file from Yahoo
+│   └── fetch_yahoo_browser.js
+├── tests/test_engine.py      10 tests (look-ahead, accounting, break-even identity, kappa)
+├── results/                  every number in this paper as CSV
+└── figures/
+</code></pre>
+<h2>References</h2>
+<ul>
+<li>Barroso, P. and Santa-Clara, P. (2015). Momentum has its moments. <em>Journal of Financial Economics</em>.</li>
+<li>Corwin, S. and Schultz, P. (2012). A simple way to estimate bid-ask spreads from daily high and low prices. <em>Journal of Finance</em>.</li>
+<li>Abdi, F. and Ranaldo, A. (2017). A simple estimation of bid-ask spreads from daily close, high, and low prices. <em>Review of Financial Studies</em>.</li>
+<li>Frazzini, A., Israel, R. and Moskowitz, T. (2018). Trading costs. Working paper, AQR / Yale.</li>
+<li>Gârleanu, N. and Pedersen, L. H. (2013). Dynamic trading with predictable returns and transaction costs. <em>Journal of Finance</em>.</li>
+<li>Jegadeesh, N. and Titman, S. (1993). Returns to buying winners and selling losers. <em>Journal of Finance</em>.</li>
+<li>Jones, C. (2002). A century of stock market liquidity and trading costs. Working paper, Columbia.</li>
+<li>Korajczyk, R. and Sadka, R. (2004). Are momentum profits robust to trading costs? <em>Journal of Finance</em>.</li>
+<li>Lesmond, D., Schill, M. and Zhou, C. (2004). The illusory nature of momentum profits. <em>Journal of Financial Economics</em>.</li>
+<li>Moskowitz, T. and Grinblatt, M. (1999). Do industries explain momentum? <em>Journal of Finance</em>.</li>
+<li>Novy-Marx, R. and Velikov, M. (2016). A taxonomy of anomalies and their trading costs. <em>Review of Financial Studies</em>.</li>
+<li>Politis, D. and Romano, J. (1994). The stationary bootstrap. <em>Journal of the American Statistical Association</em>.</li>
+<li>Tóth, B. et al. (2011). Anomalous price impact and the critical nature of liquidity in financial markets. <em>Physical Review X</em>.</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/12-momentum-trading-costs">12-momentum-trading-costs on GitHub</a>.</footer>
+</div>
+</body>
+</html>
