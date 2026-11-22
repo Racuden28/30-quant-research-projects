@@ -367,3 +367,59 @@ def without_1y() -> pd.DataFrame:
 
 if __name__ == "__main__":
     without_1y().to_csv(RES / "robustness_without_1y.csv", index=False)
+
+
+def ridge_neutral_check(alphas=(0.001, 0.01, 0.1, 1.0)) -> pd.DataFrame:
+    """Referee check: is the PCA-neutral blow-up just exact identification?
+
+    Replaces the exact solve L_H' h = -L_T' w with a ridge solve
+    h = -(L_H L_H' + alpha I)^-1 L_H L_T' w (loadings are unit vectors, so alpha is unit-free),
+    and separately caps the gross hedge at 2x the book's DV01 by scaling it down. Same windows,
+    same holding periods, curve books, max K.
+    """
+    from backtest import HOLD, WARM
+    rows = []
+    for p in ("A", "B"):
+        z = load(p)
+        dyf, mats, _ = experiment_data(p)
+        cols = list(dyf.columns)
+        dy = dyf.to_numpy()
+        tg = list(z["targets"])
+        iT = [cols.index(c) for c in tg]
+        K = max(HEDGES[p])
+        iH = [cols.index(c) for c in HEDGES[p][K]]
+        B = books(len(tg))["curve"]
+        first = WARM + 504
+        n = len(dy) - first
+        E = {a: np.zeros((n, len(iT))) for a in alphas}
+        capped = np.zeros((n, B.shape[1]))
+        for r in range(first, len(dy), HOLD):
+            L, _ = pca(np.cov(dy[r - 504:r], rowvar=False), K)
+            LH, LT = L[iH], L[iT]
+            fut = dy[r:min(r + HOLD, len(dy))]
+            o = slice(r - first, r - first + len(fut))
+            for a in alphas:
+                A = np.linalg.solve(LH @ LH.T + a * np.eye(K), LH @ LT.T)
+                E[a][o] = fut[:, iT] - fut[:, iH] @ A
+            A0 = np.linalg.solve(LH.T, LT.T)
+            H = A0 @ B
+            scale = np.minimum(1, 2 * np.abs(B).sum(0) / np.maximum(np.abs(H).sum(0), 1e-12))
+            capped[o] = -(fut[:, iT] @ B - fut[:, iH] @ (H * scale))
+        keys = {f"ridge_{a}": E[a] for a in alphas}
+        zz = dict(z, **keys)
+        d, Lz, _ = norm_losses(zz, B, [f"interp_k{K}", f"pca_k{K}", f"ols_k{K}"] + list(keys))
+        un = qloss(z["dyT"], B)
+        scale = pd.Series(un).rolling(252, min_periods=63).mean().shift(1).to_numpy()
+        ok = np.isfinite(scale)
+        Lz["cap2x"] = (capped ** 2).mean(1)[ok] / scale[ok]
+        base = Lz[f"interp_k{K}"]
+        for k in [f"pca_k{K}"] + list(keys) + ["cap2x", f"ols_k{K}"]:
+            mon = pd.DataFrame({"a": Lz[k], "b": base}, index=d).groupby(d.to_period("M")).mean()
+            rows.append({"panel": p, "K": K, "variant": k, "ratio_vs_interp": Lz[k].mean() / base.mean(),
+                         "median_month_ratio": float(np.median(mon.a / mon.b)),
+                         "share_months_better": float((mon.a < mon.b).mean())})
+    return pd.DataFrame(rows)
+
+
+if __name__ == "__main__":
+    ridge_neutral_check().to_csv(RES / "ridge_neutral_check.csv", index=False)

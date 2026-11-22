@@ -264,6 +264,26 @@ book's DV01, it trusts it in 13% of months in Panel A. In those months it beats 
 that pass are mostly at the zero lower bound. With the 2Y yield below 0.5%, the front end barely moves, the
 PCs separate, the median gross hedge is 0.7×, and the textbook hedge beats bucketing in 63% of months.
 
+**Is it just exact identification?** A referee would ask whether the blow-up only reflects inverting a K×K
+matrix with K instruments. Two repairs test this (`results/ridge_neutral_check.csv`, curve books). The first
+is a ridge solve of the neutrality conditions, h = −(L_H L_H′ + αI)⁻¹ L_H L_T′ w. The second scales the exact
+hedge down whenever its gross size exceeds 2× the book's DV01.
+
+| Factor-neutral variant | Panel A, K = 3 | Panel B, K = 4 |
+|---|---|---|
+| Exact (textbook) | 2,771× (median month 20.4×) | 6,373× (44.7×) |
+| Ridge α = 0.01 | 3.16× (2.70×) | 1.51× (1.13×) |
+| Ridge α = 0.1 | 1.73× (1.16×) | 1.14× (0.76×) |
+| Ridge α = 1 | 1.18× (1.07×) | 1.41× (1.36×) |
+| Gross capped at 2× | 2.05× (1.93×) | 2.24× (2.05×) |
+| *For comparison:* risk model, all factors (OLS) | 0.74× (0.71×) | 0.62× (0.57×) |
+
+Regularising removes the explosion, which confirms that conditioning causes it. But no regularised
+factor-neutral hedge beats bucketing on the pooled measure, and none comes close to the minimum-variance
+hedge. The best one (α = 0.1 in Panel B) wins 74% of months but loses on average. So there are two separate
+problems. Exact identification makes the neutral hedge explode, and neutralising factors instead of
+minimising variance makes it mediocre even after the repair.
+
 ### 4.4 How many factors to keep (H4)
 
 ![How many factors](figures/fig3_how_many_factors.png)
@@ -430,6 +450,9 @@ I reviewed the first complete draft as a hostile referee would. Changes made:
 6. **A traded-instrument check added** (Panel E), because constant-maturity P&L is an approximation.
 7. **Over-claiming removed.** "Volatility scaling helps in regime changes" became "helps one-instrument
    hedges", and "estimated hedges always win" became the SVB exception.
+8. **Exact identification tested (after the Manager's review).** Ridge-regularised and gross-capped versions
+   of the neutral hedge remove the blow-up but still do not beat bucketing (§4.3). The conclusion now separates
+   the two problems: conditioning causes the explosion, and the neutral objective causes the mediocrity.
 
 ## 9. Reproduce
 

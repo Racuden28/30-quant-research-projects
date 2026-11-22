@@ -499,6 +499,56 @@ book's DV01, it trusts it in 13% of months in Panel A. In those months it beats 
 (median ratio 0.54). In the other 87% of months it beats bucketing in 0.4% of cases (median 28×). The months
 that pass are mostly at the zero lower bound. With the 2Y yield below 0.5%, the front end barely moves, the
 PCs separate, the median gross hedge is 0.7×, and the textbook hedge beats bucketing in 63% of months.</p>
+<p><strong>Is it just exact identification?</strong> A referee would ask whether the blow-up only reflects inverting a K×K
+matrix with K instruments. Two repairs test this (<code>results/ridge_neutral_check.csv</code>, curve books). The first
+is a ridge solve of the neutrality conditions, h = −(L_H L_H′ + αI)⁻¹ L_H L_T′ w. The second scales the exact
+hedge down whenever its gross size exceeds 2× the book's DV01.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Factor-neutral variant</th>
+<th>Panel A, K = 3</th>
+<th>Panel B, K = 4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exact (textbook)</td>
+<td>2,771× (median month 20.4×)</td>
+<td>6,373× (44.7×)</td>
+</tr>
+<tr>
+<td>Ridge α = 0.01</td>
+<td>3.16× (2.70×)</td>
+<td>1.51× (1.13×)</td>
+</tr>
+<tr>
+<td>Ridge α = 0.1</td>
+<td>1.73× (1.16×)</td>
+<td>1.14× (0.76×)</td>
+</tr>
+<tr>
+<td>Ridge α = 1</td>
+<td>1.18× (1.07×)</td>
+<td>1.41× (1.36×)</td>
+</tr>
+<tr>
+<td>Gross capped at 2×</td>
+<td>2.05× (1.93×)</td>
+<td>2.24× (2.05×)</td>
+</tr>
+<tr>
+<td><em>For comparison:</em> risk model, all factors (OLS)</td>
+<td>0.74× (0.71×)</td>
+<td>0.62× (0.57×)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Regularising removes the explosion, which confirms that conditioning causes it. But no regularised
+factor-neutral hedge beats bucketing on the pooled measure, and none comes close to the minimum-variance
+hedge. The best one (α = 0.1 in Panel B) wins 74% of months but loses on average. So there are two separate
+problems. Exact identification makes the neutral hedge explode, and neutralising factors instead of
+minimising variance makes it mediocre even after the repair.</p>
 <h3>4.4 How many factors to keep (H4)</h3>
 <p><img alt="How many factors" loading="lazy" src="figures/fig3_how_many_factors.png" /></p>
 <p>If PCA is used as a covariance model, the number of factors <em>j</em> is a separate choice from the number of
@@ -799,6 +849,9 @@ p = 0.0002 to 0.002 for the plain-PCA version and 0.22 to 0.85 for the risk-mode
 <li><strong>A traded-instrument check added</strong> (Panel E), because constant-maturity P&amp;L is an approximation.</li>
 <li><strong>Over-claiming removed.</strong> "Volatility scaling helps in regime changes" became "helps one-instrument
    hedges", and "estimated hedges always win" became the SVB exception.</li>
+<li><strong>Exact identification tested (after the Manager's review).</strong> Ridge-regularised and gross-capped versions
+   of the neutral hedge remove the blow-up but still do not beat bucketing (§4.3). The conclusion now separates
+   the two problems: conditioning causes the explosion, and the neutral objective causes the mediocrity.</li>
 </ol>
 <h2>9. Reproduce</h2>
 <pre><code class="language-bash">pip install -r requirements.txt
