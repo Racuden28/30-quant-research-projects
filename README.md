@@ -25,7 +25,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 10 | [What on a Market Screen Is Worth Looking At?](10-market-terminal/) | Which of fourteen terminal widgets forecast returns, volatility or drawdowns out of sample, beyond realised volatility? | ✅ Published |
 | 11 | Pairs trading | | ⏳ Planned |
 | 12 | Momentum with transaction costs | | ⏳ Planned |
-| 13 | GARCH volatility forecasting | | ⏳ Planned |
+| 13 | [How Long Does a Volatility Shock Last?](13-garch-shock-half-life/) | Does GARCH's α+β describe how long a volatility shock really lasts, and if not, where does its persistence come from? | ✅ Published |
 | 14 | Implied volatility surface | | ⏳ Planned |
 | 15 | Binomial tree pricing | | ⏳ Planned |
 | 16 | [The Floor Under Delta Hedging](16-delta-hedging-floor/) | How much of an option's hedging risk can rebalancing more often remove, and what removes the rest? | ✅ Published |

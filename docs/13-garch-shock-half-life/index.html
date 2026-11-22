@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How Long Does a Volatility Shock Last?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does GARCH&#x27;s α+β describe how long a volatility shock really lasts, and if not, where does its persistence come from?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 13 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 13</p>
+<h1>How Long Does a Volatility Shock Last?</h1>
+<p><strong>GARCH's half-life tested against a century of daily data from 10 equity indices, 1928–2026</strong></p>
+<p><em>Project 13 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Volatility shocks fade faster, and linger longer, than GARCH allows" loading="lazy" src="figures/fig1_shock_decay.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Every GARCH(1,1) carries one number that answers a practical question: once volatility jumps, how long until
+half of the jump is gone? The answer is the half-life, ln 0.5 / ln(α+β). Fitted on daily equity index returns,
+α+β comes out around 0.99, which says half of a volatility shock is still there after six weeks to seven months, depending on the index. That number drives
+every multi-week GARCH forecast, every VaR horizon scaling, and the mean-reversion speed that option models inherit.</p>
+<p>This paper asks: <strong>is that half-life a property of the shocks, and if not, where does it come from?</strong> I measure
+the decay of volatility shocks directly, with local projections (Jordà, 2005). This is a regression of the squared return k days ahead on the
+variance the model quotes for tomorrow. I then compare it with what GARCH predicts. The comparison uses
+10 equity indices: the S&amp;P 500 from 1928, the Nasdaq, TSX, FTSE 100, DAX, CAC 40, Nikkei 225, Hang Seng, ASX 200 and
+Ibovespa. Together they give 122,000 index-days and 95,500 out-of-sample forecast origins. The test has three parts. The headline test compares the data with
+<strong>the same measurement run on 100 simulated worlds in which the fitted model is true</strong>. That matters, because the
+measurement itself is biased (§4.1). The second part fits GARCH decade by decade and checks the parameter
+estimates against their bootstrap null distribution. The third is an out-of-sample event study of 130 volatility
+shocks, with forecasts from six models made on the day each shock was detected.</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>The naive comparison exaggerates the gap by about a factor of two.</strong> Out of sample, the realized decay of a shock
+   has a pooled half-life of <strong>17 trading days</strong> (90% CI 9–34). The GARCH forecasts imply <strong>81 days</strong>. But a placebo
+   shows the measurement runs short even when GARCH is true. In simulated GARCH worlds with a true half-life of
+   69 days, the measured half-life comes out at 37. Any "GARCH is too persistent" result that does not correct for
+   this is overstated.</li>
+<li><strong>After the correction, GARCH is still rejected, from both ends.</strong> The same measurement gives 16 days in the data
+   and <strong>37 days in GARCH worlds</strong> (90% range 20–63, p = 0.02). A year after the shock, <strong>12%</strong> of it is still visible
+   in the data, against <strong>0.5%</strong> in GARCH worlds (p = 0.02). Real shocks fade faster at first and then linger far
+   longer than one exponential allows. Per index, the fast decay is significant in 5 of 10 markets (p ≤ 0.03). DAX,
+   CAC 40 and Nasdaq are fully consistent with GARCH.</li>
+<li><strong>GARCH's long half-life is borrowed from the decades, not from the shocks.</strong> Refitted on each calendar decade, the
+   S&amp;P 500's GARCH half-life is a median <strong>20 days</strong>. On the whole 1928–2026 sample it is <strong>140 days</strong>. If the parameters
+   were constant, decade fits would give a median of 98 days. Parameter constancy is rejected in 9 of 10 indices by a
+   parametric-bootstrap LR test (p ≤ 0.04; DAX p = 0.40). Shifts in the <em>level</em> of volatility between eras look,
+   to a one-factor model, like slow decay of every shock. This is the Lamoureux–Lastrapes (1990) effect, measured
+   here over a century.</li>
+<li><strong>A component GARCH fixes the tail, not the start.</strong> The Engle–Lee two-factor model reproduces the data's
+   one-year tail (p = 0.85) but still decays too slowly in the first weeks: 16 days in the data against 30 in its own
+   simulated worlds (p = 0.04).</li>
+<li><strong>Out of sample the decay error costs little on average, and a lot after shocks.</strong> Over all days, the
+   QLIKE gaps between GARCH, GJR-GARCH-t, component GARCH and HAR are small. The only Holm-significant one is
+   GJR-t's 4% gain at one week. At one year, component GARCH and HAR are 11% better than GARCH(1,1) (90% CI 0.80–0.99
+   and 0.79–1.01), not significant after Holm. On the 130 shock days the error is systematic. Over the
+   next 6–12 months, realized variance came in <strong>34% below GARCH's forecast in aggregate</strong> (realized ÷ forecast 0.66,
+   90% CI 0.52–0.81), and below it in 75% of events. Over the next week it came in above the forecast (1.51, 90% CI
+   0.85–2.22, so not significant), because many shocks are still escalating when they are first detected. Component
+   GARCH is right at long horizons (0.95–0.98).</li>
+</ol>
+<p>The practical reading: <strong>a GARCH(1,1) volatility forecast beyond about a month is a forecast of the volatility regime,
+and its regime anchor comes from the estimation sample, not from the shock.</strong> Use a two-speed model, or a rolling window
+that keeps the anchor current, for anything beyond a month.</p>
+<hr />
+<h2>1. Why this question</h2>
+<p>GARCH(1,1) is the default volatility model in risk management and the first one taught. Its parameters are rarely
+questioned once fitted, but α + β is not a harmless technical detail:</p>
+<ul>
+<li>It sets the <strong>term structure</strong> of the volatility forecast. A 10-day VaR, a 3-month vol target or a GARCH option
+  price all rest on how fast today's shock is assumed to fade.</li>
+<li>It is notoriously <strong>close to 1</strong> in daily data (integrated GARCH; Engle &amp; Bollerslev, 1986). Lamoureux &amp; Lastrapes
+  (1990) and Mikosch &amp; Stărică (2004) argued that this near-unit-root persistence is partly an artefact of
+  structural breaks in the unconditional variance. Ding, Granger &amp; Engle (1993) and Andersen &amp; Bollerslev (1997) showed
+  that absolute returns have <em>long memory</em>: their autocorrelations decay hyperbolically, not exponentially.</li>
+<li>Those papers tested the <strong>autocorrelation of squared returns</strong>, or the in-sample likelihood. Neither directly answers
+  the forecasting question "how much of today's news is still there in k days?", and neither checks whether the test
+  is biased.</li>
+</ul>
+<p>What is new here:</p>
+<ol>
+<li>The decay is measured <strong>on the model's own terms</strong>: by regressing the realized r²(t+k) on the variance the
+   model quotes for tomorrow, and comparing with the same regression on the model's own k-step forecast. Out of sample,
+   with yearly re-estimation, this is a Mincer–Zarnowitz test at every lag from 1 to 252.</li>
+<li>The measurement is <strong>calibrated by simulation</strong>. I show it is biased towards short half-lives, and I test against the
+   distribution it produces in worlds where GARCH (or component GARCH) is true. Comparisons of GARCH persistence
+   with empirical decay rarely make this correction explicit.</li>
+<li><strong>A century of data across 10 markets</strong>, with decade-by-decade stability tests whose null comes from a parametric
+   bootstrap, not from χ² tables. QMLE likelihood ratios are not χ² under fat tails.</li>
+<li>An <strong>out-of-sample event study</strong> of the forecasts each model gave on the day a shock was detected.</li>
+</ol>
+<h3>Hypotheses (stated before running the tests)</h3>
+<ul>
+<li><strong>H1 (shape).</strong> Measured decay is faster than GARCH implies in the first weeks.</li>
+<li><strong>H2 (stability).</strong> GARCH parameters are not constant across decades, and the full-sample persistence is longer than
+  the typical within-decade persistence, by more than small-sample bias explains.</li>
+<li><strong>H3 (forecasting).</strong> GARCH(1,1)'s disadvantage against two-speed models grows with the horizon.</li>
+<li><strong>H4 (episodes).</strong> After large shocks, GARCH over-forecasts multi-month variance.</li>
+</ul>
+<p>H1 was confirmed only after the simulation correction, and only at half the size first measured. H2 was confirmed.
+H3 holds in direction but is not significant after Holm. H4 was confirmed beyond 2 months, and reversed at 1 week.</p>
+<hr />
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Symbol</th>
+<th>Daily returns from</th>
+<th>Out-of-sample origins from</th>
+<th>Return days</th>
+<th>Forecast origins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500</td>
+<td>^GSPC</td>
+<td>1928-01</td>
+<td>1939-01</td>
+<td>24,837</td>
+<td>22,092</td>
+</tr>
+<tr>
+<td>Nasdaq Composite</td>
+<td>^IXIC</td>
+<td>1971-02</td>
+<td>1982-01</td>
+<td>14,063</td>
+<td>11,311</td>
+</tr>
+<tr>
+<td>S&amp;P/TSX</td>
+<td>^GSPTSE</td>
+<td>1979-07</td>
+<td>1990-01</td>
+<td>11,897</td>
+<td>9,272</td>
+</tr>
+<tr>
+<td>FTSE 100</td>
+<td>^FTSE</td>
+<td>1984-01</td>
+<td>1994-01</td>
+<td>10,832</td>
+<td>8,307</td>
+</tr>
+<tr>
+<td>DAX</td>
+<td>^GDAXI</td>
+<td>1988-01</td>
+<td>1999-01</td>
+<td>9,834</td>
+<td>7,081</td>
+</tr>
+<tr>
+<td>CAC 40</td>
+<td>^FCHI</td>
+<td>1990-03</td>
+<td>2001-01</td>
+<td>9,326</td>
+<td>6,619</td>
+</tr>
+<tr>
+<td>Nikkei 225</td>
+<td>^N225</td>
+<td>1965-01</td>
+<td>1976-01</td>
+<td>15,208</td>
+<td>12,512</td>
+</tr>
+<tr>
+<td>Hang Seng</td>
+<td>^HSI</td>
+<td>1987-01</td>
+<td>1998-01</td>
+<td>9,842</td>
+<td>7,119</td>
+</tr>
+<tr>
+<td>S&amp;P/ASX 200</td>
+<td>^AXJO</td>
+<td>1992-11</td>
+<td>2003-01</td>
+<td>8,593</td>
+<td>6,039</td>
+</tr>
+<tr>
+<td>Ibovespa</td>
+<td>^BVSP</td>
+<td>1995-01</td>
+<td>2006-01</td>
+<td>7,895</td>
+<td>5,171</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>122,327</strong></td>
+<td><strong>95,523</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Daily closes from Yahoo Finance to 2026-11-18. This is the same file as project
+<a href="../03-moving-average-volatility/">03</a>, reused on purpose: it is the only dataset in the series that reaches back a century,
+and that is what this question needs. Returns are 100 × log close-to-close. Ibovespa starts in 1995 to skip
+hyperinflation, the same cut as project 03. Price indices omit dividends, which is irrelevant for variance. Before 1957 the
+S&amp;P series is the S&amp;P 90.</p>
+<p>The stress windows of the series are all inside the out-of-sample period: 1987, 2008–09, 2011, 2020 and 2022.
+In-sample fits also cover 1929–1937.</p>
+<hr />
+<h2>3. Method</h2>
+<h3>3.1 Models (all zero-mean, re-estimated every January)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Variance recursion</th>
+<th>What it says about a shock</th>
+<th>Window</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EWMA 0.94 (RiskMetrics)</td>
+<td>σ²ₜ₊₁ = λσ²ₜ + (1−λ)r²ₜ</td>
+<td>never decays (no mean reversion)</td>
+<td>–</td>
+</tr>
+<tr>
+<td>GARCH(1,1)</td>
+<td>σ²ₜ₊₁ = ω + αr²ₜ + βσ²ₜ</td>
+<td>one exponential, rate α+β</td>
+<td>expanding</td>
+</tr>
+<tr>
+<td>GARCH(1,1), 10y rolling</td>
+<td>same</td>
+<td>same, but the anchor ω/(1−α−β) is from the last decade</td>
+<td>rolling 2,520 days</td>
+</tr>
+<tr>
+<td>GJR-GARCH(1,1)-t</td>
+<td>adds γ·r²ₜ·1[rₜ&lt;0], Student-t</td>
+<td>one exponential, rate α+γ/2+β</td>
+<td>expanding</td>
+</tr>
+<tr>
+<td>Component GARCH (Engle &amp; Lee, 1999)</td>
+<td>long-run qₜ with rate ρ, transitory σ²−q with rate α+β</td>
+<td>two exponentials</td>
+<td>expanding</td>
+</tr>
+<tr>
+<td>HAR (direct)</td>
+<td>log RV over the next h days on log RV over the last 5, 22, 66 and 252 days</td>
+<td>no structural decay; horizon-specific regression</td>
+<td>expanding</td>
+</tr>
+</tbody>
+</table></div>
+<p>My own QMLE code (<code>src/models.py</code>, numba recursions) matches the <code>arch</code> package's log-likelihood to within 2 points
+on 12,500 to 25,000 observations (tests). Multi-step forecasts are closed form: for GARCH,
+E[σ²ₜ₊ₖ] = σ̄² + (α+β)^(k−1)(σ²ₜ₊₁ − σ̄²). The first 2,520 days (10 years) of each index are burn-in, so forecasting starts in the eleventh year.</p>
+<h3>3.2 Measuring the decay: local projections on the model's own terms</h3>
+<p>For every forecast origin t and lag k = 1…252:</p>
+<ul>
+<li><strong>Realized:</strong> regress r²ₜ₊ₖ = cₖ + bₖ · sₜ + e, where sₜ is the model's variance for tomorrow.</li>
+<li><strong>Model-implied:</strong> regress the model's own k-step forecast Fₜ(k) on the same sₜ, which gives mₖ.</li>
+</ul>
+<p>If the model is right, bₖ = mₖ at every k. The ratio bₖ/b₁ is the share of today's variance news still visible k days later.
+The k where it crosses 0.5 is the <strong>half-life</strong>. The intercept absorbs any error in the model's long-run level, so
+this isolates the <em>dynamics</em>. Indices are pooled with index fixed effects, after scaling each by its mean r².
+Confidence bands come from a calendar-year block bootstrap (1,000 draws) that resamples the same years for every
+index, which keeps the cross-market dependence of 2008 or 2020.</p>
+<h3>3.3 The placebo, and the fair test</h3>
+<p><code>src/sim_check.py</code> simulates 25,000-day GARCH paths with t₅ shocks and true half-lives of 34, 69 and 138 days. It
+fits GARCH and runs §3.2. The fitted model recovers the truth: 32, 72 and 139 days. <strong>The local projection does
+not.</strong> It reports 28, 37 and 61 days. With fat tails, the variance of r² is barely finite, and the slope at long lags
+is pulled towards zero. So the population half-life ln 0.5 / ln(α+β) is the wrong benchmark for a measured one.</p>
+<p>The headline test (<code>src/null_worlds.py</code>) therefore compares like with like. For each index it fits GARCH(1,1), and
+separately component GARCH, on the full sample. It simulates 100 paths of the same length, with shocks resampled from
+that model's own standardized residuals (filtered historical simulation, which keeps the fat tails and skew). It refits
+the model on each path and runs the identical in-sample local projection. The p-value is the share of simulated
+worlds whose measured half-life is at least as short as the data's. The same simulations give the null distribution
+of the one-year tail share.</p>
+<h3>3.4 Decade stability</h3>
+<p>GARCH(1,1) is fitted on every calendar decade with at least 5 years of data: 51 decade fits. The statistic is
+LR = 2(Σ decade log-likelihoods − log-likelihood of the decades at the full-sample parameters). The null distribution
+comes from 200 simulations of the full-sample model with bootstrapped residuals, with every fit repeated exactly on
+each path (<code>src/stability.py</code>). The same simulations show what spread of decade half-lives estimation noise alone
+produces.</p>
+<h3>3.5 Event study</h3>
+<p>A shock is detected on day t when the trailing 22-day realized variance first exceeds 4× its trailing 5-year median
+(volatility doubles), after at least 126 days below that trigger. Everything is known at t. Over the out-of-sample
+period this gives <strong>130 events in 80 calendar months</strong>. For each event and model, the realized cumulative variance over
+5–252 days is compared with the forecast made at t. The main statistic is the <strong>ratio of sums</strong>, which is unbiased if
+the model is right. The geometric mean of ratios is pulled below 1 by Jensen's inequality even under a correct model,
+so it is reported only as a secondary statistic. Inference uses a cluster bootstrap that resamples calendar months.</p>
+<h3>3.6 Forecast evaluation</h3>
+<p>QLIKE against the realized sum of r² over the next h ∈ {5, 22, 66, 126, 252} days, every trading day. QLIKE is
+robust to the noise in this proxy (Patton, 2011). There are Diebold–Mariano tests per index (Newey–West with lag h),
+and a panel geometric mean of loss ratios with a year-block bootstrap. A Holm correction covers the family of 25
+comparisons (5 models × 5 horizons, each against GARCH(1,1)).</p>
+<hr />
+<h2>4. Results</h2>
+<h3>4.1 The naive gap, and why it is half bias</h3>
+<p>Out of sample, pooled over 10 indices (<code>results/half_lives.csv</code>, tag <code>main</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Realized half-life (days, 90% CI)</th>
+<th>Half-life implied by the model's own forecasts</th>
+<th>Gap, 90% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GARCH(1,1)</td>
+<td>16.7 (8.7–34.1)</td>
+<td>81.4</td>
+<td>64 (35–207)</td>
+</tr>
+<tr>
+<td>GARCH(1,1), 10y rolling</td>
+<td>17.4 (9.4–37.2)</td>
+<td>53.2</td>
+<td>36 (22–58)</td>
+</tr>
+<tr>
+<td>GJR-GARCH-t</td>
+<td>14.6 (8.5–31.5)</td>
+<td>71.8</td>
+<td>56 (39–79)</td>
+</tr>
+<tr>
+<td>Component GARCH</td>
+<td>16.6 (8.7–35.4)</td>
+<td>38.1</td>
+<td>20 (6–52)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Taken at face value, this says GARCH believes shocks last five times longer than they do. It survives winsorizing r²
+at the 99.9th percentile (20.1 vs 81.4) and dropping October 1987 to March 1988 (18.2 vs 69.9). <strong>But it is not a
+fair comparison.</strong> The placebo in §3.3 shows that the realized measurement would report about half of the true
+half-life even if GARCH were exactly right (37 for a true 69). The model-implied column has no such bias, because it is a regression of a
+deterministic function of sₜ. Any comparison of GARCH persistence with an empirical decay of r², such as autocorrelations, faces the same
+problem.</p>
+<h3>4.2 The fair test: data vs simulated model worlds (Figures 1 and 2)</h3>
+<p><img alt="Per index" loading="lazy" src="figures/fig2_half_life_by_index.png" /></p>
+<p><code>results/null_world_tests.csv</code>, in-sample fits, 100 worlds per model and index:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Data</th>
+<th>GARCH worlds: median (90%)</th>
+<th>p</th>
+<th>Component GARCH worlds: median (90%)</th>
+<th>p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pooled half-life, days</td>
+<td><strong>16.5</strong></td>
+<td>37.0 (20.2–63.4)</td>
+<td><strong>0.020</strong></td>
+<td>30.4 (18.2–62.7)</td>
+<td><strong>0.040</strong></td>
+</tr>
+<tr>
+<td>Share left after 252 days</td>
+<td><strong>0.12</strong></td>
+<td>0.005</td>
+<td><strong>0.020</strong></td>
+<td>0.18</td>
+<td>0.85</td>
+</tr>
+<tr>
+<td>Mean share over days 1–126</td>
+<td>0.33</td>
+<td>0.39</td>
+<td>0.25</td>
+<td>0.44</td>
+<td>0.050</td>
+</tr>
+</tbody>
+</table></div>
+<p>Per index, the measured half-life is faster than at least 97% of GARCH worlds in <strong>5 of 10</strong> markets: S&amp;P 500 (27 vs
+47, p = 0.03), S&amp;P/TSX (11 vs 26), ASX 200 (13 vs 25), Ibovespa (13 vs 36), each with p = 0.01, and Hang Seng (10 vs 26, p = 0.03). Nikkei
+(p = 0.09) and FTSE (p = 0.14) point the same way. <strong>DAX (p = 0.73), CAC 40 (0.61) and Nasdaq (0.35) are consistent with
+GARCH.</strong> A one-year tail far above GARCH's is significant for the S&amp;P 500 (0.32 vs 0.02, p = 0.01) and the Nasdaq
+(0.21 vs 0.00, p = 0.02).</p>
+<p>So the shape result is real: <strong>a fast initial decay followed by a long tail.</strong> A single exponential has one dial. To
+fit the tail it must decay slowly, and then it misses the start. Component GARCH has two dials. It matches the tail but
+its maximum-likelihood fit still decays too slowly in the first weeks (16 days in the data against 30 in component
+GARCH worlds, p = 0.04).</p>
+<h3>4.3 Where the persistence comes from: decades (Figure 3)</h3>
+<p><img alt="Decade stability" loading="lazy" src="figures/fig3_decade_stability.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Decades</th>
+<th>Full-sample half-life</th>
+<th>Median decade half-life</th>
+<th>Same, if parameters were constant</th>
+<th>LR p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500</td>
+<td>10</td>
+<td>140</td>
+<td>20</td>
+<td>98</td>
+<td>0.005</td>
+</tr>
+<tr>
+<td>Nikkei 225</td>
+<td>6</td>
+<td>78</td>
+<td>19</td>
+<td>56</td>
+<td>0.005</td>
+</tr>
+<tr>
+<td>Nasdaq</td>
+<td>6</td>
+<td>92</td>
+<td>25</td>
+<td>76</td>
+<td>0.005</td>
+</tr>
+<tr>
+<td>S&amp;P/TSX</td>
+<td>5</td>
+<td>47</td>
+<td>32</td>
+<td>41</td>
+<td>0.005</td>
+</tr>
+<tr>
+<td>FTSE 100</td>
+<td>5</td>
+<td>31</td>
+<td>14</td>
+<td>28</td>
+<td>0.040</td>
+</tr>
+<tr>
+<td>Hang Seng</td>
+<td>4</td>
+<td>42</td>
+<td>34</td>
+<td>39</td>
+<td>0.020</td>
+</tr>
+<tr>
+<td>DAX</td>
+<td>4</td>
+<td>34</td>
+<td>32</td>
+<td>29</td>
+<td>0.403</td>
+</tr>
+<tr>
+<td>CAC 40</td>
+<td>4</td>
+<td>34</td>
+<td>23</td>
+<td>32</td>
+<td>0.010</td>
+</tr>
+<tr>
+<td>ASX 200</td>
+<td>4</td>
+<td>30</td>
+<td>21</td>
+<td>28</td>
+<td>0.005</td>
+</tr>
+<tr>
+<td>Ibovespa</td>
+<td>3</td>
+<td>60</td>
+<td>27</td>
+<td>51</td>
+<td>0.010</td>
+</tr>
+</tbody>
+</table></div>
+<p>(p = 0.005 is the floor with 200 simulations.) Short windows do bias the persistence estimate down (for the
+S&amp;P 500, 98 days instead of 140 if nothing changed), but much less than the real decade fits fall. The median decade
+half-life is below the constant-parameter null in 9 of 10 indices, and less than about half of it in the S&amp;P 500,
+Nikkei, Nasdaq, FTSE and Ibovespa. The pattern in Figure 3 is regular. Long half-lives appear in decades that <em>contain a regime shift in the
+level of volatility</em>: the S&amp;P 500 in the 1990s and 2000s (121 and 104 days), and the 2000s in 8 of 9 other indices
+(70–180 days). Six of the ten S&amp;P 500 decades give 9–20 days. <strong>The 140-day half-life of the S&amp;P 500 is not a property of any decade
+in its history.</strong> This is also what makes the S&amp;P 500 the index where an expanding-window GARCH forecasts worst at
+long horizons. Its anchor σ̄² still remembers the 1930s: at one year, the 10-year rolling GARCH has 43% lower
+QLIKE, and HAR 55% lower (<code>results/qlike_by_index.csv</code>).</p>
+<h3>4.4 Shock by shock (Figures 4 and 7)</h3>
+<p><img alt="Event study" loading="lazy" src="figures/fig4_event_study.png" /></p>
+<p>Realized ÷ forecast cumulative variance on the 130 shock days, as a ratio of sums with a 90% month-cluster bootstrap
+(<code>results/event_errors.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Horizon</th>
+<th>GARCH(1,1)</th>
+<th>GJR-GARCH-t</th>
+<th>Component GARCH</th>
+<th>HAR</th>
+<th>EWMA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5 days</td>
+<td>1.51 (0.85–2.22)</td>
+<td>1.38</td>
+<td>1.57</td>
+<td>2.47</td>
+<td>2.07</td>
+</tr>
+<tr>
+<td>22 days</td>
+<td>1.06 (0.71–1.46)</td>
+<td>0.96</td>
+<td>1.29</td>
+<td>1.88</td>
+<td>1.33</td>
+</tr>
+<tr>
+<td>66 days</td>
+<td><strong>0.75</strong> (0.56–0.96)</td>
+<td>0.68</td>
+<td>1.04</td>
+<td>1.33</td>
+<td>0.81</td>
+</tr>
+<tr>
+<td>126 days</td>
+<td><strong>0.66</strong> (0.52–0.81)</td>
+<td>0.61</td>
+<td>0.95</td>
+<td>1.13</td>
+<td>0.62</td>
+</tr>
+<tr>
+<td>252 days</td>
+<td><strong>0.68</strong> (0.56–0.83)</td>
+<td>0.66</td>
+<td>0.98</td>
+<td>1.08</td>
+<td>0.56</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two errors, in opposite directions. In the first week, every model under-forecasts in aggregate, because the trigger often
+fires on the first leg of a crash (the 1987 trigger fired on Friday 16 October, the trading day before Black Monday). From 3 months on, realized variance under GARCH and
+GJR-t came in about a third below the forecast, and below it in about three events out of four. Component GARCH is unbiased at long horizons.
+HAR is too slow at the start, because its regressors are trailing averages.</p>
+<p>The halfway time of each event's excess variance (Figure 4, right) shows why the decay curve has two speeds. <strong>42% of
+shocks are half gone within 5 days.</strong> Most are one-day jumps, such as the S&amp;P 500 after the Kennedy assassination
+in November 1963, or the February 2018 "Volmageddon" day. Another <strong>18% take more than two months</strong>: 1998 LTCM, 2000–02, 2008 in Brazil, 2020 in Europe.
+A single exponential is fitted to the average of a mixture of very short and very long episodes. Figure 7 shows four
+of them. In 1987 the expanding-window S&amp;P GARCH actually forecast <em>rising</em> volatility after the crash, because its anchor
+was the 1930s.</p>
+<h3>4.5 Does it matter for forecasting? (Figure 5)</h3>
+<p><img alt="QLIKE by horizon" loading="lazy" src="figures/fig5_qlike_by_horizon.png" /></p>
+<p>Panel QLIKE relative to GARCH(1,1), geometric mean over 10 indices with a 90% year-block bootstrap
+(<code>results/qlike_panel.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Horizon</th>
+<th>EWMA</th>
+<th>GARCH 10y</th>
+<th>GJR-t</th>
+<th>Component GARCH</th>
+<th>HAR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5 days</td>
+<td>1.04</td>
+<td>1.00</td>
+<td><strong>0.96</strong> (Holm p = 0.01)</td>
+<td>0.99</td>
+<td>1.01</td>
+</tr>
+<tr>
+<td>22 days</td>
+<td>1.12</td>
+<td>0.99</td>
+<td>0.97 (Holm p = 0.10)</td>
+<td>1.00</td>
+<td>1.00</td>
+</tr>
+<tr>
+<td>66 days</td>
+<td>1.34</td>
+<td>0.97</td>
+<td>0.98</td>
+<td>0.97</td>
+<td>0.97</td>
+</tr>
+<tr>
+<td>126 days</td>
+<td>1.40</td>
+<td>0.95</td>
+<td>0.97</td>
+<td>0.92</td>
+<td>0.93</td>
+</tr>
+<tr>
+<td>252 days</td>
+<td>1.50</td>
+<td>0.93</td>
+<td>0.97</td>
+<td>0.89 (0.80–0.99)</td>
+<td>0.89 (0.79–1.01)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The decay error has a small average cost. Over all days, a shock is the exception, and between shocks GARCH's slow
+decay does little harm. The cost grows with the horizon, as H3 predicted, but nothing beyond one week survives the
+Holm correction over 25 comparisons. The one robust conclusion is that <strong>EWMA, which has no mean reversion at all, is
+the worst model at every horizon of three months or more</strong> (34–50% worse than GARCH). Even an over-persistent model beats a model with
+no persistence limit.</p>
+<p>In the stress windows (<code>results/stress_windows.csv</code>, all indices, h = 22), GJR-t is the best model in 2008–09, 2011 and
+2020, with GARCH(1,1) 3–4% behind it. In 2022, a slow-building bear market, HAR was best (0.93). Component GARCH is 12–18% worse, and HAR 35–38% worse in 2008 and
+2020. A model that expects fast decay is hurt when a shock keeps building, so the event study and the stress windows
+tell the same two-sided story.</p>
+<h3>4.6 Has the half-life changed over 90 years? (Figure 6)</h3>
+<p><img alt="Eras" loading="lazy" src="figures/fig6_eras.png" /></p>
+<p>Pooled out-of-sample decay by period of the forecast origin: 1939–1969 (S&amp;P 500 only), <strong>15 days</strong> (90% CI 6.5–18);
+1970–1999, <strong>6 days</strong> (5–49, very wide because of 1987); 2000–2026, <strong>17 days</strong> (9–44). There is no detectable trend.
+Fast decay is not a feature of modern, electronic markets: it was already there in the 1940s.</p>
+<hr />
+<h2>5. What this means in practice</h2>
+<ul>
+<li><strong>Do not read α+β as the life of a shock.</strong> On daily equity data it is mostly the life of the <em>volatility regime</em>,
+  and the estimation sample decides which regime that is. A forecast beyond a month from an expanding-window GARCH
+  is mainly a bet on the sample's long-run variance.</li>
+<li><strong>For horizons beyond a month, use two speeds or a current anchor.</strong> Component GARCH, HAR or a rolling-window GARCH
+  remove the systematic one-third over-forecast after shocks at no cost at short horizons.</li>
+<li><strong>For the first days after a shock, keep a single-factor model with a leverage term.</strong> GJR-GARCH-t is the only model
+  significantly better than GARCH(1,1) anywhere, at one week, and it is the most robust in crises.</li>
+<li><strong>When you test persistence, calibrate the test.</strong> The local-projection or autocorrelation half-life of squared
+  returns is biased short under fat tails. Compare it with simulated model worlds, not with ln 0.5 / ln(α+β).</li>
+</ul>
+<hr />
+<h2>6. Robustness</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Winsorize r² at 99.9%</td>
+<td>out-of-sample realized half-life 20 vs 81 for the model</td>
+<td><code>half_lives.csv</code>, tag <code>winsor99.9</code></td>
+</tr>
+<tr>
+<td>Drop Oct 1987 to Mar 1988</td>
+<td>18 vs 70</td>
+<td>tag <code>drop1987</code></td>
+</tr>
+<tr>
+<td>Other yardstick models (GARCH 10y rolling, GJR-t, CGARCH)</td>
+<td>realized half-lives 15–17 in every case</td>
+<td><code>half_lives.csv</code></td>
+</tr>
+<tr>
+<td>Placebo: two-component world (true half-life 17–20)</td>
+<td>local projection recovers 17–22</td>
+<td><code>simulation_check.csv</code></td>
+</tr>
+<tr>
+<td>Same optimizer on data and simulated paths</td>
+<td>yes: all fits use the same multi-start QMLE</td>
+<td><code>stability.py</code></td>
+</tr>
+<tr>
+<td>Event trigger only after 1970 (115 events)</td>
+<td>median halfway time 14 days, against 12 for all events</td>
+<td><code>events.csv</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>Daily closes only.</strong> Realized variance is the sum of squared daily returns, not intraday data, so it is a noisy
+  proxy. QLIKE rankings are robust to this, but levels of loss are not comparable with intraday studies such as project
+  <a href="../02-volatility-dashboard-audit/">02</a>, which has OHLC for ETFs. Intraday data would sharpen the first days of the decay
+  curve.</li>
+<li><strong>Equity indices only.</strong> Rates, FX and commodities may decay differently. Gold has an inverse leverage effect
+  (project <a href="../10-market-terminal/">10</a>).</li>
+<li><strong>100 simulated worlds per model and index.</strong> The smallest attainable p-value is 0.0099. Per-index tests are 10 tests per
+  measure and are reported without multiplicity adjustment. The pooled test is the pre-specified headline. With Holm
+  over the 10 per-index half-life tests, none survives on its own (min p = 0.01 × 10 = 0.10). Read the per-index results as
+  "5 of 10 point the same way at the 5% level", not as 5 independent discoveries.</li>
+<li><strong>Component GARCH is hard to identify.</strong> For the Nikkei its long-run root hits 1 (a random-walk trend), and for
+  the Hang Seng β = 0. Its maximum-likelihood fit is a one-step-ahead criterion, so it is not built to get the 3-month decay right.
+  A multi-horizon estimator could do better and was not tried.</li>
+<li><strong>FIGARCH and realized GARCH are not included.</strong> FIGARCH's analytic multi-step forecast costs O(h × 1,000) per
+  origin, which was too expensive for 95,500 daily origins. Realized GARCH needs intraday data.</li>
+<li><strong>The event trigger is one rule.</strong> Its cool-down skips some famous dates (the S&amp;P 500 in September 2008 and March 2020
+  fall inside earlier episodes). Results by horizon are stable to restricting it to post-1970 events, but other
+  triggers were not tried.</li>
+<li><strong>Yahoo index data</strong> before the 1960s are reconstructions (S&amp;P 90), and a few non-US series have stale days. Zero-return
+  days are 1.3% of S&amp;P 500 and Nikkei days, and below 0.3% elsewhere.</li>
+</ul>
+<hr />
+<h2>8. Referee-style self-review: what it changed</h2>
+<ol>
+<li><strong>"Your measurement is biased."</strong> The first draft's headline was "17 days vs 81 days". The placebo in §3.3,
+   which I wrote to check the method, showed that the local projection reports about half of a true GARCH half-life.
+   The headline test was rebuilt around simulated model worlds (§3.3, §4.2). The effect fell from a factor of 5 to a
+   factor of 2.2, and from 10 of 10 to 5 of 10 significant markets. The naive table stays in §4.1, explicitly labelled.</li>
+<li><strong>"Jensen's inequality."</strong> The event study's first statistic was the geometric mean of realized ÷ forecast. It is below 1
+   even for a correct model. The ratio of sums is now the main statistic. The direction of the conclusion did not
+   change, but the one-week result flipped sign: models under-forecast the first week in aggregate.</li>
+<li><strong>"The anchor and the dynamics are confounded."</strong> An intercept in every local projection absorbs level errors, so the
+   curves measure decay only. The anchor problem is reported separately (§4.3, S&amp;P 500 at one year).</li>
+<li><strong>"Simulations and data used different optimizers."</strong> The first stability run warm-started simulated fits from one
+   point. Every fit now uses the same multi-start QMLE. The results were unchanged.</li>
+<li><strong>"Look-ahead in the event selection."</strong> Selecting peaks of realized volatility would condition on the future and
+   guarantee a decay. The trigger uses only trailing data, and forecasts use parameters estimated before the event.</li>
+<li><strong>"Overclaiming forecast gains."</strong> At one year component GARCH and HAR are 11% better. That is not significant after
+   Holm, and the abstract says so.</li>
+</ol>
+<hr />
+<h2>9. Connections to the other projects</h2>
+<ul>
+<li><strong>#01</strong> uses GJR-GARCH-t as a Monte Carlo engine and finds its 90% intervals well calibrated at one week in every
+  volatility quintile. That is consistent with this paper: the decay error matters beyond a month.</li>
+<li><strong>#02</strong> found GJR-GARCH-t 25% better than a 21-day dashboard number at 22 days, and calibrated by volatility
+  quintile. The same holds here on average (<code>calibration_by_state.csv</code>). The bias appears only when conditioning on
+  the moment a shock is detected.</li>
+<li><strong>#03</strong> uses the same index data. Its finding that the 200-day trend carries next-month <em>risk</em> information is a
+  symptom of the slow component: the level of volatility moves with the regime.</li>
+<li><strong>#06</strong> (filtered historical simulation VaR) and <strong>#07</strong> (GARCH-scaled Kelly) both scale risk by a GARCH variance. Their
+  multi-week horizons inherit the over-persistence documented here.</li>
+<li><strong>#19</strong> (HMM regimes) models directly what §4.3 finds: discrete shifts in the level of volatility. <strong>#14</strong> and <strong>#26</strong>
+  (implied volatility surface, Heston) face the same two-speed problem: Heston's single mean-reversion speed κ is the
+  continuous-time cousin of α+β.</li>
+</ul>
+<hr />
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh          # tests, all experiments and figures; about 15 minutes on 4 cores
+</code></pre>
+<p>All numbers in this document are in <code>results/*.csv</code>. Seeds are fixed. Data: <code>data/index_closes.csv</code>, the same file as
+project 03 (refresh with <code>../03-moving-average-volatility/src/fetch_data.py</code>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/models.py</code></td>
+<td>GARCH, GJR-t, component GARCH, EWMA: QMLE, filters, closed-form forecasts, simulators</td>
+</tr>
+<tr>
+<td><code>src/backtest.py</code></td>
+<td>yearly-refit walk-forward forecasts at 5 horizons (<code>results/forecasts/*.pkl.gz</code>, not committed: rebuilt in about 80 seconds)</td>
+</tr>
+<tr>
+<td><code>src/irf.py</code></td>
+<td>out-of-sample local projections and half-lives, with robustness and era splits</td>
+</tr>
+<tr>
+<td><code>src/sim_check.py</code></td>
+<td>placebo: what the measurement reports when the truth is known</td>
+</tr>
+<tr>
+<td><code>src/null_worlds.py</code></td>
+<td>headline test against 100 simulated GARCH and component GARCH worlds per index</td>
+</tr>
+<tr>
+<td><code>src/stability.py</code></td>
+<td>decade fits and parametric-bootstrap LR test</td>
+</tr>
+<tr>
+<td><code>src/episodes.py</code></td>
+<td>event study of 130 detected shocks</td>
+</tr>
+<tr>
+<td><code>src/evaluate.py</code></td>
+<td>QLIKE, Diebold–Mariano, Holm, stress windows, calibration by state</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>all figures</td>
+</tr>
+<tr>
+<td><code>tests/</code></td>
+<td>11 tests, including cross-checks against the <code>arch</code> package and a no-look-ahead test</td>
+</tr>
+</tbody>
+</table></div>
+<h2>References</h2>
+<p>Andersen, T., Bollerslev, T. (1997). Heterogeneous information arrivals and return volatility dynamics. <em>Journal of Finance</em> 52(3).
+Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. <em>Journal of Econometrics</em> 31(3).
+Corsi, F. (2009). A simple approximate long-memory model of realized volatility. <em>Journal of Financial Econometrics</em> 7(2).
+Ding, Z., Granger, C., Engle, R. (1993). A long memory property of stock market returns and a new model. <em>Journal of Empirical Finance</em> 1(1).
+Engle, R., Bollerslev, T. (1986). Modelling the persistence of conditional variances. <em>Econometric Reviews</em> 5(1).
+Engle, R., Lee, G. (1999). A long-run and short-run component model of stock return volatility. In <em>Cointegration, Causality and Forecasting</em>, Oxford UP.
+Glosten, L., Jagannathan, R., Runkle, D. (1993). On the relation between the expected value and the volatility of the nominal excess return on stocks. <em>Journal of Finance</em> 48(5).
+Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scandinavian Journal of Statistics</em> 6(2).
+Jordà, Ò. (2005). Estimation and inference of impulse responses by local projections. <em>American Economic Review</em> 95(1).
+Lamoureux, C., Lastrapes, W. (1990). Persistence in variance, structural change, and the GARCH model. <em>Journal of Business &amp; Economic Statistics</em> 8(2).
+Mikosch, T., Stărică, C. (2004). Nonstationarities in financial time series, the long-range dependence, and the IGARCH effects. <em>Review of Economics and Statistics</em> 86(1).
+Patton, A. (2011). Volatility forecast comparison using imperfect volatility proxies. <em>Journal of Econometrics</em> 160(1).</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/13-garch-shock-half-life">13-garch-shock-half-life on GitHub</a>.</footer>
+</div>
+</body>
+</html>
