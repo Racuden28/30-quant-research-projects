@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>When Is an American Option Worth More Than a European One?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="When is an American option worth more than a European one, and can a tree tell you when to exercise?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 15 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 15</p>
+<h1>When Is an American Option Worth More Than a European One?</h1>
+<p><strong>Thirteen lattices for American options, ninety-eight years of early-exercise premia on the S&amp;P 500,
+and what the exercise rule needs to know</strong></p>
+<p><em>Project 15 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Who should exercise early" loading="lazy" src="figures/fig3_rq_century.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>The binomial tree is the textbook engine for American options, and the textbook exercise stops at
+"the tree converges". This paper asks three questions that sit underneath it. <strong>(I)</strong> Which lattice should you
+actually use, and accurate to <em>what</em>? <strong>(II)</strong> Over a century of real interest rates, dividend yields and
+volatility, when did the American feature of an index option matter at all, and for which side?
+<strong>(III)</strong> Early exercise is a decision rule. How much of its value survives when the rule is drawn with the wrong
+volatility, or in a world where volatility moves?</p>
+<p><strong>Main findings</strong></p>
+<ol>
+<li><strong>Accuracy on the price hides inaccuracy on the premium.</strong> Across 1,000 random American puts, every lattice
+   is, by its median ratio, 14–57 times less accurate in relative terms on the early-exercise premium (EEP) than on the price.
+   CRR with 1,600 steps prices to 1.4 bp but still misstates the premium by 0.7%.</li>
+<li><strong>Leisen–Reimer plus Richardson extrapolation wins, if you extrapolate with the right exponent.</strong>
+   For American options the LR error shrinks like 1/n, not 1/n² as in the European case. Extrapolating
+   with 1/n gives 6.2 × 10⁻⁶ RMS relative price error at n = 1,600, 2.6× better than the textbook 1/n² weights
+   and 22× better than CRR. Reaching a 1% premium error takes 0.004 ms with this engine and about 1.8 ms
+   with CRR, roughly 500 times faster. The Hull–White control variate improves CRR by 5–7× and does nothing for LR.</li>
+<li><strong>Who should exercise early flipped three times in 98 years.</strong> On a 3-month at-the-money S&amp;P 500 option,
+   the call carried the larger premium on 96% of days in 1930–63 (dividend yields of 4–7% against bills near 1%).
+   The put carried it on 92% of days in 1964–2008, and the call again on 89% of days in 2009–22 under zero
+   rates. Since 2023 it has been the put on 100% of days. At the extremes the premium was 7.9% of the
+   American price for a 3-month call in 1942 and 12.3% for a 3-month put in 1981 (33% for a one-year put).</li>
+<li><strong>A European pricer is wrong by more than 1% on most days.</strong> On 73% of trading days since 1928, either
+   the 3-month ATM put or call had a premium above 1% of its price, and on 18% of days above 5%. For
+   one-year options the figure is 93%. In the crashes of 2008 and 2020 the put premium was zero,
+   because rates were zero. The American put pays for early exercise only when cash pays interest.</li>
+<li><strong>The exercise rule needs to know volatility, and underestimating it is the expensive mistake.</strong>
+   Exact lattice policy evaluation shows that a boundary drawn at 0.8× the true volatility forfeits 11–24% of
+   the premium. At ½× it forfeits 114–263%, so the "American" option ends up worth <em>less</em> than its European twin.
+   Overestimating volatility by 1.25× costs only 11–15%. The loss is quadratic near the truth, about 3–5 × (ln m)².</li>
+<li><strong>In a GARCH world a frozen tree boundary throws away most of the premium. A tree boundary that is
+   re-read at the current volatility does not.</strong> With risk-neutral GJR-GARCH paths fitted to the S&amp;P 500
+   (1928–2026), a constant-volatility boundary drawn once at the start captures only 5–83% of the
+   Longstaff–Schwartz premium. Under the leverage effect the put is in the money exactly when volatility has risen,
+   so a frozen boundary exercises too early; volatility is 16–37% above its assumed level when it exercises.
+   Re-reading the same tree boundary daily at the current GARCH term volatility captures 91–128% of the
+   Longstaff–Schwartz premium. In all 10 non-trivial cells it beats the frozen rule with z &gt; 5.9.</li>
+</ol>
+<hr />
+<h2>1. Motivation and question</h2>
+<p>Most listed equity and ETF options are American. Most introductions to the binomial tree price one American put,
+show the price converging, and stop. Three things are left unasked.</p>
+<ul>
+<li><em>Convergence of what?</em> The quantity that distinguishes an American option from a European one is the
+  early-exercise premium, which is often a few percent of the price. A tree's error is spread over the whole price, so
+  a small relative price error can be a large relative error in the premium.</li>
+<li><em>When does it matter?</em> The put premium comes from interest earned on the strike, and the call premium from
+  dividends lost while waiting. Both carry rates have moved enormously since 1928. Nobody prices options
+  with a 1942 dividend yield today, but the history tells you which regime you are in and how large the effect can get.</li>
+<li><em>What does the exercise decision depend on?</em> A tree outputs a price and, implicitly, an exercise
+  boundary. In practice that boundary is drawn with an estimated volatility in a world where volatility moves.</li>
+</ul>
+<p><strong>Research questions.</strong>
+(I) Which lattice reaches a given accuracy on the price and on the premium fastest?
+(II) From 1928 to 2026, how large was the EEP of S&amp;P 500 puts and calls, and which side carried it?
+(III) How much premium is lost when the exercise boundary is drawn with the wrong volatility or carry,
+and does a tree boundary still work when volatility follows a GARCH process?</p>
+<p><strong>Hypotheses stated before running Part II and Part III</strong> (H1 is in the project thread from the first
+message): <strong>H1</strong> in the high-dividend, near-zero-rate 1940s it was the American <em>call</em>, not the put, that
+carried the early-exercise premium. <strong>H2</strong> the European price is a poor proxy (error &gt; 1%) on a non-trivial share of days.
+<strong>H3</strong> (<em>which turned out to be wrong</em>) the envelope theorem makes the value of an exercise rule insensitive to the
+volatility used to draw it: I expected a 25% volatility error to cost under 5% of the premium.</p>
+<p>Ideas this builds on: Cox, Ross and Rubinstein (1979); Jarrow and Rudd (1983); Trigeorgis (1991); Tian (1993);
+Leisen and Reimer (1996); Broadie and Detemple (1996) for the BBS/BBSR methods and the random-contract test design;
+Hull and White (1988) for the control variate; Longstaff and Schwartz (2001); Duan (1995) for risk-neutral GARCH;
+McDonald and Schroder (1998) for put–call symmetry. To my knowledge, a century-long history of index early-exercise
+premia and the exact cost of a mis-drawn exercise boundary have not been published.</p>
+<h2>2. Part I: which tree, and accurate to what?</h2>
+<h3>2.1 Engines</h3>
+<p><code>src/trees.py</code> implements thirteen lattice methods with a continuous dividend yield, compiled with numba. They share
+one backward-induction kernel and differ only in (u, d, p) or in how the last step and the extrapolation are done:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Idea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CRR</td>
+<td>u = e^{σ√Δt}, d = 1/u</td>
+</tr>
+<tr>
+<td>Jarrow–Rudd</td>
+<td>drift in the nodes; risk-neutral p (so the tree is arbitrage-free)</td>
+</tr>
+<tr>
+<td>Tian</td>
+<td>matches the first three moments</td>
+</tr>
+<tr>
+<td>Trigeorgis</td>
+<td>log-space tree with the drift in p</td>
+</tr>
+<tr>
+<td>Trinomial</td>
+<td>Boyle / Kamrad–Ritchken, λ = √3</td>
+</tr>
+<tr>
+<td>Leisen–Reimer</td>
+<td>nodes centred on the strike via the Peizer–Pratt inversion; n odd</td>
+</tr>
+<tr>
+<td>CRR avg(n, n+1)</td>
+<td>averages away the odd–even zig-zag</td>
+</tr>
+<tr>
+<td>BBS</td>
+<td>CRR whose last step is the Black–Scholes value (Broadie–Detemple)</td>
+</tr>
+<tr>
+<td>BBS + Richardson</td>
+<td>2·BBS(n) − BBS(n/2)</td>
+</tr>
+<tr>
+<td>LR + Richardson (1/n)</td>
+<td>2·LR(2m) − LR(m) with the exact step ratio (<em>this paper's choice</em>)</td>
+</tr>
+<tr>
+<td>LR + Richardson (1/n², textbook)</td>
+<td>(4·LR(2m) − LR(m)) / 3</td>
+</tr>
+<tr>
+<td>CRR + control variate</td>
+<td>American_tree − European_tree + Black–Scholes (Hull–White)</td>
+</tr>
+<tr>
+<td>LR + control variate</td>
+<td>the same on LR</td>
+</tr>
+</tbody>
+</table></div>
+<p>The Black–Scholes function prices the out-of-the-money side and gets the other by parity, as in
+<a href="../04-black-scholes-breakeven-smile/">project 04</a>.</p>
+<h3>2.2 Reference values and design</h3>
+<p>Following Broadie and Detemple (1996), 1,000 American puts and 300 American calls on S = 100 are drawn at random:
+K ∼ U[70, 130], σ ∼ U[10%, 60%], T ∼ U[0.1, 1] years with probability 0.75 and U[1, 5] otherwise,
+r ∼ U[0, 10%] with probability 0.8 and 0 otherwise, q ∼ U[0, 10%] (calls: U[1%, 10%]). The sample includes
+the q &gt; r region where calls are exercised early.</p>
+<p>The reference value is LR at n = 10,001 and 20,003 extrapolated with 1/n weights. Two independent checks on 60
+contracts: BBS + Richardson at n = 40,000 agrees to a median 5 × 10⁻⁷ (max 9 × 10⁻⁶), and LR + Richardson at
+n = 40,004 to a median 1 × 10⁻⁸ (max 1 × 10⁻⁵). The RMS relative disagreement is 1 × 10⁻⁷, more than 50 times
+below the smallest error reported below (<code>results/reference_check.csv</code>).</p>
+<p>Errors are measured two ways: relative to the price (on contracts worth at least $0.50, n = 928 puts) and relative
+to the premium itself (on contracts whose premium is at least 5 cents, n = 386 puts). Timings are single-core.</p>
+<h3>2.3 Results</h3>
+<p><img alt="Efficiency" loading="lazy" src="figures/fig1_tree_efficiency.png" /></p>
+<p>RMS relative error, American puts (<code>results/accuracy_errors.csv</code>; calls give the same ranking):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>price, n = 200</th>
+<th>price, n = 1,600</th>
+<th>premium, n = 200</th>
+<th>premium, n = 1,600</th>
+<th>ms per option, n = 1,600</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CRR</td>
+<td>1.0 × 10⁻³</td>
+<td>1.4 × 10⁻⁴</td>
+<td>5.4%</td>
+<td>0.72%</td>
+<td>1.8</td>
+</tr>
+<tr>
+<td>Tian</td>
+<td>1.4 × 10⁻³</td>
+<td>1.8 × 10⁻⁴</td>
+<td>7.3%</td>
+<td>0.85%</td>
+<td>1.8</td>
+</tr>
+<tr>
+<td>Trinomial</td>
+<td>8.0 × 10⁻⁴</td>
+<td>9.2 × 10⁻⁵</td>
+<td>3.8%</td>
+<td>0.47%</td>
+<td>4.4</td>
+</tr>
+<tr>
+<td>BBS</td>
+<td>5.1 × 10⁻⁴</td>
+<td>6.5 × 10⁻⁵</td>
+<td>2.5%</td>
+<td>0.33%</td>
+<td>2.1</td>
+</tr>
+<tr>
+<td>CRR + control variate</td>
+<td>1.9 × 10⁻⁴</td>
+<td>2.5 × 10⁻⁵</td>
+<td>0.66%</td>
+<td>0.10%</td>
+<td>2.0</td>
+</tr>
+<tr>
+<td>Leisen–Reimer</td>
+<td>2.0 × 10⁻⁴</td>
+<td>2.4 × 10⁻⁵</td>
+<td>0.60%</td>
+<td>0.076%</td>
+<td>1.8</td>
+</tr>
+<tr>
+<td>LR + Richardson, 1/n²</td>
+<td>1.3 × 10⁻⁴</td>
+<td>1.6 × 10⁻⁵</td>
+<td>0.40%</td>
+<td>0.050%</td>
+<td>2.3</td>
+</tr>
+<tr>
+<td>BBS + Richardson</td>
+<td>5.2 × 10⁻⁵</td>
+<td>6.9 × 10⁻⁶</td>
+<td>0.20%</td>
+<td>0.021%</td>
+<td>2.6</td>
+</tr>
+<tr>
+<td><strong>LR + Richardson, 1/n</strong></td>
+<td><strong>5.9 × 10⁻⁵</strong></td>
+<td><strong>6.2 × 10⁻⁶</strong></td>
+<td><strong>0.074%</strong></td>
+<td><strong>0.0053%</strong></td>
+<td>2.3</td>
+</tr>
+</tbody>
+</table></div>
+<p>What this shows:</p>
+<ul>
+<li><strong>The premium is the hard part.</strong> For every method the relative error on the premium is 14–57 times the
+  relative error on the price (median ratio across n, per method). A tree accurate to a basis point of price can be off
+  by percent on the quantity that makes the option American.</li>
+<li><strong>The right Richardson exponent matters.</strong> LR's European error is O(1/n²), which is why the textbook
+  extrapolation uses weights 4/3 and −1/3. For American options the error is dominated by the exercise boundary
+  and shrinks like 1/n (Hull's put in Figure 2: LR errors of 16, 7.7, 3.6 and 1.8 × 10⁻⁶ at n = 2,501, 5,001,
+  10,001 and 20,001, halving each time n doubles).
+  With the 1/n weights the premium error falls by a further 9× at n = 1,600.</li>
+<li><strong>The control variate helps a bad tree, not a good one.</strong> It cuts CRR's errors 5–7×, because CRR's
+  European error is large and is shared by the American price. LR's European error is already tiny (about
+  10⁻⁷ at n = 1,000), and what remains of its American error comes from the exercise boundary, which the
+  European leg cannot see.</li>
+<li><strong>Speed at equal accuracy.</strong> For 1 bp of price, CRR needs more than 1,600 steps (1.8 ms) and LR + Richardson
+  100–200 (0.01–0.04 ms). At n = 200 BBS + Richardson is level with it on price, but 3× worse on the premium. For 1% of the premium the gap is about 500× (1.8 ms against 0.004 ms at n = 50).</li>
+</ul>
+<p><img alt="Convergence" loading="lazy" src="figures/fig2_convergence_hull.png" /></p>
+<p>Part II uses LR + Richardson (1/n) at n = 400, which has a premium RMS error near 0.03%.</p>
+<h2>3. Part II: ninety-eight years of the American premium</h2>
+<h3>3.1 Data</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Source</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S&amp;P 500 price</td>
+<td>^GSPC daily close (Yahoo, via <a href="../03-moving-average-volatility/">project 03</a>)</td>
+<td>1927-12 to 2026-11-17</td>
+</tr>
+<tr>
+<td>Short rate r</td>
+<td>Ken French RF (1-month T-bill), 12·ln(1+RF), applied within the month it is quoted for; ^IRX (13-week bill) after 2026-09</td>
+<td>1926-07 to 2026-11</td>
+</tr>
+<tr>
+<td>Dividend yield q</td>
+<td>Shiller trailing 12-month dividend / price, ln(1 + D/P), applied from the following month; from 2023-07 implied from SPY (total return minus ^GSPC price return over 252 days, plus SPY's 0.0945% fee)</td>
+<td>1928-04 to 2026-11</td>
+</tr>
+<tr>
+<td>Volatility σ</td>
+<td>trailing 63-day close-to-close volatility of ^GSPC</td>
+<td>1928-04 to 2026-11</td>
+</tr>
+</tbody>
+</table></div>
+<p>All inputs are known at the close of the pricing day. The SPY-implied yield tracks Shiller's in the 2007–2023
+overlap with correlation 0.84 and a mean absolute gap of 15 bp (<code>results/dividend_splice_check.csv</code>).
+On every one of 24,775 trading days I price American and European puts and calls (ATM 1 month, 3 months and 1 year;
+3-month 10% OTM and ITM).</p>
+<h3>3.2 Results</h3>
+<p><img alt="History" loading="lazy" src="figures/fig4_eep_history.png" /></p>
+<p><strong>H1 confirmed, and the pattern repeats.</strong> Mean premium as a share of the American price, 3-month ATM
+(<code>results/history_summary.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Period</th>
+<th>r</th>
+<th>q</th>
+<th>put premium</th>
+<th>call premium</th>
+<th>days the put premium is larger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1930–1963</td>
+<td>1.1%</td>
+<td>5.0%</td>
+<td>0.02%</td>
+<td><strong>3.5%</strong></td>
+<td>3.5%</td>
+</tr>
+<tr>
+<td>1964–2008</td>
+<td>5.6%</td>
+<td>3.1%</td>
+<td><strong>2.8%</strong></td>
+<td>0.03%</td>
+<td>92%</td>
+</tr>
+<tr>
+<td>2009–2022</td>
+<td>0.5%</td>
+<td>2.0%</td>
+<td>0.04%</td>
+<td><strong>1.1%</strong></td>
+<td>11%</td>
+</tr>
+<tr>
+<td>2023–2026</td>
+<td>4.5%</td>
+<td>1.4%</td>
+<td><strong>3.0%</strong></td>
+<td>0.00%</td>
+<td>100%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The extremes are large. Over 1942 (r = 0.3%, q = 7.4%) a 3-month ATM call's premium averaged 7.9% of its price,
+and 22% for one year. In 1981 (r = 13.7%) the 3-month put's premium was 12.3%, and 33% for one year. In November 2026 it is
+2.8% (0.32 vol points) for the 3-month put, and zero for the call.</p>
+<p>In volatility units, a European pricer used on an American 3-month ATM option would need to add 0.16–0.17 vol
+points on average over the century, and up to 1.7 points in 1981 (bottom panel of Figure 4).</p>
+<p><strong>H2 confirmed.</strong> The European price is more than 1% below the American on 38% of days for the 3-month ATM put, 36%
+for the call, and 73% for at least one of the two. For one-year options the either-side figure is 93%.</p>
+<p><strong>Stress windows.</strong> The premium is driven by carry, not by fear. In the 2008 crisis (σ = 51%) and the 2020 crash
+(σ = 45%) the put premium was 0.00%, because bills paid nothing, and the call carried 0.4% and 0.2%.
+In 1973–74 (r = 7.2%) the put premium averaged 3.3%, and over the 2022–23 hikes it rose from zero to 4.7% in
+October 2023. In 1929–32 and 1937–38 the call side dominated (1.3% and 2.2%).</p>
+<p><strong>The exercise boundary.</strong> In put regimes the 3-month ATM put should be exercised once the index falls about
+1.4–1.5 standard deviations (σ√T) below the strike (median S*/K = 0.91–0.92). In call regimes the call should be
+exercised about 1.5–1.7 standard deviations above it (<code>results/history_boundary.csv</code>).</p>
+<p><strong>Robustness.</strong> Replacing the 63-day volatility with a 5-year one, a 21-day half-life EWMA or a constant 15% changes
+the decade means substantially (the 1930s call premium goes from 1.8% to 4.5% at a constant 15%, because volatility
+was then 33% and a higher volatility lowers the premium share). It never changes which side carries the premium in
+any decade (<code>results/history_robustness.csv</code>). The (r, q) map in the header figure is computed at σ = 15% and is
+not used for the daily numbers.</p>
+<h2>4. Part III: what does the exercise rule need to know?</h2>
+<h3>4.1 Exact misspecification on the lattice</h3>
+<p>A lattice gives an exact way to value a <em>policy</em> rather than an option. <code>crr_boundary</code> extracts the critical price
+at every step. <code>crr_policy_value</code> then values "exercise when the price crosses this boundary" on the <em>true</em> lattice
+by backward induction, with no Monte Carlo noise. A test checks that the true boundary reproduces the American price
+to 10⁻¹².</p>
+<p>Three regimes from Part II, each for a 1-year option with σ = 15%: a 1981 put (r 14%, q 5%), a 2023 put (r 5%,
+q 1.5%) and a 1942 call (r 0.3%, q 6%), at the money, 10% in and 10% out of the money; n = 2,000.</p>
+<p><img alt="Misspecification" loading="lazy" src="figures/fig5_boundary_misspec.png" /></p>
+<p>Share of the premium lost, at-the-money (<code>results/misspec_sigma.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>boundary drawn at</th>
+<th>½σ</th>
+<th>⅔σ</th>
+<th>0.8σ</th>
+<th>0.9σ</th>
+<th>1.1σ</th>
+<th>1.25σ</th>
+<th>1.5σ</th>
+<th>2σ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1981 put</td>
+<td>114%</td>
+<td>51%</td>
+<td>11%</td>
+<td>2.5%</td>
+<td>3.2%</td>
+<td>11%</td>
+<td>38%</td>
+<td>71%</td>
+</tr>
+<tr>
+<td>2023 put</td>
+<td>263%</td>
+<td>98%</td>
+<td>24%</td>
+<td>5.6%</td>
+<td>4.1%</td>
+<td>15%</td>
+<td>44%</td>
+<td>72%</td>
+</tr>
+<tr>
+<td>1942 call</td>
+<td>191%</td>
+<td>76%</td>
+<td>19%</td>
+<td>5.3%</td>
+<td>4.0%</td>
+<td>14%</td>
+<td>42%</td>
+<td>74%</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>H3 rejected.</strong> The envelope theorem holds, since the loss is second-order near the truth (about 3–5 × (ln m)²).
+But the premium is itself small, so a second-order loss is a large <em>share</em> of it. A boundary drawn at too low a
+volatility exercises too early: it gives up an option worth more than the interest or dividend it captures.
+Below about ⅔σ that destroys more value than the American feature is worth. Overestimating volatility only delays
+exercise, and the loss tends to 100% (never exercise), not beyond. The flat dashed lines are the ITM contracts,
+where a low-volatility boundary says "exercise now".</p>
+<p>The carry input behaves the same way: drawing the boundary with 0.75× the true carry costs 3–7% of the premium,
+and 0.5× costs 14–34% (<code>results/misspec_rate.csv</code>).</p>
+<p>Two heuristics: "exercise when intrinsic value exceeds the European value of what is left" loses 69–94% of the
+premium in 7 of the 9 contracts, and "exercise as soon as it is in the money" loses up to 16.5 times the premium (<code>results/heuristics.csv</code>).</p>
+<h3>4.2 In a world where volatility moves</h3>
+<p>The lattice assumes constant volatility. To test the boundary where it does not hold, I fit a Gaussian GJR-GARCH(1,1)
+with a risk premium λ√h to daily S&amp;P 500 excess returns, 1928–2026 (24,774 days; α = 0.040, γ = 0.093, β = 0.903,
+λ = 0.045), and simulate it under Duan's (1995) risk-neutral measure (persistence 0.993, long-run volatility 21.9%).
+A 3-month American put can be exercised daily, with r ∈ {5%, 10%}, q = 1.5%, K/S ∈ {1.0, 1.1} and starting volatility
+∈ {10%, 20%, 40%}. Four rules are evaluated on the same 600,000 paths per cell:</p>
+<ul>
+<li><strong>hold</strong>: the European payoff;</li>
+<li><strong>static tree</strong>: a CRR boundary drawn once at the GARCH expected volatility over the option's life;</li>
+<li><strong>dynamic tree</strong>: the same CRR boundary table, re-read every day at the current GARCH term volatility;</li>
+<li><strong>Longstaff–Schwartz (LSM)</strong>: regression on (S/K, √h) polynomials, fitted on 200,000 <em>separate</em> paths so that
+  the evaluation is out of sample (a lower bound).</li>
+</ul>
+<p><em>Validation (constant volatility, where the exact daily-exercise value is known from a lattice):</em> the tree rule
+captures 89–99% of the exact premium and LSM 77–99%. LSM is weakest at high volatility, which is why "captured" below
+can exceed 100% (<code>results/lsm_gbm_validation.csv</code>).</p>
+<p><img alt="GARCH" loading="lazy" src="figures/fig6_garch_policies.png" /></p>
+<p>Share of the LSM premium captured (<code>results/garch_policies.csv</code>; two deep-ITM, low-volatility cells where every rule
+exercises immediately are left out):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>cell (K/S, r, start vol)</th>
+<th>static tree</th>
+<th>dynamic tree</th>
+<th>vol when the static rule exercises vs assumed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0, 5%, 10%</td>
+<td>41% ± 10</td>
+<td>106% ± 10</td>
+<td>1.37×</td>
+</tr>
+<tr>
+<td>1.0, 5%, 20%</td>
+<td>31% ± 12</td>
+<td>114% ± 12</td>
+<td>1.24×</td>
+</tr>
+<tr>
+<td>1.0, 5%, 40%</td>
+<td>5% ± 22</td>
+<td>128% ± 18</td>
+<td>1.16×</td>
+</tr>
+<tr>
+<td>1.0, 10%, 10%</td>
+<td>75% ± 3</td>
+<td>93% ± 3</td>
+<td>1.37×</td>
+</tr>
+<tr>
+<td>1.0, 10%, 20%</td>
+<td>63% ± 4</td>
+<td>98% ± 3</td>
+<td>1.27×</td>
+</tr>
+<tr>
+<td>1.0, 10%, 40%</td>
+<td>51% ± 7</td>
+<td>105% ± 5</td>
+<td>1.20×</td>
+</tr>
+<tr>
+<td>1.1, 5%, 20%</td>
+<td>75% ± 3</td>
+<td>95% ± 3</td>
+<td>1.05×</td>
+</tr>
+<tr>
+<td>1.1, 5%, 40%</td>
+<td>46% ± 9</td>
+<td>101% ± 7</td>
+<td>1.04×</td>
+</tr>
+<tr>
+<td>1.1, 10%, 20%</td>
+<td>83% ± 1</td>
+<td>91% ± 1</td>
+<td>1.04×</td>
+</tr>
+<tr>
+<td>1.1, 10%, 40%</td>
+<td>69% ± 3</td>
+<td>99% ± 3</td>
+<td>1.07×</td>
+</tr>
+</tbody>
+</table></div>
+<p>(± is the 95% half-width from paired differences with LSM.)</p>
+<p>The mechanism is the one in 4.1. Under the leverage effect a falling index raises volatility, so the put is deep in
+the money exactly when the true boundary has moved down. A boundary frozen at the starting volatility then
+exercises too early: volatility at the static rule's exercise is 4–37% above what the rule assumed. The dynamic rule
+beats the static one in every cell, with z between 5.9 and 11.2 even under a conservative standard error
+(the sum of the two paired errors against LSM). All 10 survive a Holm correction trivially. Against LSM the dynamic
+rule is ahead in 5 cells (significantly at the 5% level in 2) and behind in 5 (significantly in 3, worst 91%). A
+constant-volatility tree is therefore a good exercise engine in a stochastic-volatility world, as long as its
+volatility input is kept current.</p>
+<h2>5. Referee self-review: what it changed</h2>
+<p>I reviewed the first complete draft as a hostile referee would. The points raised, and what was done:</p>
+<ol>
+<li><em>"Your reference values are just another tree."</em> Added two independent extrapolations at n = 40,000 (BBS family
+   and LR family). Their disagreement (RMS 10⁻⁷ relative) is reported and is far below every error in the table.</li>
+<li><em>"LR + Richardson is standard; what is new?"</em> The first run used the textbook 1/n² weights. The convergence
+   trace showed 1/n behaviour for American options. Both variants are now reported side by side, and the 1/n version
+   is 2.6× (price) to 9× (premium) more accurate.</li>
+<li><em>"A Monte Carlo EEP mixes the premium with the noise of the European leg."</em> The first validation compared MC
+   American values with closed-form European values, so the MC noise of the European leg (up to 3 standard errors) leaked
+   into the premium. All premia are now paired differences (rule − hold) on the same paths, and the paths were raised to 600,000.</li>
+<li><em>"Is the static rule's failure a bug?"</em> Under constant volatility the same code captures 89–99% of the exact
+   premium, so the code is right. The failure appears only when volatility moves, and a diagnostic (volatility at
+   exercise vs assumed) now shows the mechanism directly.</li>
+<li><em>"LSM is a lower bound, so 'captured &gt; 100%' is odd."</em> That is stated, and validated: LSM leaves up to 23% of the
+   premium on the table at 40% volatility under GBM. No claim is made that the dynamic tree is optimal.</li>
+<li><em>"The carry experiment for the call was trivial."</em> Scaling r for a call with r = 0.3% changes nothing. The call
+   now scales q, the carry that drives its exercise.</li>
+<li><em>"Dividends."</em> An index pays a near-continuous dividend, so a continuous yield is a fair model for the S&amp;P 500.
+   It is not a fair model for single stocks with discrete ex-dates; see Limitations.</li>
+<li><em>"Star chart readability."</em> Era colours originally matched the red and blue of the map, which made dots
+   invisible. Eras are now the four regimes, with marker shapes and colours outside the map's palette.</li>
+</ol>
+<h2>6. Limitations</h2>
+<ul>
+<li><strong>Model premia, not market premia.</strong> Part II prices options with a model at trailing volatility. Listed S&amp;P 500
+  index options (SPX) are European. The American products are OEX, SPY options and single-stock options, whose
+  quotes before 1973 do not exist. The history shows what a correct American pricer <em>would</em> have charged.</li>
+<li><strong>Continuous dividend yield.</strong> Real dividends arrive on ex-dates. For single stocks, early exercise of calls
+  clusters just before ex-dates, and a continuous yield understates the call premium in that window. For the
+  index, with hundreds of payers, the approximation is good.</li>
+<li><strong>Volatility input.</strong> Trailing 63-day volatility ignores the volatility risk premium and the smile
+  (<a href="../04-black-scholes-breakeven-smile/">project 04</a>). The premium share falls as volatility rises, so implied
+  volatility (higher on average) would give slightly smaller premia. The robustness table bounds this.</li>
+<li><strong>Rates.</strong> The 1-month bill is a proxy for the financing rate of a hedger. Before the 1950s bill yields were
+  sometimes slightly negative or administered. Using a 3-month rate would raise put premia slightly.</li>
+<li><strong>Splice.</strong> The dividend yield after June 2023 is implied from SPY. It agrees with Shiller in the overlap to
+  15 bp on average, and the last 41 months carry that error.</li>
+<li><strong>GARCH world.</strong> One model (Gaussian GJR-GARCH, Duan measure) with 12 parameter cells and one maturity. Jumps,
+  stochastic rates and a smile under Q are absent. LSM is a lower bound; an upper bound (Andersen–Broadie duality)
+  would bracket the true premium.</li>
+<li><strong>Part I timings</strong> come from one machine with numba JIT. Ratios between methods are more portable than
+  absolute times.</li>
+</ul>
+<h2>7. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh            # about 20 minutes on 4 cores (18 min measured on a clean copy); accuracy.py takes most of it
+python -m pytest tests     # 36 tests: convergence, parity, McDonald–Schroder symmetry, policy evaluation, data
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/trees.py</code></td>
+<td>13 lattice engines, exercise boundary, exact policy evaluation, lattice Greeks</td>
+</tr>
+<tr>
+<td><code>src/build_data.py</code></td>
+<td>S&amp;P 500 inputs (price, r, q, σ) from <code>data/raw</code></td>
+</tr>
+<tr>
+<td><code>src/accuracy.py</code></td>
+<td>Part I: random contracts, references, accuracy and timing grid</td>
+</tr>
+<tr>
+<td><code>src/history.py</code></td>
+<td>Part II: daily premia 1928–2026, boundaries, (r, q) map, robustness</td>
+</tr>
+<tr>
+<td><code>src/garch.py</code></td>
+<td>GJR-GARCH estimation and risk-neutral simulation</td>
+</tr>
+<tr>
+<td><code>src/exercise.py</code></td>
+<td>Part III: lattice misspecification, heuristics, GARCH world, LSM</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>All figures</td>
+</tr>
+</tbody>
+</table></div>
+<h2>8. Connections to other projects</h2>
+<ul>
+<li><strong>03 Moving average</strong>: source of the S&amp;P 500 and T-bill series.</li>
+<li><strong>04 Black–Scholes break-even smile</strong>: the European pricer's numerics, and the smile that a constant-volatility
+  boundary ignores.</li>
+<li><strong>13 GARCH volatility</strong>: the leverage effect that breaks the frozen boundary here.</li>
+<li><strong>16 Delta hedging</strong>: hedging an American option with lattice Greeks (<code>crr_delta</code>).</li>
+<li><strong>26 Heston calibration</strong>: the stochastic-volatility version of Part III.</li>
+<li><strong>30 Deep hedging</strong>: learned exercise and hedging rules can be benchmarked against the lattice policy evaluator.</li>
+</ul>
+<h2>References</h2>
+<p>Andersen, L. and Broadie, M. (2004). Primal-dual simulation algorithm for pricing multidimensional American options.
+<em>Management Science</em>. · Broadie, M. and Detemple, J. (1996). American option valuation: new bounds, approximations,
+and a comparison of existing methods. <em>RFS</em>. · Cox, J., Ross, S. and Rubinstein, M. (1979). Option pricing: a
+simplified approach. <em>JFE</em>. · Duan, J.-C. (1995). The GARCH option pricing model. <em>Mathematical Finance</em>. ·
+Glosten, L., Jagannathan, R. and Runkle, D. (1993). <em>JF</em>. · Holm, S. (1979). <em>Scand. J. Stat.</em> · Hull, J. and
+White, A. (1988). The use of the control variate technique in option pricing. <em>JFQA</em>. · Jarrow, R. and Rudd, A.
+(1983). <em>Option Pricing</em>. · Leisen, D. and Reimer, M. (1996). Binomial models for option valuation: examining and
+improving convergence. <em>Applied Mathematical Finance</em>. · Longstaff, F. and Schwartz, E. (2001). Valuing American
+options by simulation. <em>RFS</em>. · McDonald, R. and Schroder, M. (1998). A parity result for American options.
+<em>J. Computational Finance</em>. · Shiller, R. <em>Irrational Exuberance</em> data. · Tian, Y. (1993). A modified lattice
+approach to option pricing. <em>J. Futures Markets</em>. · Trigeorgis, L. (1991). A log-transformed binomial numerical
+analysis method. <em>JFQA</em>.</p>
+<hr />
+<p>Code: MIT. Text and figures: CC BY 4.0.</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/15-american-early-exercise">15-american-early-exercise on GitHub</a>.</footer>
+</div>
+</body>
+</html>

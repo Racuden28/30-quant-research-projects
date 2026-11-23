@@ -27,7 +27,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 12 | [The Last Trade Is the Cheapest to Skip](12-momentum-trading-costs/) | Does momentum's average break-even cost tell you how fast to trade it, or do its last trades earn far less? | ✅ Published |
 | 13 | [How Long Does a Volatility Shock Last?](13-garch-shock-half-life/) | Does GARCH's α+β describe how long a volatility shock really lasts, and if not, where does its persistence come from? | ✅ Published |
 | 14 | Implied volatility surface | | ⏳ Planned |
-| 15 | Binomial tree pricing | | ⏳ Planned |
+| 15 | [When Is an American Option Worth More Than a European One?](15-american-early-exercise/) | When is an American option worth more than a European one, and can a tree tell you when to exercise? | ✅ Published |
 | 16 | [The Floor Under Delta Hedging](16-delta-hedging-floor/) | How much of an option's hedging risk can rebalancing more often remove, and what removes the rest? | ✅ Published |
 | 17 | [The Five-Factor Model's Holdout Exam](17-five-factor-holdout/) | Does the five-factor model's 2013 verdict survive 13 years of data that did not exist when it was chosen? | ✅ Published |
 | 18 | [Three Factors Explain the Curve. They Don't Hedge It.](18-yield-curve-pca/) | Does yield-curve PCA actually hedge better than a desk's model-free bucketing out of sample? | ✅ Published |
