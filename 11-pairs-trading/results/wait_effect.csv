@@ -1,0 +1,22 @@
+universe,period,comparison,ann_pct,nw_t
+industries,Full 1927-2026,D20_w0 - D20_w1,0.50871,3.1409
+industries,Full 1927-2026,D20_w1 - D20_w5,0.15766,1.8362
+industries,Full 1927-2026,C20_w0 - C20_w1,1.6148,2.1868
+industries,1927-1961,D20_w0 - D20_w1,1.4973,3.4846
+industries,1927-1961,D20_w1 - D20_w5,0.073328,0.36495
+industries,1927-1961,C20_w0 - C20_w1,4.7484,2.3137
+industries,1962-2002 (GGR sample),D20_w0 - D20_w1,-0.046165,-0.84455
+industries,1962-2002 (GGR sample),D20_w1 - D20_w5,0.26582,2.5976
+industries,1962-2002 (GGR sample),C20_w0 - C20_w1,-0.22547,-1.5753
+industries,2003-2026,D20_w0 - D20_w1,0.03051,0.40494
+industries,2003-2026,D20_w1 - D20_w5,0.093459,0.8729
+industries,2003-2026,C20_w0 - C20_w1,0.23953,1.4351
+countries,Full 2002-2026,D20_w0 - D20_w1,0.49014,3.8199
+countries,Full 2002-2026,D20_w1 - D20_w5,0.49706,2.8583
+countries,Full 2002-2026,C20_w0 - C20_w1,0.75466,3.8077
+countries,2003-2026,D20_w0 - D20_w1,0.44779,3.5701
+countries,2003-2026,D20_w1 - D20_w5,0.38644,2.6095
+countries,2003-2026,C20_w0 - C20_w1,0.72643,3.6737
+countries,2010-2026,D20_w0 - D20_w1,0.26766,2.31
+countries,2010-2026,D20_w1 - D20_w5,0.22466,1.6404
+countries,2010-2026,C20_w0 - C20_w1,0.26248,1.7437

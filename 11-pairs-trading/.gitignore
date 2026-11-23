@@ -1,0 +1,5 @@
+# raw per-window simulation output (rebuilt by src/backtest.py, ~170 MB)
+results/raw_*.npz
+src/__pycache__/
+tests/__pycache__/
+study/

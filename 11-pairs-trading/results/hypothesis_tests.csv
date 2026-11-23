@@ -1,0 +1,13 @@
+hypothesis,test,estimate_ann_pct,nw_t,p,confirmatory,p_holm,ratio,real,placebo
+H1,"Industries, real - N1 edge > 0, full sample",-0.85263,-2.6297,0.99573,True,0.99573,,,
+H2,"industries, real - N1 edge > 0 in 2003-2026 (predicted: not significant)",0.23369,0.48416,0.31414,True,0.62827,,,
+H2,"countries, real - N1 edge > 0 in 2003-2026 (predicted: not significant)",1.304,2.5791,0.0049535,True,0.019814,,,
+H5,"Countries, net of 5 bp/leg, 2010-2026 mean > 0 (predicted: not significant)",0.44433,0.87952,0.18956,True,0.56868,,,
+H2,industries 2003-2026 edge smaller than industries 1962-2002,1.3141,,,False,,,,
+H2,countries 2003-2026 edge smaller than industries 1962-2002,2.3844,,,False,,,,
+H3,industries: N1 convergence share / real (>= 0.8 predicted),,,,False,,0.98864,0.36026,0.35616
+H3,countries: N1 convergence share / real (>= 0.8 predicted),,,,False,,0.87328,0.36043,0.31476
+H4,"countries: share of pairs with EG p<0.05, real / N1 (< 2 predicted)",,,,False,,1.9793,0.1037,0.052393
+H4,"countries: persistence lift, real vs N1 (real <= placebo predicted)",,,,False,,,0.044392,0.0084045
+H4,"industries: share of pairs with EG p<0.05, real / N1 (< 2 predicted)",,,,False,,1.2557,0.065116,0.051857
+H4,"industries: persistence lift, real vs N1 (real <= placebo predicted)",,,,False,,,0.020413,-0.00010635

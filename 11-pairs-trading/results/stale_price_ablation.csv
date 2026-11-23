@@ -1,0 +1,5 @@
+period,version,months,mean_assets,real_ann_pct,real_t,edge_N1_ann_pct,edge_N1_t,converged_share
+1997-2001,stale-price rule (main),0,,,,,,
+1997-2001,no rule (ablation),57,18.316,-0.63648,-0.31137,-0.75885,-0.35479,0.35432
+2002-2026,stale-price rule (main),297,20.726,1.3019,2.7027,1.2952,2.5752,0.36043
+2002-2026,no rule (ablation),298,21.911,1.2348,2.6207,1.3485,2.7224,0.37378

@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Convergence Is Not Evidence</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Is pairs-trading convergence evidence of mean reversion, or what a market with no mean reversion also produces?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 11 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 11</p>
+<h1>Convergence Is Not Evidence</h1>
+<p><strong>Pairs trading against a placebo market, on a century of US industries and 25 years of country ETFs</strong></p>
+<p><em>Project 11 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="Convergence is not evidence" loading="lazy" src="figures/fig1_convergence_is_not_evidence.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>Pairs trading is usually sold with two pieces of evidence: most trades converge, and the selected pairs pass
+a cointegration test. Both would also appear in a market where relative prices have no memory at all. I build
+that market. For every formation-plus-trading window I resample whole days of returns after giving every asset
+the same drift, which keeps each asset's volatility, fat tails and the full correlation matrix but removes any
+tendency of a spread to come back. Then I run the textbook distance rule of Gatev, Goetzmann and Rouwenhorst
+(2006) and an Engle–Granger rule on the real and on the placebo market, with a pre-registered design, on two
+universes: the 49 Fama–French industry portfolios from 1927 to September 2026 (no survivorship, a century of
+history) and 22 single-country equity ETFs from 2002 to November 2026 (tradable, one closing time).</p>
+<p>Three results. <strong>(1) Convergence is not evidence.</strong> 36 % of opened trades converge on real industry data and
+36 % in the placebo; for country ETFs, 36 % against 32 %. <strong>(2) Most "cointegrated" pairs are false positives.</strong>
+6.5 % of industry pairs pass Engle–Granger at 5 % against 5.2 % in the placebo, so about four in five discoveries
+are what chance alone delivers; for countries 10.4 % against 5.2 %. <strong>(3) The profit depends on whether spreads
+really revert, and only one universe's do.</strong> Industry spreads keep drifting apart after they diverge (industry
+momentum), and the distance rule lost 0.97 % a year gross over 99 years (Newey–West t = −3.0), worse than the
+placebo's −0.12 %. Country spreads come back at every horizon from a week to three months, and the rule earned
++1.30 % a year gross (t = 2.7, 95 % CI +0.3 % to +2.3 %) — +0.44 % a year after a realistic 5 bp per leg in
+2010–2026, which is not significant (t = 0.9). Along the way, the placebo itself had to be fixed twice: the
+registered version gave the placebo foreknowledge of each asset's drift and would have "confirmed" a profitable
+industry edge of +1.1 % a year with t = 3.6. Both flaws are documented, unit-tested and disclosed.</p>
+<hr />
+<h2>1. Question</h2>
+<p>A pair is two assets whose prices moved together in a formation year. When they drift apart, the rule buys the
+cheap one, sells the rich one, and waits for the gap to close. The evidence usually quoted for this is
+descriptive: a high share of trades that "converge", and a significant cointegration test in the formation
+period. Neither is a test, because neither is compared with what the same rule produces when there is nothing
+to find. A random walk also crosses its starting level often; with hundreds of candidate pairs, 5 % of them
+pass a 5 % test by construction.</p>
+<p>So the question is:</p>
+<blockquote>
+<p>How much of a pairs strategy's convergence, of its statistical evidence and of its profit is genuine relative
+mean reversion, measured against a placebo market with the same volatilities, fat tails and contemporaneous
+correlations but no relative mean reversion?</p>
+</blockquote>
+<p>And, because the answer could depend on the assets, on the era and on trading frictions: in which universe and
+in which decade does a genuine edge exist, and does it survive costs today?</p>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Universe</th>
+<th>Assets</th>
+<th>Period used</th>
+<th>Source</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Industries</strong></td>
+<td>49 Fama–French value-weighted industry portfolios, daily total returns</td>
+<td>Jul 1927 – Sep 2026 (1,186 monthly portfolios)</td>
+<td>Ken French Data Library, vintage 202609, built by <a href="../09-beta-horse-race/">project 09</a></td>
+<td>No survivorship bias; a century including 1929–32, 1987, 2000–02, 2008, 2020 and 2022</td>
+</tr>
+<tr>
+<td><strong>B. Countries</strong></td>
+<td>SPY and 21 iShares MSCI single-country ETFs (Australia … South Africa)</td>
+<td>Jan 2002 – 20 Nov 2026 (297 months)</td>
+<td>Yahoo adjusted closes (dividends reinvested), downloaded 22 Nov 2026</td>
+<td>Tradable, all priced at the same New York close, and not the usual Coca-Cola/Pepsi stocks</td>
+</tr>
+</tbody>
+</table></div>
+<p>Regional funds (EFA, EEM, IEV, EPP, ILF, EWX) are excluded because they hold the single-country funds and would
+form mechanical pairs. Industry data end in September 2026 (the latest French vintage); ETF data end on 20
+November 2026.</p>
+<p><strong>Two data-quality rules, fixed before any result</strong> (<code>results/data_quality.csv</code>). An asset is eligible in a
+window only if it has a return on every day and fewer than 5 % zero-return days in formation, because a stale
+price manufactures mean reversion; and an industry must hold at least five firms at the previous month-end
+(in 1927, 24 of the 49 held fewer, with one-firm portfolios moving more than 100 % in a day). Before 2005 the
+country ETFs had 8–24 % zero-return days, so fewer than ten were eligible in every window before 2002 and
+universe B effectively starts in January 2002. A run without the stale-price rule is reported in Section 5.</p>
+<h2>3. Design (pre-registered)</h2>
+<p>The full protocol, the hypotheses and every change made after registration are in
+<a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/11-pairs-trading/PREREGISTRATION.md">PREREGISTRATION.md</a>, written before any strategy return was computed.</p>
+<p><strong>Strategy.</strong> Formation 252 trading days, trading 126 days, a new portfolio on the first trading day of every
+month, so six portfolios overlap. Returns are on <em>committed capital</em>: each of the 20 selected pairs gets $1,
+traded or not, as in GGR.</p>
+<ul>
+<li><strong>Distance rule (primary).</strong> Total-return indices normalised to 1 at the start of formation; pairs ranked by
+  the sum of squared differences; top 20 traded. In trading, indices are renormalised to 1; a position opens when
+  the spread exceeds 2 formation standard deviations and closes when it crosses zero or the period ends. $1 long
+  the cheap leg, $1 short the rich leg, held buy-and-hold. <strong>One-day wait</strong>: decided at the close of day t,
+  traded at the close of t+1.</li>
+<li><strong>Cointegration rule.</strong> Engle–Granger on log prices (OLS with a constant, ADF with one lag on the residual,
+  MacKinnon p-value); the 20 most negative t-statistics with a positive hedge ratio are traded on the residual's
+  z-score with the same 2/0 rule, legs split 1 : β.</li>
+<li><strong>Ablations.</strong> No wait and a 5-day wait; pairs ranked 101–120; all pairs; no renormalisation at the start of
+  trading; the cointegration rule without the wait.</li>
+</ul>
+<p><strong>The placebo market (N1).</strong> For each 378-day window separately, every asset's daily returns are shifted so that
+all assets have the same mean (the window's cross-sectional average), then whole days — the full cross-section
+of returns on one date — are resampled with replacement. Each asset keeps its volatility and its fat tails, the
+correlation matrix is untouched, and relative prices become driftless random walks: nothing a pairs rule could
+exploit is left. Ten placebo replications per window, seeded by window. A unit test checks that the rule's mean
+P&amp;L on such a market is zero (<code>tests/test_core.py::test_martingale_placebo_has_zero_mean_pnl</code>).</p>
+<p><strong>A drift-keeping placebo (ND)</strong> skips the drift shift. It is the world where every asset's realised drift over
+the window is known to persist — a perfect-momentum world — and is kept only to show what persistent relative
+drift does to a contrarian rule.</p>
+<p><strong>Inference.</strong> Monthly returns; Newey–West t-statistics with 6 lags (the overlap of six portfolios); 95 % CIs
+from a stationary block bootstrap (mean block 12 months); Holm correction across the four confirmatory tests.</p>
+<h2>4. Results</h2>
+<h3>4.1 Headline: the rule converges as often on noise</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Industries 1927–2026: real</th>
+<th style="text-align: right;">placebo</th>
+<th style="text-align: right;">Countries 2002–2026: real</th>
+<th style="text-align: right;">placebo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trades opened (per run)</td>
+<td style="text-align: right;">28,216</td>
+<td style="text-align: right;">27,436</td>
+<td style="text-align: right;">6,187</td>
+<td style="text-align: right;">5,815</td>
+</tr>
+<tr>
+<td>Share that converge</td>
+<td style="text-align: right;"><strong>36.0 %</strong></td>
+<td style="text-align: right;"><strong>35.6 %</strong></td>
+<td style="text-align: right;"><strong>36.0 %</strong></td>
+<td style="text-align: right;"><strong>31.5 %</strong></td>
+</tr>
+<tr>
+<td>Mean return, converged trade</td>
+<td style="text-align: right;">+6.1 %</td>
+<td style="text-align: right;">+6.1 %</td>
+<td style="text-align: right;">+6.0 %</td>
+<td style="text-align: right;">+7.5 %</td>
+</tr>
+<tr>
+<td>Mean return, non-converged trade</td>
+<td style="text-align: right;">−4.0 %</td>
+<td style="text-align: right;">−3.5 %</td>
+<td style="text-align: right;">−2.5 %</td>
+<td style="text-align: right;">−3.5 %</td>
+</tr>
+<tr>
+<td>Mean return per trade</td>
+<td style="text-align: right;">−0.4 %</td>
+<td style="text-align: right;">−0.1 %</td>
+<td style="text-align: right;">+0.5 %</td>
+<td style="text-align: right;">−0.0 %</td>
+</tr>
+<tr>
+<td>Gross return, % a year (NW t)</td>
+<td style="text-align: right;"><strong>−0.97 (−3.0)</strong></td>
+<td style="text-align: right;">−0.12</td>
+<td style="text-align: right;"><strong>+1.30 (+2.7)</strong></td>
+<td style="text-align: right;">+0.01</td>
+</tr>
+<tr>
+<td>Sharpe ratio (gross)</td>
+<td style="text-align: right;">−0.33</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table></div>
+<p>The convergence share is the same in the industry placebo (ratio 0.99) and 87 % as high in the country
+placebo (<code>results/convergence.csv</code>). A trade that converges makes about 6 % in either world, and one that does
+not loses 3–4 % in either world. Convergence statistics describe the rule's geometry — a 2-sd trigger and a
+zero-crossing exit — not the market. What separates the two universes is only visible in returns: the rule's
+average trade loses on industries and wins on countries.</p>
+<h3>4.2 A century of industry pairs</h3>
+<p><img alt="A century of industry pairs" loading="lazy" src="figures/fig2_century.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Decade (1927–29 omitted: 30 months, −7.8 %)</th>
+<th style="text-align: right;">1930s</th>
+<th style="text-align: right;">1940s</th>
+<th style="text-align: right;">1950s</th>
+<th style="text-align: right;">1960s</th>
+<th style="text-align: right;">1970s</th>
+<th style="text-align: right;">1980s</th>
+<th style="text-align: right;">1990s</th>
+<th style="text-align: right;">2000s</th>
+<th style="text-align: right;">2010s</th>
+<th style="text-align: right;">2020s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Industries, real, % a year</td>
+<td style="text-align: right;">−1.2</td>
+<td style="text-align: right;">+0.3</td>
+<td style="text-align: right;">−2.1</td>
+<td style="text-align: right;">−3.0</td>
+<td style="text-align: right;">−2.2</td>
+<td style="text-align: right;">−0.5</td>
+<td style="text-align: right;">−0.1</td>
+<td style="text-align: right;">+1.1</td>
+<td style="text-align: right;">−0.2</td>
+<td style="text-align: right;">+0.4</td>
+</tr>
+<tr>
+<td>Industries, placebo</td>
+<td style="text-align: right;">+0.0</td>
+<td style="text-align: right;">+0.0</td>
+<td style="text-align: right;">−0.1</td>
+<td style="text-align: right;">−0.2</td>
+<td style="text-align: right;">−0.1</td>
+<td style="text-align: right;">−0.1</td>
+<td style="text-align: right;">−0.1</td>
+<td style="text-align: right;">+0.1</td>
+<td style="text-align: right;">−0.3</td>
+<td style="text-align: right;">−0.2</td>
+</tr>
+<tr>
+<td>Countries, real</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">+2.2</td>
+<td style="text-align: right;">+1.2</td>
+<td style="text-align: right;">+0.3</td>
+</tr>
+</tbody>
+</table></div>
+<p>Industry pairs earned a positive return in three decades out of ten, and more than +0.5 % a year only in the
+2000s, and lost most clearly in 1950–1979
+(<code>results/by_decade.csv</code>). The 1962–2002 window, where GGR documented 11 % a year on single stocks, gives
+−1.17 % a year on industries (t = −2.6). The rule is not "decaying" on industries; it never worked there. On
+country ETFs the gross return falls from +2.2 % in the 2000s to +0.3 % so far in the 2020s.</p>
+<h3>4.3 Why: where the mean reversion lives</h3>
+<p><img alt="Where reversion lives" loading="lazy" src="figures/fig3_where_reversion_lives.png" /></p>
+<p>For every pair-day in the trading period, I measure how far the spread moves back toward zero over the next
+5, 21 and 63 days (after a one-day wait), by how far it is from zero today, and subtract the same number in the
+placebo (<code>src/diagnostics.py</code>, <code>results/reversion_by_distance.csv</code>). The placebo subtraction matters: with a
+common positive drift, a price-index spread grows mechanically, so even the placebo shows "divergence".</p>
+<ul>
+<li><strong>Industry spreads keep diverging, and the further apart, the more.</strong> At |z| &gt; 3, the spread moves a further
+  0.28 formation-sd <em>away</em> from zero over 63 days, beyond the placebo. This is industry momentum (Moskowitz and
+  Grinblatt 1999) seen from the pairs side: an industry that has outperformed its twin keeps outperforming for
+  months. A rule that bets on convergence exactly when divergence is largest is short that momentum.</li>
+<li><strong>Country spreads come back</strong>, at every distance and horizon, and most where the rule trades: at |z| &gt; 3,
+  +0.26 sd over 63 days.</li>
+</ul>
+<p><img alt="Variance ratios" loading="lazy" src="figures/fig4_variance_ratios.png" /></p>
+<p>Variance ratios of the 20 traded spreads tell the same story without conditioning on the trigger
+(<code>results/variance_ratios.csv</code>; the placebo's VR is between 1.00 and 1.01 at every horizon, which also confirms the
+estimator has no bias worth worrying about here). Industry spreads mean-revert over the first two weeks (VR falls to 0.83 at
+10–21 days) and then stop: VR is flat or rising from 21 to 63 days, the signature of persistence at longer
+horizons. Country spreads keep reverting out to three months (VR 0.64 at 63 days). The distance rule waits a
+day, then holds a trade for 55 days on average, so it pays for the industries' longer-horizon persistence and
+collects the countries' longer-horizon reversion.</p>
+<p>The drift-keeping placebo ND is the limiting case: if every asset's realised drift persisted perfectly, the rule
+would lose 2.2 % a year on industries and 1.5 % on countries. Real industries (−1.0 %) sit between the
+no-memory placebo (−0.1 %) and that world; real countries (+1.3 %) sit on the other side of zero.</p>
+<h3>4.4 Cointegration screens</h3>
+<p><img alt="Cointegration screen" loading="lazy" src="figures/fig5_cointegration_screen.png" /></p>
+<p>One Engle–Granger test per pair per non-overlapping year (<code>results/coint_screen.csv</code>):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Industries: real</th>
+<th style="text-align: right;">placebo</th>
+<th style="text-align: right;">Countries: real</th>
+<th style="text-align: right;">placebo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pairs with p &lt; 0.05</td>
+<td style="text-align: right;">6.5 %</td>
+<td style="text-align: right;">5.2 %</td>
+<td style="text-align: right;">10.4 %</td>
+<td style="text-align: right;">5.2 %</td>
+</tr>
+<tr>
+<td>Benjamini–Hochberg discoveries per year (q = 0.05)</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">0.3</td>
+<td style="text-align: right;">1.4</td>
+<td style="text-align: right;">0.2</td>
+</tr>
+<tr>
+<td>P(p &lt; 0.05 next year | significant this year)</td>
+<td style="text-align: right;">8.8 %</td>
+<td style="text-align: right;">5.3 %</td>
+<td style="text-align: right;">13.1 %</td>
+<td style="text-align: right;">5.8 %</td>
+</tr>
+<tr>
+<td>P(p &lt; 0.05 next year | not significant)</td>
+<td style="text-align: right;">6.8 %</td>
+<td style="text-align: right;">5.3 %</td>
+<td style="text-align: right;">8.6 %</td>
+<td style="text-align: right;">4.9 %</td>
+</tr>
+</tbody>
+</table></div>
+<p>With ~880 industry pairs a year, the 6.5 % "significant" are 57 pairs, of which about 46 are expected under the
+placebo. After false-discovery control, two industry pairs a year survive. Significance is weakly persistent on
+real data (+2.0 points for industries, +4.4 for countries, against ~0 in the placebo), so the screens are not
+pure noise, but they are mostly noise.</p>
+<p>The cointegration <em>rule</em> lost 2.5 % a year on industries and made +0.6 % (t = 0.7) on countries. Its placebo
+loses too (−2.3 % and −2.3 % a year): with β ≠ 1 the two legs have unequal dollar sizes, so the position carries
+net market exposure, and because the residual drifts upward when β &lt; 1 and the market rises, the rule tends to
+be net short in rising markets. Against its own placebo it is flat on industries (−0.3 %) and +2.8 % on
+countries. Ranking pairs by an EG statistic did not beat ranking them by distance in either universe.</p>
+<h3>4.5 Costs</h3>
+<p><img alt="Costs" loading="lazy" src="figures/fig6_costs.png" /></p>
+<p>The distance rule trades about 0.7–0.8 dollars of notional per dollar committed per month
+(<code>results/costs.csv</code>). On country ETFs the gross return breaks even at 15 bp per leg for 2002–2026 and 10 bp for
+2010–2026.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Countries, distance rule</th>
+<th style="text-align: right;">Gross</th>
+<th style="text-align: right;">5 bp / leg</th>
+<th style="text-align: right;">10 bp</th>
+<th style="text-align: right;">20 bp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2002–2026, % a year (NW t)</td>
+<td style="text-align: right;">+1.30 (2.7)</td>
+<td style="text-align: right;">+0.88 (1.8)</td>
+<td style="text-align: right;">+0.45 (0.9)</td>
+<td style="text-align: right;">−0.40 (−0.8)</td>
+</tr>
+<tr>
+<td>2010–2026</td>
+<td style="text-align: right;">+0.87 (1.7)</td>
+<td style="text-align: right;">+0.44 (0.9)</td>
+<td style="text-align: right;">+0.02 (0.0)</td>
+<td style="text-align: right;">−0.83 (−1.7)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The pre-registered realistic cost for a small account in liquid country ETFs since 2010 is 5 bp per leg
+(half-spread plus impact). At that cost the post-2010 return is +0.44 % a year on committed capital, with a
+Sharpe ratio of 0.21 — a real but small effect that a 2-sigma investor cannot distinguish from zero.</p>
+<h3>4.6 Scorecard of the pre-registered hypotheses</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Hypothesis</th>
+<th>Result</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Industries: real − placebo &gt; 0, full sample</td>
+<td>−0.85 % a year, t = −2.6, Holm p = 1.00</td>
+<td><strong>Rejected — the sign is the opposite</strong></td>
+</tr>
+<tr>
+<td>H2</td>
+<td>No significant edge in 2003–2026</td>
+<td>Industries +0.23 % (t = 0.5) ✓; countries +1.30 % (t = 2.6, Holm p = 0.02) ✗</td>
+<td><strong>Half supported</strong></td>
+</tr>
+<tr>
+<td>H2</td>
+<td>2003–2026 edge smaller than 1962–2002</td>
+<td>Industries had no 1962–2002 edge to lose (−1.08 %)</td>
+<td>Not meaningful as stated</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>Placebo convergence ≥ 80 % of real</td>
+<td>99 % (industries), 87 % (countries)</td>
+<td><strong>Supported</strong></td>
+</tr>
+<tr>
+<td>H4</td>
+<td>EG significance share &lt; 2 × placebo</td>
+<td>1.26 × (industries), 1.98 × (countries)</td>
+<td><strong>Supported (countries only just)</strong></td>
+</tr>
+<tr>
+<td>H4</td>
+<td>Persistence lift no larger than placebo</td>
+<td>+2.0 and +4.4 points vs ~0</td>
+<td><strong>Rejected — a small real signal</strong></td>
+</tr>
+<tr>
+<td>H5</td>
+<td>Countries, 5 bp/leg, 2010–2026 not significant</td>
+<td>+0.44 %, t = 0.9, Holm p = 0.57</td>
+<td><strong>Supported</strong></td>
+</tr>
+<tr>
+<td>H6</td>
+<td>Edge larger in stress windows (descriptive)</td>
+<td>Industries +0.6 % vs −0.9 % a year; countries +0.4 % vs +1.4 %</td>
+<td><strong>Mixed</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>The confirmatory tests (H1, two parts of H2, H5) are Holm-adjusted together (<code>results/hypothesis_tests.csv</code>).
+I expected a historical industry edge that had decayed; the data say there never was one, and that the only
+edge in the study (countries) is real but too small to survive realistic costs after 2010.</p>
+<h2>5. Robustness</h2>
+<p><strong>Execution lag</strong> (<code>results/wait_effect.csv</code>). Trading at the same close as the signal adds +0.49 % a year on
+countries (t = 3.8) and +1.50 % on industries in 1927–1961 (t = 3.5), but nothing on industries after 1962
+(−0.05 %). The early-industry gain is the non-synchronous-trading reversal that GGR's one-day wait exists to
+remove; on ETFs it is the closing-print bounce. Neither is capturable at the same close. A 5-day wait costs
+countries another 0.50 % a year (t = 2.9): most of the reversion that matters is in the first week.</p>
+<p><strong>Selection</strong> (<code>results/performance.csv</code>). On countries the top-20 pairs (+1.30 %) beat pairs ranked 101–120
+(+0.37 %) and all pairs (+0.97 %): the distance ranking carries some information. On industries all three lose.</p>
+<p><strong>No renormalisation at trading start.</strong> Continuing the formation index instead of resetting it to 1 gives
+−1.40 % a year on industries and +1.39 % on countries — the same conclusion.</p>
+<p><strong>Stale prices.</strong> Without the 5 % zero-return rule, country ETFs can be traded from 1997; 1997–2001 gives
+−0.64 % a year (t = −0.3), and 2002–2026 is unchanged (+1.24 % vs +1.30 %). For this rule, in this universe,
+stale quotes did not manufacture profit. The rule stays in the main design anyway, because funds with a quarter
+of their days stale should not be traded on closing prices (<code>results/stale_price_ablation.csv</code>).</p>
+<p><img alt="Stress windows" loading="lazy" src="figures/fig7_stress_windows.png" /></p>
+<p><strong>Stress windows</strong> (<code>results/stress_windows.csv</code>). The dot-com unwind (2000–02) is the one crisis in which
+industry pairs paid (+10.0 % cumulative over the placebo, as sector spreads snapped back). In 1929–32, 2008–09,
+2020 and 2022 industry pairs lost against the placebo. Country pairs gained 2.1 % in 2008–09 and lost 1.8 % in
+2022. Pairs trading is sometimes described as a crisis hedge; across these six windows it was not one.</p>
+<h2>6. Limitations</h2>
+<ul>
+<li><strong>Industries are not tradable.</strong> Universe A tests whether <em>relative value between industries</em> mean-reverts;
+  it cannot say anything about single-stock pairs, where GGR's profits came from and where bid–ask bounce,
+  liquidity provision and idiosyncratic news all differ. I did not use single stocks because a survivorship-free
+  daily stock panel to 2026 was not reachable from this environment; this is the largest gap.</li>
+<li><strong>Country ETFs are not countries.</strong> ETF prices can deviate from NAV, especially for Asian markets that close
+  before New York; part of the measured reversion could be premium/discount mean reversion rather than
+  relative-value reversion between economies. Either way it is what an ETF trader would face.</li>
+<li><strong>One rule family.</strong> Thresholds (2 sd), horizons (12 + 6 months) and the 20-pair count are GGR's and were not
+  tuned. A better-designed rule (for example one that conditions on industry momentum) might do better, but
+  every variant tried would need its own placebo and its own multiple-testing charge.</li>
+<li><strong>Costs are flat.</strong> A single cost per leg ignores that spreads were wider before 2010 and wider in crises,
+  when the rule trades most; the realistic net numbers are, if anything, optimistic for 2002–2009 and 2008.</li>
+<li><strong>No short-sale costs or margin.</strong> Borrowing country ETFs is cheap but not free; committed-capital returns
+  ignore the margin a broker would require on both legs.</li>
+<li><strong>The placebo has a scope.</strong> N1 removes <em>all</em> serial dependence, so "real minus placebo" mixes short-horizon
+  reversal and long-horizon persistence. Separating them with a block placebo failed (Section 7); the
+  separation here rests on the variance ratios and the reversion-by-distance diagnostic, which are descriptive.</li>
+<li><strong>The 2020s are 81 months.</strong> The decline of the country edge in the 2020s is a point estimate with a wide
+  interval.</li>
+</ul>
+<h2>7. Referee-style self-review: what it changed</h2>
+<p>I reviewed the work as a hostile referee would, before writing this paper. In order of importance:</p>
+<ol>
+<li><strong>The registered placebo had look-ahead.</strong> It resampled days from the whole 378-day window without touching
+   drifts, so each asset kept its realised drift <em>including the trading period's</em>. The placebo then "knew" which
+   asset would keep outperforming, and any contrarian rule lost in it by construction (−1.5 % a year on countries,
+   −2.2 % on industries).
+   Real minus that placebo produced exactly the result I had predicted — an industry edge of +1.14 % a year,
+   t = 3.6 — and it was an artefact. Fix: equalise drifts before resampling; the drift-keeping version survives
+   only as the ND ablation. A unit test now checks that the placebo is a martingale.</li>
+<li><strong>The registered block placebo was biased too.</strong> N2 (stationary bootstrap, mean block 21 days) was meant to
+   separate short-horizon reversal from longer horizons. After the drift fix it earned +1.6 % a year on both
+   universes. On simulated IID returns with no dynamics at all it still earns +0.9 % per six months: after the
+   drift shift, each relative path sums to zero over the window, and stitching contiguous blocks of that closed
+   loop manufactures mean reversion. N2 is dropped from every comparison and the artefact is a unit test
+   (<code>test_block_placebo_of_demeaned_window_is_biased</code>). I replaced its job with variance ratios and the
+   reversion-by-distance diagnostic, both read against N1.</li>
+<li><strong>Negative hedge ratios.</strong> The cointegration ranking initially allowed β &lt; 0, for which a long/short trade is
+   not a hedge. A positive-control unit test (synthetic cointegrated pairs) exposed it; such pairs are now
+   skipped.</li>
+<li><strong>The positive control also exposed an Engle–Granger weakness</strong>: when one leg carries fast mean-reverting
+   noise, <em>unrelated</em> pairs pass the test more than 5 % of the time. Bid–ask bounce and stale prices are such
+   noise, which is a further reason to read EG counts against a placebo rather than against the nominal 5 %.</li>
+<li><strong>Universe B's start.</strong> The stale-price rule left fewer than 10 country ETFs before 2002. Rather than relax the
+   rule after seeing that, I set a 10-asset minimum, dropped 1997–2001 from the main sample and report the
+   no-rule run as an ablation.</li>
+<li><strong>What I did not do.</strong> I did not add a momentum filter or tune the trigger after seeing Section 4.3, although
+   both are obvious next steps; doing so on the same data would be the forking path this paper warns about.</li>
+</ol>
+<p>Every change is dated in <a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/11-pairs-trading/PREREGISTRATION.md">PREREGISTRATION.md</a>.</p>
+<h2>8. Conclusion</h2>
+<p>The share of trades that converge is a property of the trading rule, not of the market: a market with no
+relative mean reversion converges just as often. Cointegration screens, read against the same placebo, find
+mostly what chance alone would find. What decides whether pairs trading makes money is whether spreads revert
+over the holding period, and that is an empirical property of the universe: industry spreads drift apart
+(momentum) and the textbook rule lost money on them for a century; country-ETF spreads come back, and the rule
+earned about 1.3 % a year gross from 2002, falling toward zero once realistic costs and the post-2010 period
+are taken into account.</p>
+<p>The practical lesson is a habit, not a strategy: before believing any pairs backtest, run it on a placebo
+market built from the same data — and check that the placebo cannot see the future.</p>
+<p><strong>Connections.</strong> The industry data and the non-synchronous-trading point come from
+<a href="../09-beta-horse-race/">project 09</a>; pre-registration and placebo logic from <a href="../03-moving-average-volatility/">project 03</a>;
+variance ratios from <a href="../02-volatility-dashboard-audit/">project 02</a>; FDR from <a href="../08-correlation-crash-illusion/">project 08</a>.
+Industry momentum, which is what sinks industry pairs here, is the subject of project 12 (momentum with costs).
+Projects 24 (PCA statistical arbitrage) and 25 (Kalman hedge ratios) revisit relative value with factor-based
+and time-varying hedges; project 23 (deflated Sharpe) formalises the multiple-testing charge discussed in
+Section 6.</p>
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh        # ~4 minutes on 4 cores: data -&gt; backtest (real + placebo) -&gt; evaluate -&gt; figures -&gt; tests
+</code></pre>
+<p><code>src/backtest.py</code> writes per-window results to <code>results/raw_*.npz</code> (about 120 MB, not committed);
+<code>src/evaluate.py</code> and <code>src/diagnostics.py</code> turn them into every CSV quoted here. Seeds are fixed per window.
+The raw Yahoo download is in <code>data/raw/</code>; the industry panel is copied from project 09.</p>
+<h2>References</h2>
+<ul>
+<li>Benjamini, Y. and Hochberg, Y. (1995). Controlling the false discovery rate. <em>JRSS B</em> 57, 289–300.</li>
+<li>Do, B. and Faff, R. (2010). Does simple pairs trading still work? <em>Financial Analysts Journal</em> 66(4), 83–95.</li>
+<li>Engle, R. and Granger, C. (1987). Co-integration and error correction. <em>Econometrica</em> 55, 251–276.</li>
+<li>Gatev, E., Goetzmann, W. and Rouwenhorst, K. G. (2006). Pairs trading: performance of a relative-value
+  arbitrage rule. <em>Review of Financial Studies</em> 19, 797–827.</li>
+<li>Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scandinavian Journal of Statistics</em>
+  6, 65–70.</li>
+<li>Krauss, C. (2017). Statistical arbitrage pairs trading strategies: review and outlook. <em>Journal of Economic
+  Surveys</em> 31, 513–545.</li>
+<li>Lo, A. and MacKinlay, A. C. (1988). Stock market prices do not follow random walks. <em>Review of Financial
+  Studies</em> 1, 41–66.</li>
+<li>Lo, A. and MacKinlay, A. C. (1990). When are contrarian profits due to stock market overreaction? <em>Review of
+  Financial Studies</em> 3, 175–205.</li>
+<li>MacKinnon, J. (1994). Approximate asymptotic distribution functions for unit-root and cointegration tests.
+  <em>Journal of Business &amp; Economic Statistics</em> 12, 167–176.</li>
+<li>Moskowitz, T. and Grinblatt, M. (1999). Do industries explain momentum? <em>Journal of Finance</em> 54, 1249–1290.</li>
+<li>Newey, W. and West, K. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation
+  consistent covariance matrix. <em>Econometrica</em> 55, 703–708.</li>
+<li>Politis, D. and Romano, J. (1994). The stationary bootstrap. <em>JASA</em> 89, 1303–1313.</li>
+<li>Rad, H., Low, R. and Faff, R. (2016). The profitability of pairs trading strategies: distance, cointegration
+  and copula methods. <em>Quantitative Finance</em> 16, 1541–1558.</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/11-pairs-trading">11-pairs-trading on GitHub</a>.</footer>
+</div>
+</body>
+</html>

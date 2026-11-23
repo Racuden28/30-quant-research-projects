@@ -1,0 +1,15 @@
+universe,window,days,real_cum_pct,N1_cum_pct,edge_cum_pct,edge_ann_pct,real_ann_vol_pct
+industries,1929-32 crash,817,-2.6841,0.715,-3.3991,-1.0484,5.3666
+industries,1987 crash,64,1.1982,0.043856,1.1543,4.5451,4.1128
+industries,2000-02 dot-com,671,11.008,0.97838,10.029,3.7666,4.1196
+industries,2008-09 GFC,146,-1.6252,0.45185,-2.077,-3.585,5.217
+industries,2020 Covid,50,-0.30452,0.22742,-0.53195,-2.681,8.9559
+industries,2022 inflation,209,-0.66728,-0.26402,-0.40325,-0.48622,3.8277
+industries,All stress days,1957,,,,0.61451,
+industries,All other days,24082,,,,-0.93546,
+countries,2000-02 dot-com,190,3.0684,2.4242,0.64426,0.85449,6.3805
+countries,2008-09 GFC,146,2.5416,0.49116,2.0504,3.5391,5.0394
+countries,2020 Covid,50,-0.51506,-0.4382,-0.076867,-0.38741,7.4373
+countries,2022 inflation,209,-1.088,0.6925,-1.7805,-2.1468,5.4155
+countries,All stress days,595,,,,0.35463,
+countries,All other days,5631,,,,1.3971,
