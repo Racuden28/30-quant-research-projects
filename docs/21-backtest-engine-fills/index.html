@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Day After the Signal: What One Backtest Engine Finds in Three Published Backtests</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does the day you assume a trade fills change what a backtest concludes?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 21 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 21</p>
+<h1>The Day After the Signal: What One Backtest Engine Finds in Three Published Backtests</h1>
+<p><em>Project 21 of 30 · Backtest engine · November 2026</em></p>
+<blockquote>
+<p><strong>Headline.</strong> Projects <a href="../03-moving-average-volatility/">03</a>, <a href="../12-momentum-trading-costs/">12</a> and <a href="../19-hmm-regime-hindsight/">19</a> each wrote their own backtest, and all three made the same silent choice: a trade fills <strong>at the close the signal was computed from</strong>. I rebuilt the three strategies on one engine that separates the <em>decision</em> from the <em>fill</em>, checked that it reproduces their published numbers (project 03's Sharpe ratios to four decimals in 10 of 10 indices), and then moved only the fill. For the 200-day moving-average rule, filling one close later is worth exactly the return of the first day after each trade. On the <strong>price indices</strong> that 03 and 19 used, that day continues the move before 1990: filling late costs <strong>+19 bp per trade</strong> (95% CI 5 to 41, 5 of 5 indices), four times the whole 5 bp cost those projects assumed. On the <strong>US-listed ETFs</strong> you would actually trade, the same day <em>reversed</em> in 1993–2005: filling late <strong>earns 33 bp per trade</strong> (CI 18 to 45; filling late helped in all 10 ETFs). Over the same dates, the index and its ETF disagree by <strong>15 bp per trade</strong> (CI 7 to 22, 9 of 10 pairs). Since 2006 both effects are close to zero (index +3 bp, ETF −1 bp). A cell's lag-1 autocorrelation times the return of the trade day predicts the sign: slope 0.59 (se 0.14) across 87 market-era cells. The fill moves the verdict on tradable ETFs, where the 200-day rule beats buy &amp; hold in 3 of 10 at the same close and 6 of 10 one close later, though no single difference is significant. It does not move project 19's verdict (the real-time HMM trails buy &amp; hold in 7 of 10 indices under every fill), because volatility, not direction, triggers its trades. Industry momentum (project 12) loses 1.9 bp per unit of turnover against a 78 bp break-even. The engine's <strong>causality audit</strong> passes all three real strategies and catches both planted look-ahead bugs.</p>
+</blockquote>
+<p><img alt="The star chart" loading="lazy" src="figures/fig1_fill_convention_by_era.png" /></p>
+<hr />
+<h2>1. Why this question</h2>
+<p>A backtest engine has one job that a spreadsheet cannot do: keep <em>what you decided</em> apart from <em>when and at what price it happened</em>. Most backtests fuse the two into one line, <code>position.shift(1) * returns</code>. That line hides an assumption. The signal is computed from today's close, and the trade happens at that same close.</p>
+<p>For an ETF that is roughly feasible: a market-on-close order placed a few minutes before the bell, on a signal computed from the price at that moment. For a <strong>price index</strong> it is not, because you cannot trade the index. You trade a future or an ETF whose price can differ from the index print, and the index print itself may be <strong>stale</strong> (some of its stocks have not traded recently; see project <a href="../09-beta-horse-race/">09</a> on non-synchronous trading and project <a href="../02-volatility-dashboard-audit/">02</a> on stale opens).</p>
+<p>Projects 03 and 19 tested timing rules on ten price indices back to 1928 and 1965. Project 12 tested momentum on 49 industry portfolios and 42 country ETFs. All three used the same-close fill. Each project was careful about look-ahead <em>in the signal</em> (19 is entirely about it). None of them asked whether the <em>fill</em> was innocent. That is this project's question:</p>
+<p><strong>Research question.</strong> Holding each strategy's decisions fixed, how much do the conclusions of projects 03, 12 and 19 depend on when the engine assumes the trade fills? Where they do, what mechanism decides the sign?</p>
+<p><strong>Hypotheses</strong> (written after a first exploratory pass on the S&amp;P 500 and Nasdaq moving-average rule, before any ETF, HMM, momentum or era-split result was computed; I disclose this because it makes H1 partly in-sample):</p>
+<ul>
+<li><strong>H1 (stale indices).</strong> On price indices with positive lag-1 autocorrelation, the same-close fill flatters a trend rule: filling one close later costs a positive amount per trade.</li>
+<li><strong>H2 (tradable instrument).</strong> On the ETF that tracks the same index, over the same dates, that cost is smaller or negative.</li>
+<li><strong>H3 (mechanism).</strong> The per-trade delay cost is predicted, to first order, by the lag-1 autocorrelation times the trade-day return (in the direction of the trade). So rules whose trades are triggered by direction (MA200) are exposed and rules triggered by volatility (HMM) much less.</li>
+<li><strong>H4 (slow signals).</strong> A monthly cross-sectional signal (12-1 momentum) is insensitive: its delay cost per unit of turnover is a small fraction of its break-even cost.</li>
+</ul>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Set</th>
+<th>What</th>
+<th>Period</th>
+<th>Source</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Indices</td>
+<td>S&amp;P 500, Nasdaq Composite, TSX, FTSE 100, DAX, CAC 40, Nikkei 225, Hang Seng, ASX 200, Ibovespa (price, OHLC)</td>
+<td>1928–2026 (each from its first date; Ibovespa from 1995)</td>
+<td>Yahoo Finance, pulled 2026-11-23 through a browser (<code>src/fetch_yahoo_browser.js</code>), cut at 2026-11-20</td>
+<td>Same indices as 03 and 19, <strong>on purpose</strong>: the point is to re-run their studies. New here: the open</td>
+</tr>
+<tr>
+<td>ETFs</td>
+<td>SPY, QQQ, EWC, EWU, EWG, EWQ, EWJ, EWH, EWA, EWZ (one per index; OHLC + dividend-adjusted close)</td>
+<td>1993/1996/1999–2026</td>
+<td>Yahoo; QQQ new, the others copied from 12's universe B</td>
+<td>Deliberate overlap with 12, cross-linked</td>
+</tr>
+<tr>
+<td>Industries</td>
+<td>49 Fama-French industries, daily excess returns</td>
+<td>1926–2026-09</td>
+<td>copied from 12 (universe A, from 09)</td>
+<td>Deliberate overlap</td>
+</tr>
+<tr>
+<td>Country ETFs</td>
+<td>42 single-country ETFs (12's universe B)</td>
+<td>1996–2026-10</td>
+<td>copied from 12</td>
+<td>Deliberate overlap</td>
+</tr>
+<tr>
+<td>Cash</td>
+<td>13-week T-bill (^IRX) for US instruments and all ETFs from 1960; zero before 1960 and for foreign indices, as in 03 and 19</td>
+<td></td>
+<td>Yahoo</td>
+<td></td>
+</tr>
+<tr>
+<td>Published numbers</td>
+<td>the result CSVs of 03, 12 and 19 (<code>data/published_results.csv</code>)</td>
+<td></td>
+<td>this monorepo</td>
+<td>for §4.1 only</td>
+</tr>
+</tbody>
+</table></div>
+<p>Indices are price indices (no dividends), exactly as in 03 and 19. ETFs use total returns. QQQ tracks the Nasdaq-100, not the Composite; I keep it as the closest tradable proxy and flag it.</p>
+<p><strong>Opens.</strong> Yahoo's "open" for an index or an early ETF is often a copy of a close. <code>real_open_mask</code> keeps an instrument's open only from the first trailing year in which at least 80% of opens differ from both the same day's close and the previous close. For indices, even real opens are partly stale (the first print is computed before many stocks have traded; project 02), so the <em>next-open</em> fill is used only on ETFs.</p>
+<h2>3. The engine</h2>
+<p><code>src/engine.py</code> (≈200 lines, no dependencies beyond numpy/pandas).</p>
+<p><strong>Decision.</strong> A strategy outputs target weights dated at a close, computed from data up to that close. The engine never sees how. <strong>Fill.</strong> An explicit argument: <code>close</code> (the signal's own close), <code>open</code> (next open) or <code>close+k</code> (the close <em>k</em> days later). <strong>Accounting.</strong> Each day splits into an overnight piece (close → open, where dividends go ex) and an intraday piece (open → close). Holdings before an open fill earn the overnight piece and holdings after it earn the intraday piece. Weights drift between trades. Turnover is measured against drifted weights, and the cost (5 bp per unit of one-way turnover, as in 03 and 19) is charged at the fill. Returns are in an excess-of-cash frame, rf + Σ w (R − rf), so the same code runs a long/flat timing rule and a $1/$1 long-short book.</p>
+<p><strong>The identity that makes the fill measurable.</strong> For a long/flat rule,</p>
+<p>Σ gross return (fill at close) − Σ gross return (fill at close+1) = Σ_t Δpos_t × (R_{t+1} − rf_{t+1}),</p>
+<p><strong>exactly</strong> (<code>tests/test_engine.py::test_delay_identity_is_exact</code>, to 1e-12). Moving the fill one close later costs precisely the excess return of the first day after each trade. Divided by turnover, that is a <strong>delay cost in bp per trade</strong>, in the same unit as a transaction cost. Positive means the same-close backtest flatters the rule.</p>
+<p><strong>Causality audit</strong> (<code>src/audit.py</code>). A decision dated <em>t</em> may use data up to <em>t</em> only. So if the input is truncated after a cut date τ, every decision dated ≤ τ must be unchanged. The audit recomputes a strategy on truncated inputs at random cut dates and counts decisions that moved. This is stricter than perturbing the future, because it also catches code that behaves differently on a shorter sample (a full-sample z-score, a full-sample fit). It generalises project 19's "change the future" test to any strategy.</p>
+<p><strong>Strategies</strong> (<code>src/strategies.py</code>), rewritten as pure decision functions with the original parameters: <strong>MA200</strong> (03: long when close &gt; 200-day SMA including today); <strong>real-time HMM</strong> (19, rung R3: two-state Gaussian HMM refitted every 21 days on an expanding window after 5 years, long when tomorrow's predicted turbulent probability is below 0.5; <code>hmm.py</code> copied from 19); <strong>12-1 momentum</strong> (12: at each month end, rank on months m−11…m−1, long the top 30%, short the bottom 30%, equal weights).</p>
+<p><strong>Statistics.</strong> Per-trade delay costs get 95% CIs from a stationary bootstrap (mean block 20 days, 2,000 draws). Averages across the 10 indices or 10 ETFs use a <strong>joint</strong> date bootstrap: every instrument is resampled on the same dates, so a day like 16 March 2020 that hits all of them is not counted as ten independent events. Sharpe-ratio differences use the Ledoit-Wolf HAC test. Within each family of 10 markets, p-values are Holm-adjusted, and counts get a sign test.</p>
+<h2>4. Does the engine tell the truth?</h2>
+<h3>4.1 It reproduces the three projects (<code>results/validation.csv</code>)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Project</th>
+<th>Quantity</th>
+<th>Engine</th>
+<th>Published</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>03</td>
+<td>MA200 gross Sharpe, 10 indices</td>
+<td>identical in 10/10</td>
+<td></td>
+<td>&lt; 0.00005</td>
+</tr>
+<tr>
+<td>03</td>
+<td>MA200 net Sharpe, 10 indices</td>
+<td></td>
+<td></td>
+<td>−0.0002 to −0.0011</td>
+</tr>
+<tr>
+<td>19</td>
+<td>real-time HMM net Sharpe, 10 indices</td>
+<td></td>
+<td></td>
+<td>≤ 0.002 in 9/10; ASX +0.005</td>
+</tr>
+<tr>
+<td>12</td>
+<td>12-1 on 49 industries: gross premium</td>
+<td>7.77 %/yr</td>
+<td>7.72 %/yr</td>
+<td>+0.06</td>
+</tr>
+<tr>
+<td>12</td>
+<td>… gross Sharpe (monthly)</td>
+<td>0.599</td>
+<td>0.594</td>
+<td>+0.005</td>
+</tr>
+<tr>
+<td>12</td>
+<td>… turnover per month</td>
+<td>0.836</td>
+<td>0.836</td>
+<td>−0.001</td>
+</tr>
+</tbody>
+</table></div>
+<p>The 03 net gap comes from one bookkeeping choice: 03 books the cost on the day after the trade, and this engine books it at the fill, compounded. The 19 gap comes from a price file that runs three days longer, so the HMM refits see slightly different data. The 12 gap comes from assets that drop out of the universe: 12 freezes their drifted weight, and this engine sets it to zero at the next rebalance. Every gap is at least 50 times smaller than the effects below.</p>
+<h3>4.2 The causality audit (<code>results/audit.csv</code>)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Expected</th>
+<th>Decisions checked</th>
+<th>Changed</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MA200 (03)</td>
+<td>causal</td>
+<td>18,373</td>
+<td>0</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>Centred MA200 (planted bug, <code>center=True</code>)</td>
+<td>look-ahead</td>
+<td>18,670</td>
+<td>297 (1.7%)</td>
+<td><strong>caught</strong></td>
+</tr>
+<tr>
+<td>Real-time HMM (19)</td>
+<td>causal</td>
+<td>15,190</td>
+<td>0</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>Smoothed HMM (19's rung R1)</td>
+<td>look-ahead</td>
+<td>18,967</td>
+<td>261 (2.3%)</td>
+<td><strong>caught</strong></td>
+</tr>
+<tr>
+<td>12-1 momentum (12)</td>
+<td>causal</td>
+<td>49,539</td>
+<td>0</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table></div>
+<p>Three cut dates each, S&amp;P 500 1995–2026 and the industries 1990–2026. Momentum decides on the last trading day of the month, which the exchange calendar fixes in advance, so it is audited at its own decision dates.</p>
+<p>So the signals of 03, 12 and 19 are clean. What the engine adds is the fill.</p>
+<h2>5. Results: moving only the fill</h2>
+<h3>5.1 The 200-day rule: indices against ETFs (<code>results/pooled.csv</code>, <code>delay.csv</code>, <code>paired_gap.csv</code>)</h3>
+<p>Per-trade cost of filling one close later, mean over 10 instruments, joint-bootstrap 95% CI:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Instruments</th>
+<th>Sample</th>
+<th>bp per trade</th>
+<th>95% CI</th>
+<th>Instruments &gt; 0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 indices</td>
+<td>each index's full sample</td>
+<td><strong>+5.2</strong></td>
+<td>−0.2 to +10.4</td>
+<td>8/10</td>
+</tr>
+<tr>
+<td>10 ETFs</td>
+<td>each ETF's full sample</td>
+<td><strong>−11.4</strong></td>
+<td>−18.7 to −4.3</td>
+<td><strong>0/10</strong> (sign p = 0.002)</td>
+</tr>
+<tr>
+<td>10 ETFs, next <strong>open</strong> instead</td>
+<td>ETF dates with real opens</td>
+<td><strong>−7.1</strong></td>
+<td>−13.0 to −1.4</td>
+<td>1/10</td>
+</tr>
+<tr>
+<td>Index minus its ETF, same dates</td>
+<td>1993–2026</td>
+<td><strong>+14.6</strong></td>
+<td>+7.1 to +22.1</td>
+<td>9/10 (sign p = 0.02; bootstrap p &lt; 0.001)</td>
+</tr>
+</tbody>
+</table></div>
+<p>No single market is significant after Holm: one market's CI is ±15 to ±25 bp, because a 200-day rule trades only 6–10 times a year. The evidence is in the cross-section. Every ETF has a negative point estimate, and in 9 of 10 pairs the index makes late filling look worse than its own ETF does over the same dates (fig. 4).</p>
+<p><img alt="Index vs ETF" loading="lazy" src="figures/fig4_index_vs_etf.png" /></p>
+<h3>5.2 By era (<code>results/era_pooled.csv</code>, star chart)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Before 1990</th>
+<th>1990–2005</th>
+<th>2006–2026</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Indices</td>
+<td><strong>+18.5</strong> [5.3, 40.6], 5/5</td>
+<td>+4.4 [−5.7, 16.5], 5/10</td>
+<td>+3.3 [−3.5, 10.7], 6/10</td>
+</tr>
+<tr>
+<td>ETFs</td>
+<td>—</td>
+<td><strong>−32.6</strong> [−45.2, −18.1], 0/10</td>
+<td>−1.2 [−8.8, 7.2], 3/10</td>
+</tr>
+</tbody>
+</table></div>
+<p>The full-sample numbers in §5.1 average over regimes that point in opposite directions. Before 1990, index prices were stale. The Nasdaq Composite had a lag-1 autocorrelation of +0.30 and the TSX +0.21 (<code>results/mechanism.csv</code>), so the day after a crossing kept going and a same-close fill captured that drift, which no one could actually trade. The young ETFs of 1993–2005 traded thinly, around a NAV set by markets that were often closed (project <a href="../11-pairs-trading/">11</a> on premiums and discounts to NAV). Their lag-1 autocorrelations were negative in 9 of 10 (−0.04 to −0.15; EWZ +0.01), and the day after a crossing reversed. Since 2006 both are close to zero, and the fill convention costs or earns less than the 5 bp cost.</p>
+<p><strong>Read it this way:</strong> the longer the history a backtest uses, the more its fill convention matters, and the sign depends on whether the series is an untradable average (stale, momentum-like) or a thinly traded instrument (noisy, reverting).</p>
+<h3>5.3 The mechanism (<code>results/mechanism.csv</code>, <code>mechanism_fit.csv</code>)</h3>
+<p>If tomorrow's return projects linearly on today's, E[R_{t+1} | R_t] ≈ ρ₁ R_t, then the delay cost per trade ≈ ρ₁ × (trade-day return in the direction of the trade). I computed both sides in 87 cells (20 instruments × up to 3 eras × 2 strategies, at least 15 trades and 3 years per cell) and regressed actual on predicted, weighting by trades, with HC1 errors:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Cells</th>
+<th>Slope (se)</th>
+<th>Intercept (se)</th>
+<th>Weighted R²</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>All 87</td>
+<td><strong>0.59 (0.14)</strong></td>
+<td>0.8 (1.3)</td>
+<td>0.12</td>
+</tr>
+<tr>
+<td>MA200, 45</td>
+<td>0.67 (0.16)</td>
+<td>2.9 (2.1)</td>
+<td>0.20</td>
+</tr>
+<tr>
+<td>HMM, 42</td>
+<td>0.63 (0.34)</td>
+<td>−0.2 (1.7)</td>
+<td>0.05</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Mechanism" loading="lazy" src="figures/fig3_mechanism.png" /></p>
+<p>The slope is clearly positive and the intercept is zero, but the slope is below 1. Two reasons, both expected. First, ρ₁ in a cell is estimated with error, which attenuates the slope (errors in variables, project 09). Second, the projection is linear while crossings happen on large, unusual days. The R² is low because a cell's actual delay cost has a standard error of 5–15 bp. The mechanism <strong>predicts the sign and roughly the size. It does not predict each cell.</strong></p>
+<p>It also explains which strategies care. The median trade-day return in the direction of the trade is <strong>156 bp</strong> (indices) and <strong>186 bp</strong> (ETFs) for MA200, and only <strong>45–52 bp</strong> for the HMM (fig. 2, h = 0). A moving-average crossing happens <em>because</em> of a big directional move. A regime switch happens because of a big move <em>in either direction</em>, so it carries a third of the directional exposure. The prediction for the HMM is therefore small, and so is the result. Its per-trade delay cost is −0.7 bp on ETFs (CI −10.4 to +8.9) and −4.6 bp on indices (CI −12.5 to +2.4), with no consistent sign. The one exception is −8.8 bp on indices since 2006 (CI −17.9 to −0.1, p = 0.05, 5/10 positive), which is borderline and has no sign consistency. I do not read it as an effect.</p>
+<p><img alt="Day after" loading="lazy" src="figures/fig2_day_after_profile.png" /></p>
+<p>The day-after profile also shows that <strong>only day 1 is systematic</strong>. From day 2 on, the medians move around zero by ±5–10 bp with no consistent shape. So the fill convention is a one-day microstructure effect, not slow information that a lagged trade misses.</p>
+<h3>5.4 Delay curves (<code>results/delay_curve.csv</code>)</h3>
+<p><img alt="Delay curve" loading="lazy" src="figures/fig5_delay_curve.png" /></p>
+<p>Net Sharpe against fill lag <em>k</em> = 0…10 closes. MA200 on indices: median −0.03 at <em>k</em> = 1, drifting to −0.08 at <em>k</em> = 10. MA200 on ETFs: median <strong>+0.06</strong> at <em>k</em> = 1, staying between +0.03 and +0.08. HMM: within ±0.06 throughout, with no trend.</p>
+<h2>6. What changes in the three projects</h2>
+<h3>6.1 Project 03 and 19's verdicts against buy &amp; hold (<code>results/claims.csv</code>, <code>claims_summary.csv</code>)</h3>
+<p>Net Sharpe of the rule minus buy &amp; hold, 5 bp costs:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule, instrument</th>
+<th>Same close (as published)</th>
+<th>Next close</th>
+<th>Next open (ETFs, same sample)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MA200, indices</td>
+<td>median +0.080, 7/10 beat B&amp;H</td>
+<td>+0.061, 7/10</td>
+<td>—</td>
+</tr>
+<tr>
+<td>MA200, ETFs</td>
+<td>median −0.039, <strong>3/10</strong></td>
+<td>+0.030, <strong>6/10</strong></td>
+<td>−0.034 → +0.019, 3/10 → 6/10</td>
+</tr>
+<tr>
+<td>Real-time HMM, indices</td>
+<td>median −0.063, 3/10</td>
+<td>−0.054, 3/10</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Real-time HMM, ETFs</td>
+<td>median −0.050, 2/10</td>
+<td>−0.020, 2/10</td>
+<td>−0.050 → −0.036, 2/10 → 2/10</td>
+</tr>
+</tbody>
+</table></div>
+<p>None of the individual differences in <code>claims.csv</code> is significant after Holm.</p>
+<p><img alt="Verdict" loading="lazy" src="figures/fig6_ma_vs_buy_hold_etf.png" /></p>
+<ul>
+<li><strong>Project 03</strong> ran on indices, where the same-close fill gives the rule a small tailwind (+0.02 Sharpe in the median). Its verdict there is unchanged: 7/10 either way. On the instruments you would actually trade, the published convention points the wrong way. It makes the 200-day rule <em>look worse</em> than a realistic fill would, and the count of markets where it beats buy &amp; hold flips from 3/10 to 6/10. Project 03's main finding, that the rule's edge is a risk forecast and not a return forecast, does not depend on this: both counts are well short of significant.</li>
+<li><strong>Project 19's</strong> conclusion that the real-time HMM trails buy &amp; hold (7/10 indices) survives every fill and both instrument types. §5.3 explains why it is robust.</li>
+</ul>
+<h3>6.2 Project 12's momentum (<code>results/momentum.csv</code>)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Universe</th>
+<th>Fill</th>
+<th>Gross premium (%/yr)</th>
+<th>Change vs same close (95% CI)</th>
+<th>Delay cost per unit turnover</th>
+<th>Break-even (bp)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>49 industries, 1927–2026</td>
+<td>close</td>
+<td>7.77</td>
+<td>—</td>
+<td>—</td>
+<td>77.5</td>
+</tr>
+<tr>
+<td></td>
+<td>close+1</td>
+<td>7.60</td>
+<td>−0.18 (−0.45, +0.07)</td>
+<td><strong>1.9 bp</strong></td>
+<td>75.8</td>
+</tr>
+<tr>
+<td></td>
+<td>close+2</td>
+<td>7.42</td>
+<td>−0.35 (−0.74, +0.03)</td>
+<td>3.6 bp</td>
+<td>74.0</td>
+</tr>
+<tr>
+<td></td>
+<td>close+5</td>
+<td>7.06</td>
+<td>−0.71 (−1.29, −0.14)</td>
+<td>7.4 bp</td>
+<td>70.2</td>
+</tr>
+<tr>
+<td>42 country ETFs, 1997–2026</td>
+<td>close</td>
+<td>1.41</td>
+<td>—</td>
+<td>—</td>
+<td>12.4</td>
+</tr>
+<tr>
+<td></td>
+<td>close+1</td>
+<td>0.59</td>
+<td><strong>−0.77 (−1.51, −0.04)</strong></td>
+<td>6.7 bp</td>
+<td>5.2</td>
+</tr>
+<tr>
+<td>same, real-open dates (2001–)</td>
+<td>open</td>
+<td>−0.42</td>
+<td>−0.23 (−0.70, +0.24)</td>
+<td>2.0 bp</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="Momentum" loading="lazy" src="figures/fig7_momentum.png" /></p>
+<p><strong>H4 holds for industries.</strong> One close later costs 1.9 bp per unit of turnover, 2.4% of the break-even, and the CI includes zero. Project 12's break-even conclusions stand. Country-ETF momentum, which 12 already found had no reliable premium, loses half of what little it had by filling one close later, and the CI just excludes zero. Its sign is the opposite of MA200 on the same ETFs, as it should be. A cross-sectional winner bought at the close keeps drifting up for a day relative to the losers (positive cross-serial dependence), while a single ETF crossing its own moving average tends to bounce back.</p>
+<h2>7. Robustness and stress windows</h2>
+<p><strong>Stress windows</strong> (<code>results/stress.csv</code>; GFC 2008-09-01 to 2009-03-31, COVID 2020-02-19 to 2020-04-30, inflation 2022-01-03 to 2022-10-31). The fill effect is <strong>not</strong> a crisis phenomenon. For MA200, the cumulative delay P&amp;L (close vs close+1) averages +0.1% in the GFC, −0.8% (indices) and +0.2% (ETFs) in COVID, and +1.5% / +1.3% in 2022, all within ±10% in every single market. In the first two windows the rule left the market early and made few trades afterwards. For the HMM, the window means range from −3.5% to +4.6% with no consistent sign. The pre-1990 and 1993–2005 effects in §5.2 come from ordinary days, not from a few crashes.</p>
+<p><strong>Next open versus next close.</strong> On ETFs the next-open fill keeps about 60% of the next-close effect (−7.1 vs −11.4 bp per trade). The rest of the reversal happens overnight, before the next open.</p>
+<p><strong>Cost assumption.</strong> All Sharpe numbers are net of 5 bp. Delay costs are gross and in bp per trade, so they can be set directly against any cost assumption: the pre-1990 index effect (+19 bp) is four times it, and the 1993–2005 ETF effect (−33 bp) is six times it with the opposite sign.</p>
+<p><strong>Ablation of the engine.</strong> Each of the engine's choices is checked by a unit test that isolates it (<code>tests/test_engine.py</code>, 10 tests): buy &amp; hold equals the asset's own return, a flat book earns cash, an open fill equals a close fill when the open equals the previous close, an open fill splits overnight and intraday correctly, drift is not counted as turnover, costs are exact, changing the future does not change the past, and the audit separates causal code from a centred window.</p>
+<h2>8. Limitations</h2>
+<ul>
+<li><strong>Era boundaries.</strong> 1990 and 2006 were fixed in the first exploratory pass (on two US indices), before any ETF or era result. They are round numbers, not estimated breakpoints. Other cuts would move the numbers. They should not reverse the before-1990 index result (5/5) or the 1993–2005 ETF result (0/10), but I have not tested that.</li>
+<li><strong>H1 is partly in-sample.</strong> The exploratory pass that suggested it used the S&amp;P 500 and Nasdaq. The confirmatory evidence is the other eight indices, the ETFs, the paired test and the mechanism regression.</li>
+<li><strong>The ETF is not the index.</strong> QQQ tracks the Nasdaq-100. The foreign ETFs trade during US hours, asynchronously with their home markets, so the ETF's "day after" includes information the index sees on a different calendar day. The paired gap compares <em>the instrument a US investor trades</em> with <em>the series the projects backtested</em>, which is the comparison that matters for an investor. It is not a clean test of stale prices alone.</li>
+<li><strong>Same-close is not impossible.</strong> On liquid ETFs, a market-on-close order placed on a signal computed a few minutes before the bell approximates it. I have no intraday data to measure how often a 15:50 signal differs from the close signal. The next-open and next-close fills bracket the realistic cases. A fill at an intraday VWAP is not modelled.</li>
+<li><strong>Few trades per market.</strong> A 200-day rule trades 6–10 times a year, so single-market CIs are wide (±15–25 bp) and no single market survives Holm. All claims rest on cross-sectional counts and the joint bootstrap. The 1993–2005 ETF cells hold only 27–106 trades each.</li>
+<li><strong>Mechanism.</strong> The linear prediction is a first-order approximation. It gets the sign and an attenuated slope (0.59), and it explains a small share of cell-to-cell variance.</li>
+<li><strong>Costs and dividends</strong> follow 03 and 19: a flat 5 bp, price indices without dividends, zero cash for foreign indices. Projects 03 and 19 show these choices do not drive their results. Here they cancel out of the delay cost, which is a difference between two fills of the same rule.</li>
+<li><strong>Momentum B with opens</strong> uses only the dates on which each ETF's open is real (from 2001), so it is a different sample from the close-fill run above it.</li>
+</ul>
+<h2>9. Referee self-review</h2>
+<p>I reviewed the draft as a hostile referee would. Points raised, and what changed:</p>
+<ol>
+<li><em>"The 'open' fill compares a shorter sample with the full-sample close fill."</em> True in the first draft of §6.1. The claims table now compares open with close on the <strong>same</strong> real-open sample (<code>fill = "close (open sample)"</code>), and the figure compares close with next close on the full sample.</li>
+<li><em>"Averaging per-market bootstraps treats correlated markets as independent."</em> Replaced with a joint date bootstrap for every across-market average (§3).</li>
+<li><em>"The HMM effect 'index, ETF dates' (−10.5 bp, p = 0.03) is a finding you are hiding."</em> Most of it is one pair: Ibovespa, with 60 HMM trades and −85 bp. Without it the mean is −2.2 bp. Eight of ten are negative, but all lie within ±8 bp and none is individually significant. It is reported in <code>delay_index_etf_dates.csv</code> and is not claimed as an effect.</li>
+<li><em>"The momentum title 'barely notices the fill' overstates."</em> Country-ETF momentum does lose half its premium. The figure title and §6.2 now say so.</li>
+<li><em>"Is the engine validated, or just self-consistent?"</em> It reproduces 03's published gross Sharpe ratios to four decimals in 10/10 indices, and 12 and 19 to within the stated, explained gaps (§4.1).</li>
+<li><em>"Is 'filling late earns money on ETFs' just short-term reversal?"</em> Yes, and that is the point: §5.3 names it and measures its strength. What is new is that it <strong>reverses the sign</strong> of the implementation gap relative to the index the original studies used, and that it was concentrated in 1993–2005.</li>
+<li><em>"Multiple testing across 2 strategies × 2 instrument types × 3 eras × 2 fills."</em> Holm within each 10-market family. The two headline cells (pre-1990 indices, 1993–2005 ETFs) have joint-bootstrap p = 0.04 and 0.0005 and sign counts of 5/5 and 0/10. With Holm over the 10 era-pooled tests in <code>era_pooled.csv</code>, the ETF cell survives (adjusted p ≈ 0.005) and the index cell does not (adjusted p ≈ 0.38). The pre-1990 index result should be read as consistent with H1, not as proven.</li>
+</ol>
+<p>Open points a referee could still raise: estimated breakpoints instead of fixed eras, futures as the tradable instrument for the S&amp;P 500 before 1993, and an intraday test of how far a 15:50 signal differs from the close signal.</p>
+<h2>10. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+./run_all.sh          # tests, HMM refits (about 6 min on 4 cores), every CSV and figure
+</code></pre>
+<p><code>src/fetch_yahoo_browser.js</code> rebuilds <code>data/yahoo_ohlc.csv.gz</code> from a browser on the Yahoo origin (Yahoo blocks cloud machines). Everything else is in <code>data/</code>.</p>
+<h2>11. Links to other projects</h2>
+<ul>
+<li><a href="../03-moving-average-volatility/">03</a> and <a href="../19-hmm-regime-hindsight/">19</a>: the strategies re-run here; their signal-level look-ahead checks are confirmed (§4.2).</li>
+<li><a href="../12-momentum-trading-costs/">12</a>: break-even costs that the delay cost is compared against (§6.2).</li>
+<li><a href="../11-pairs-trading/">11</a>: GGR's one-day wait exists for the same reason as §5.2's index effect, and its NAV premium/discount is why early ETFs reverted.</li>
+<li><a href="../09-beta-horse-race/">09</a> (non-synchronous trading) and <a href="../02-volatility-dashboard-audit/">02</a> (stale opens): the microstructure behind the index results.</li>
+<li>Next: projects 22 (purged cross-validation) and 23 (deflated Sharpe). The fill is one more researcher degree of freedom that a deflated Sharpe should count.</li>
+</ul>
+<h2>References</h2>
+<p>Gatev, E., Goetzmann, W. &amp; Rouwenhorst, K. G. (2006). Pairs trading. <em>RFS</em> 19(3).
+Lo, A. &amp; MacKinlay, A. C. (1990). When are contrarian profits due to stock market overreaction? <em>RFS</em> 3(2).
+Ledoit, O. &amp; Wolf, M. (2008). Robust performance hypothesis testing with the Sharpe ratio. <em>JEF</em> 15(5).
+Politis, D. &amp; Romano, J. (1994). The stationary bootstrap. <em>JASA</em> 89(428).
+Scholes, M. &amp; Williams, J. (1977). Estimating betas from nonsynchronous data. <em>JFE</em> 5(3).
+Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scand. J. Statist.</em> 6(2).
+Bailey, D., Borwein, J., López de Prado, M. &amp; Zhu, Q. (2014). Pseudo-mathematics and financial charlatanism. <em>Notices of the AMS</em> 61(5).</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/21-backtest-engine-fills">21-backtest-engine-fills on GitHub</a>.</footer>
+</div>
+</body>
+</html>

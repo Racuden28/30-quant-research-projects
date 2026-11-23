@@ -33,7 +33,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 18 | [Three Factors Explain the Curve. They Don't Hedge It.](18-yield-curve-pca/) | Does yield-curve PCA actually hedge better than a desk's model-free bucketing out of sample? | ✅ Published |
 | 19 | [The Regime You Only See Afterwards](19-hmm-regime-hindsight/) | How much of an HMM regime-timing backtest is hindsight, and what is left once only past data is used? | ✅ Published |
 | 20 | [Was Risk Parity Just a Bond Bull Market?](20-risk-parity-bond-bull/) | Did risk parity beat 60/40 because of a structural premium or because of the 40-year fall in bond yields? | ✅ Published |
-| 21 | Event-driven backtest engine | | ⏳ Planned |
+| 21 | [The Day After the Signal](21-backtest-engine-fills/) | Does the day you assume a trade fills change what a backtest concludes? | ✅ Published |
 | 22 | Purged cross-validation | | ⏳ Planned |
 | 23 | Deflated Sharpe ratio | | ⏳ Planned |
 | 24 | PCA statistical arbitrage | | ⏳ Planned |

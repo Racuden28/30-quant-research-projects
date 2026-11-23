@@ -1,0 +1,6 @@
+strategy,expected_causal,cuts,decisions_checked,changed,max_share_changed,passed
+MA200 (project 03),True,3,18373,0,0.0,True
+Centred MA200 (bug),False,3,18670,297,0.017077798861480076,False
+Real-time HMM (project 19),True,3,15190,0,0.0,True
+"Smoothed HMM (project 19, rung R1)",False,3,18967,261,0.022806147744174516,False
+12-1 momentum (project 12),True,3,49539,0,0.0,True
