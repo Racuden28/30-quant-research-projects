@@ -1,0 +1,6 @@
+# per-run outputs rebuilt by src/experiments.py (~10 min)
+results/runs*/
+src/__pycache__/
+tests/__pycache__/
+.pytest_cache/
+study/
