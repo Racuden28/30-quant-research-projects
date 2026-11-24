@@ -58,7 +58,8 @@ PROJECTS = [
     (22, None, "Purged cross-validation", ""), (23, None, "Deflated Sharpe ratio", ""),
     (24, None, "PCA statistical arbitrage", ""), (25, "25-kalman-hedge-ratio", "The Kalman Hedge Ratio Is an EWMA in Disguise",
      "Does a Kalman-filter hedge ratio beat rolling and EWMA betas out of sample, or is it an EWMA in disguise?"),
-    (26, None, "Heston calibration", ""), (27, None, "Merton structural credit model", ""),
+    (26, "26-heston-public-indices", "Heston From Six Public Numbers",
+     "Can Heston be calibrated from free CBOE indices, and does it agree with itself?"), (27, None, "Merton structural credit model", ""),
     (28, None, "Market-making agent", ""), (29, None, "Optimal execution", ""),
     (30, None, "Deep hedging", ""),
 ]

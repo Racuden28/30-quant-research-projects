@@ -1,0 +1,6 @@
+param,P_estimator,P,P_ci_lo,P_ci_hi,Q_median,Q_source
+kappa,"AR(1) of VIX^2, 5-day steps",5.959,4.38,13.52,4.4,term-structure fit
+sigma,sqrt(sum dv^2 / sum v dt),2.754,1.433,3.526,0.5783,VVIX
+sigma,robust (MAD of standardised dv),0.5796,0.4927,0.6593,0.5783,VVIX
+sigma,robust (MAD of standardised dv),0.5796,0.4927,0.6593,1.428,minimum needed by SKEW (rho=-1)
+rho,"corr(d lnS, dv), daily",-0.6023,-0.6652,-0.5634,-0.999,joint six-index fit

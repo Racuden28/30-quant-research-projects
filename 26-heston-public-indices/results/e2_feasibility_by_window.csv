@@ -1,0 +1,8 @@
+window,days,share_infeasible,share_vvix_unreachable,sigma_vvix_median,sigma_skew_min_median,ratio_median,nonheston_share_median,term_rmse_median,kappa_median,feller_violated,share_infeasible_ci,ratio_median_ci,nonheston_share_ci
+Full sample 2008-2026,4681,0.8983,0.04636,0.5783,1.428,2.236,0.5517,0.1275,4.4,0.3818,"[0.871, 0.925]","[2.074, 2.42]","[0.516, 0.586]"
+GFC 2008-09 to 2009-03,146,0.6986,0,1.151,2.202,1.772,0.4338,0.0766,6.008,0.7671,,,
+Covid 2020-02 to 2020-05,72,0.7083,0.2361,2.58,3.223,1.182,0.1532,0.3129,18.24,0.7639,,,
+Bear 2022,201,0.9104,0.1244,0.8369,1.809,2.086,0.5183,0.1948,4.787,0.5522,,,
+Nov 2026 shock (11-16 to 11-23),5,1,0.6,1.757,4.811,3.374,0.523,0.1903,23.98,0.4,,,
+Calm: VIX below its median,2339,0.9726,0.00171,0.4606,1.186,2.555,0.6075,0.1219,3.612,0.2112,,,
+Turbulent: VIX top decile,468,0.7585,0.1731,1.247,2.508,1.691,0.407,0.1885,10.86,0.6603,,,

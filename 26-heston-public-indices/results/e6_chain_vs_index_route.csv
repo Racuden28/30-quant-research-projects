@@ -1,0 +1,4 @@
+model,v0,kappa,theta,sigma,rho,feller,iv_rmse_volpts,share_within_spread,implied_VIX9D,implied_VIX,implied_VIX3M,implied_VIX6M,implied_SKEW,implied_VVIX
+Heston fitted to the chain,0.095448,20.655,0.061585,5.7262,-0.71621,0.077587,2.4129,0.041898,29.685,27.907,26.074,25.467,141.95,134.14
+Index route: joint six-index fit,0.088873,26.698,0.065389,10,-0.27445,0.034915,5.0152,0.019227,28.739,27.368,26.237,25.912,133.99,118.6
+Observed,,,,,,,,,28.96,27.42,25.8,26.12,133.99,118.64

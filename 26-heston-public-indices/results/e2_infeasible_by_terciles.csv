@@ -1,0 +1,4 @@
+SKEW_t,low VVIX,mid VVIX,high VVIX
+low SKEW,0.844,0.828,0.673
+mid SKEW,0.983,0.940,0.817
+high SKEW,1.000,0.996,0.948

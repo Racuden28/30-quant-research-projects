@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Heston From Six Public Numbers: SKEW and VVIX Disagree About the Vol of Vol</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Can Heston be calibrated from free CBOE indices, and does it agree with itself?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 26 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 26</p>
+<h1>Heston From Six Public Numbers: SKEW and VVIX Disagree About the Vol of Vol</h1>
+<p><strong>Project 26 of 30 · Heston calibration</strong> · S&amp;P 500, daily, 2008-01-02 to 2026-11-23</p>
+<blockquote>
+<p><strong>Abstract.</strong> Calibrating the Heston model usually needs a full option chain, which costs money. CBOE publishes
+six numbers every day that are model-free summaries of that chain: the VIX term structure (VIX9D, VIX, VIX3M,
+VIX6M), the 30-day risk-neutral skewness (SKEW) and the vol of VIX (VVIX). Under Heston these six numbers have
+exact closed forms, and they identify the five parameters in a triangle: the term structure pins (v0, κ, θ),
+VVIX pins σ (it does not depend on ρ), and SKEW pins ρ. That gives a daily, free, fully reproducible
+calibration and a built-in consistency test. On 4,681 days the test fails on <strong>90% of them (95% CI 87–93%)</strong>.
+The vol of vol that SKEW needs, even with ρ = −1, is a median <strong>2.24× (2.07–2.42)</strong> the one VVIX allows, and
+at least <strong>55% (52–59%)</strong> of the priced 30-day skewness is out of reach of diffusive stochastic volatility.
+The VVIX value agrees with history: σ = 0.58 from VVIX against a robust physical estimate of 0.58
+(0.49–0.66). SKEW is the outlier. Exact fits exist on 40% of days only on a second, degenerate branch with σ ≈ 41
+and a <em>positive</em> spot-vol correlation (median +0.75, against −0.60 in the data). Heston's comparative statics
+have the wrong size: it predicts VVIX rising 0.46 points per VIX point (data: 2.03) and SKEW falling 0.53
+(data: 0.13). What does survive is the one-factor term structure. Out of sample, freezing (κ, θ) and moving
+only v cuts next-day VIX3M and VIX6M errors by 33% and 64% against the best simple rule (Holm p ≤ 0.001). On
+the live S&amp;P 500 chain of 2026-11-23, my replication of the CBOE formulas matches the published VIX to
+0.01 points. The best Heston fitted to the 10,454 quotes still misses by 2.4 vol points, 33 times the median
+half-spread, and needs σ = 5.7, which implies a VVIX of 134 against 119 observed.</p>
+</blockquote>
+<p><img alt="The star chart" loading="lazy" src="figures/fig1_two_volvols.png" /></p>
+<hr />
+<h2>1. Question and hypotheses</h2>
+<p><strong>Research question.</strong> Can the Heston (1993) model be calibrated every day from the free CBOE indices alone? And
+when it is, do the parameters tell one consistent story across the indices, across time, and between the
+risk-neutral (Q) and physical (P) worlds?</p>
+<p>Heston is the workhorse stochastic-volatility model:</p>
+<pre><code>dS/S = √v dW₁,   dv = κ(θ − v) dt + σ √v dW₂,   corr(dW₁, dW₂) = ρ
+</code></pre>
+<p>The usual way to calibrate it is a least-squares fit to an option chain. That fit is famously ill-posed (flat
+valleys between κ and σ, parameters that jump from day to day), and it needs data most self-taught researchers do
+not have. My angle is to replace the chain with the six numbers CBOE already computes from it, <em>because each one
+has an exact Heston counterpart</em> (Section 3), and the mapping is triangular. With six numbers and five
+parameters, the system is over-identified by one, and that extra equation is a free daily specification test.</p>
+<p>Hypotheses, stated before the main runs:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Hypothesis</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>SKEW and VVIX cannot be matched by one (σ, ρ) on most days (the index version of the SPX–VIX joint-calibration puzzle)</td>
+<td><strong>Supported</strong>, 90% of days</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>At least half of the priced 30-day skewness lies outside what Heston can produce</td>
+<td><strong>Supported</strong>, 55% (52–59%), a lower bound</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>Heston's own comparative statics (how SKEW and VVIX move with VIX) match the daily data</td>
+<td><strong>Rejected</strong> for both</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>Out of sample, Heston's one-factor term structure beats simple rules for next-day VIX3M/VIX6M</td>
+<td><strong>Supported</strong>; not for VIX9D</td>
+</tr>
+<tr>
+<td>H5</td>
+<td>σ and ρ are equal under P and Q, as Heston's standard λ·v risk premium requires</td>
+<td><strong>Mixed</strong>: σ from VVIX equals robust σᴾ; σ from SKEW and ρ do not</td>
+</tr>
+</tbody>
+</table></div>
+<p>One estimator in H5 was added after the first run. The sum-of-squares σᴾ was dominated by a few days with
+huge variance jumps, so I added a robust (median-absolute-deviation) version. Both are reported (Section 4.5).</p>
+<h2>2. Data</h2>
+<p>All series are daily closes from Yahoo Finance, pulled through a browser on 2026-11-23 (details in
+<a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/26-heston-public-indices/data/README.md">data/README.md</a>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Series</th>
+<th>Definition (CBOE)</th>
+<th>Horizon</th>
+<th>Starts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VIX9D, VIX, VIX3M, VIX6M</td>
+<td>√(fair variance) from S&amp;P 500 option strips</td>
+<td>9, 30, 93, 183 days</td>
+<td>2011, 1990, 2006, <strong>2008</strong></td>
+</tr>
+<tr>
+<td>SKEW</td>
+<td>100 − 10 × risk-neutral skewness of ln(S_T/F)</td>
+<td>30 days</td>
+<td>1990</td>
+</tr>
+<tr>
+<td>VVIX</td>
+<td>VIX formula applied to VIX options</td>
+<td>30 days</td>
+<td>2007</td>
+</tr>
+<tr>
+<td>S&amp;P 500 (^GSPC)</td>
+<td>price index, for the P-measure checks</td>
+<td>daily</td>
+<td>1970</td>
+</tr>
+<tr>
+<td>S&amp;P 500 option chain</td>
+<td>22,388 quotes, 53 expiries, bid/ask, snapshot 2026-11-23 19:46 UTC</td>
+<td>1 day to 5 years</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p>The sample starts on 2008-01-02, the first day of VIX6M, and has 4,681 days. VIX9D exists only from 2011, so
+2008–2010 uses three tenors (ablation A2 drops VIX9D everywhere). The last full day is 2026-11-20. The
+2026-11-23 SKEW was not published when the data were pulled, so the chain experiment replicates it. The sample
+includes every stress window in the brief: 2008–09, Covid 2020 and the 2022 bear market. It also includes a
+live one, the November 2026 shock, when VIX went from 17.5 on 11-11 to 35.9 on 11-20.</p>
+<p><strong>Universe overlap.</strong> No earlier project uses the CBOE term-structure, SKEW or VVIX indices. #4 and #16 use VIX
+only; #14 uses Deribit crypto options. The S&amp;P 500 index is shared with #3, #13, #15 and #16 on purpose, only for
+the P-measure checks.</p>
+<h2>3. Method</h2>
+<h3>3.1 Six closed forms</h3>
+<p>Everything is written on the forward, X = ln(S_T/F₀), so rates and dividends never enter. That matches how CBOE
+defines the indices.</p>
+<p><strong>Term structure.</strong> Under Heston the fair variance for horizon τ is the expected average variance:</p>
+<pre><code>VIX_τ² = θ + (v₀ − θ)·b(τ),   b(τ) = (1 − e^{−κτ})/(κτ)
+</code></pre>
+<p><strong>SKEW.</strong> CBOE's SKEW is 100 − 10·S, where S is the risk-neutral skewness of X over 30 days. I compute the
+cumulants of X exactly with a Cauchy contour integral of the cumulant generating function, K(z) = log φ(−iz)
+(Albrecher et al. "little trap" characteristic function):</p>
+<pre><code>c_n = n!/(2πi) ∮ K(z) z^{−n−1} dz,   S = c₃ / c₂^{3/2}
+</code></pre>
+<p>The trapezoid rule on a circle is spectrally accurate. It agrees to 10⁻¹² across radii and with Monte Carlo
+(tests).</p>
+<p><strong>VVIX.</strong> Under Heston, VIX_T² = a + b·v_T is affine in v_T. The VIX future F_t = E_t[VIX_T] is a continuous
+martingale, so the model-free variance CBOE computes from VIX options equals the expected quadratic variation of
+ln F. For a continuous martingale that is −2E[ln(VIX_T/F₀)]. Hence</p>
+<pre><code>VVIX² · T = 2 ( ln E[√Y] − ½ E[ln Y] ),   Y = a + b·v_T,   T = 30 days
+</code></pre>
+<p>Both expectations are one-dimensional integrals of the CIR Laplace transform (√y and ln y have Laplace-type
+integral representations). The result matches non-central χ² quadrature to 10⁻⁵ (tests). Two consequences
+matter later. VVIX does not depend on ρ. And VVIX is <strong>hump-shaped in σ</strong> (Figure 2): above some σ, v is
+absorbed near zero so often that the vol of VIX falls again.</p>
+<p><strong>Options</strong> are priced with the COS method (Fang &amp; Oosterlee 2008) and inverted with the robust implied-vol
+solver of project #4.</p>
+<h3>3.2 Triangular identification, one day at a time</h3>
+<ol>
+<li><strong>(v₀, κ, θ) from the four VIX tenors.</strong> For fixed κ, VIX_τ² is linear in (θ, v₀). I profile κ on a grid
+   (non-negative least squares in vol units), then refine. This is the global optimum, with no starting values.
+   Bounds: κ ∈ [0.1, 30] (half-life 8 days to 7 years) and long-run vol √θ ≤ 100%.</li>
+<li><strong>σ from VVIX</strong>, using the low root of the hump. If the observed VVIX is above the hump's peak, no σ can
+   match it, and the day is "VVIX-unreachable".</li>
+<li><strong>ρ from SKEW</strong>, a 1-D root in [−0.999, 0.999]. If the observed SKEW needs more skew than ρ = −1 can deliver,
+   the day is "SKEW-infeasible". I then record σ_SKEW, the smallest σ that reaches SKEW at ρ = −1, and the
+   share of the observed skewness that Heston cannot produce, 1 − S_Heston(ρ=−1, σ_VVIX)/S_market.</li>
+<li><strong>The high root.</strong> For completeness I also solve on the degenerate upper branch of the VVIX hump (σ up to 60).</li>
+<li><strong>Joint fit.</strong> A compromise least-squares fit to all six indices. Each residual is measured in units of that
+   index's median absolute daily change, so 1 means an ordinary day's move.</li>
+</ol>
+<p>Everything is computed day by day from that day's data only, so there is no look-ahead anywhere in the
+calibration.</p>
+<h2>4. Results</h2>
+<h3>4.1 E1/E2: SKEW and VVIX want different vol of vol</h3>
+<p><img alt="How one day is calibrated" loading="lazy" src="figures/fig2_identification_one_day.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Days</th>
+<th>No exact fit (low root)</th>
+<th>VVIX unreachable</th>
+<th>σ_SKEW / σ_VVIX (median)</th>
+<th>Non-Heston share of skew</th>
+<th>Feller violated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Full sample 2008–2026</strong></td>
+<td>4,681</td>
+<td><strong>89.8%</strong> (87.1–92.5)</td>
+<td>4.6%</td>
+<td><strong>2.24</strong> (2.07–2.42)</td>
+<td><strong>55%</strong> (52–59)</td>
+<td>38%</td>
+</tr>
+<tr>
+<td>GFC Sep 2008–Mar 2009</td>
+<td>146</td>
+<td>69.9%</td>
+<td>0.0%</td>
+<td>1.77</td>
+<td>43%</td>
+<td>77%</td>
+</tr>
+<tr>
+<td>Covid Feb–May 2020</td>
+<td>72</td>
+<td>70.8%</td>
+<td>23.6%</td>
+<td>1.18</td>
+<td>15%</td>
+<td>76%</td>
+</tr>
+<tr>
+<td>2022 bear market</td>
+<td>201</td>
+<td>91.0%</td>
+<td>12.4%</td>
+<td>2.09</td>
+<td>52%</td>
+<td>55%</td>
+</tr>
+<tr>
+<td>Nov 2026 shock (11-16 to 11-20)</td>
+<td>5</td>
+<td>100%</td>
+<td>60%</td>
+<td>3.37</td>
+<td>52%</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>Calm: VIX below median</td>
+<td>2,339</td>
+<td>97.3%</td>
+<td>0.2%</td>
+<td>2.56</td>
+<td>61%</td>
+<td>21%</td>
+</tr>
+<tr>
+<td>Turbulent: VIX top decile</td>
+<td>468</td>
+<td>75.9%</td>
+<td>17.3%</td>
+<td>1.69</td>
+<td>41%</td>
+<td>66%</td>
+</tr>
+</tbody>
+</table></div>
+<p>95% moving-block bootstrap CIs (63-day blocks) are in brackets. File: <code>results/e2_feasibility_by_window.csv</code>.</p>
+<ul>
+<li>On the economically sensible branch, σ_VVIX has a median of 0.58 and σ_SKEW a median of 1.43. The ratio is
+  above 1 on 89% of days with a VVIX root.</li>
+<li><strong>The conflict is worst in calm markets</strong> (97% infeasible), not in crises. In calm markets VVIX allows a
+  small σ while SKEW stays high: the market keeps paying for crash protection that diffusive volatility cannot
+  explain. In crises, both the short-dated skew and VVIX rise, and the gap narrows, to 1.18× in Covid.</li>
+<li>By SKEW and VVIX terciles, infeasibility goes from 67% (low SKEW, high VVIX) to 100% (high SKEW, low VVIX).</li>
+<li>It has grown. The non-Heston share was 24–49% in 2008–2010 and 68–77% in 2023–2026
+  (<code>results/e2_by_year.csv</code>). This matches the post-2022 boom in very short-dated options and the steep
+  short-end skew they carry.</li>
+<li><strong>The degenerate high root.</strong> On 37.5% of days an exact fit exists on the upper branch. Including those, 40%
+  of days have some exact solution. But those solutions have σ ≈ 41 (45× the low root), a Feller ratio of
+  0.0005, and ρ &gt; 0 on 98% of them (median +0.75). That is the opposite of the leverage effect in the data
+  (ρᴾ = −0.60). I do not count them as a fit.</li>
+</ul>
+<p><img alt="Non-Heston share by year" loading="lazy" src="figures/fig3_nonheston_share_by_year.png" /></p>
+<p><strong>What the joint fit does instead.</strong> Forced to fit all six numbers, least squares keeps SKEW and VVIX nearly
+right (median errors 0.15 and 0.14 "typical days"). It pays for that with the term structure: RMSE 0.70 vol
+points against 0.13 for the triangular fit. κ is pushed to a median of 19 (half-life 13 days), ρ sits at −1 on
+88% of days, and Feller is violated on 88%. The joint fit looks good on SKEW and VVIX only because it quietly
+breaks the term structure.</p>
+<h3>4.2 E3: Heston's state dependence is wrong</h3>
+<p>Each week I bump v₀ at that week's parameters and read off the model's dVVIX/dVIX and dSKEW/dVIX. I compare them
+with daily regressions in the data (Newey-West standard errors).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Heston (median, 10–90%)</th>
+<th>Data slope (95% CI)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dVVIX / dVIX</td>
+<td>+0.46 (−3.9 to +2.0); negative on 42% of weeks</td>
+<td><strong>+2.03</strong> (1.72 to 2.34)</td>
+</tr>
+<tr>
+<td>dSKEW / dVIX</td>
+<td>−0.53 (−0.73 to −0.30)</td>
+<td><strong>−0.13</strong> (−0.20 to −0.07)</td>
+</tr>
+</tbody>
+</table></div>
+<p>In Heston the vol of VIX scales roughly like σ/(2√v), so a higher VIX means a <em>lower</em> relative vol of VIX. In the
+data VVIX rises two points per VIX point. SKEW does fall when VIX rises, but four times more slowly than Heston
+says. Both failures show up out of sample too: adding Heston's predicted change to today's SKEW makes the
+next-day forecast 4% worse than "no change" (Holm p = 0.005). For VVIX it is 84% worse (Holm p &lt; 0.001), with a
+sign hit-rate of 53%.</p>
+<p><img alt="State dependence" loading="lazy" src="figures/fig4_state_dependence.png" /></p>
+<h3>4.3 E4: what works is the term structure, out of sample</h3>
+<p>On day t+1, every forecaster knows that day's VIX. Heston maps it to the other tenors with (κ, θ) frozen at day
+t. The competitors are a parallel shift (add ΔVIX), a proportional move (scale by VIX_{t+1}/VIX_t), and no
+change. I use Diebold–Mariano tests with Newey-West (10 lags) and Holm across all 11 forecast tests.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Heston RMSE</th>
+<th>Best simple rule</th>
+<th>MSE gain</th>
+<th>Holm p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VIX9D</td>
+<td>1.26</td>
+<td>proportional 1.20</td>
+<td>−12%</td>
+<td>0.42</td>
+</tr>
+<tr>
+<td>VIX3M</td>
+<td>0.70</td>
+<td>proportional 0.85</td>
+<td><strong>+33%</strong></td>
+<td>0.001</td>
+</tr>
+<tr>
+<td>VIX6M</td>
+<td>0.70</td>
+<td>no change 0.99</td>
+<td><strong>+50%</strong> (+64% vs shift)</td>
+<td>&lt;0.001</td>
+</tr>
+</tbody>
+</table></div>
+<p>The win mostly holds in stress (<code>results/e4_forecasts_stress.csv</code>). In the GFC, VIX6M RMSE was 1.43 against
+1.98 for the best rule; in the Nov 2026 shock, VIX3M was 0.58 against 1.66. There are exceptions. In Covid the
+proportional rule beat Heston on VIX3M (1.90 vs 2.59). In 2022 the parallel shift beat it on VIX9D (1.23 vs 1.63)
+and on VIX3M (0.58 vs 0.67), while Heston still won on VIX6M (0.73 vs 0.93). The 9-day end is where Heston is
+too smooth. That is the same short-maturity problem as SKEW.</p>
+<p><img alt="Forecasts" loading="lazy" src="figures/fig5_term_structure_forecasts.png" /></p>
+<h3>4.4 E5: physical vs risk-neutral</h3>
+<p>v_t is backed out of VIX_t with that day's term-structure fit. All estimators are written on day pairs, and the
+CIs come from a moving-block bootstrap of pairs with one-year blocks.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>P estimate (95% CI)</th>
+<th>Q (median)</th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>κ</td>
+<td>5.96 (4.38–13.5), weekly AR(1) of VIX², bias-corrected</td>
+<td>4.40 (term structure)</td>
+<td>κᵠ &lt; κᴾ, as a negative variance risk premium implies; borderline</td>
+</tr>
+<tr>
+<td>σ, sum of squares</td>
+<td>2.75 (1.43–3.53)</td>
+<td>—</td>
+<td>dominated by a few days of variance jumps</td>
+</tr>
+<tr>
+<td>σ, robust (MAD)</td>
+<td><strong>0.58 (0.49–0.66)</strong></td>
+<td><strong>0.58</strong> from VVIX; 1.43 needed by SKEW</td>
+<td>VVIX = history; SKEW is 2.5× history</td>
+</tr>
+<tr>
+<td>ρ</td>
+<td><strong>−0.60 (−0.67 to −0.56)</strong></td>
+<td>−1.00 (joint fit, 88% of days at the wall)</td>
+<td>Q wants a correlation that does not exist</td>
+</tr>
+</tbody>
+</table></div>
+<p><img alt="P vs Q" loading="lazy" src="figures/fig6_p_vs_q.png" /></p>
+<p>The year-by-year robust σᴾ tracks the VVIX σ closely (left panel). That is the sharpest evidence that VVIX is
+read correctly by the model and SKEW is not. The two σᴾ estimates bracket the story: the <em>diffusive</em> vol of
+variance is about 0.6 under both measures. The heavy tail of daily variance moves (the gap between 0.58 and
+2.75) is exactly the kind of jump that SKEW prices and Heston cannot represent. With ρ set to its physical value
+−0.60 instead of −1, the missing share of skewness rises from 55% to 72%.</p>
+<h3>4.5 E6: the live option chain, 2026-11-23</h3>
+<p>This is a different route to the same question, so the conclusions do not rest on the indices alone.</p>
+<p><strong>Replication.</strong> Applying the CBOE strike-selection and variance formulas to the 19:46 UTC chain gives:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>VIX9D</th>
+<th>VIX</th>
+<th>VIX3M</th>
+<th>VIX6M</th>
+<th>SKEW</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Replicated from the chain</td>
+<td>28.17</td>
+<td><strong>27.43</strong></td>
+<td>25.89</td>
+<td>26.18</td>
+<td>133.99</td>
+</tr>
+<tr>
+<td>Published (~20:00 UTC)</td>
+<td>28.96</td>
+<td><strong>27.42</strong></td>
+<td>25.80</td>
+<td>26.12</td>
+<td>not yet out (11-20: 138.84)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Direct Heston fit.</strong> I fit 10,454 OTM options from 7 days to 1 year (each expiry weighted equally, IV errors).
+The median half-spread is 0.07 vol points.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>v₀</th>
+<th>κ</th>
+<th>θ</th>
+<th>σ</th>
+<th>ρ</th>
+<th>IV RMSE</th>
+<th>Implied VVIX</th>
+<th>Implied SKEW</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heston fitted to the chain</td>
+<td>0.095</td>
+<td>20.7</td>
+<td>0.062</td>
+<td><strong>5.73</strong></td>
+<td>−0.72</td>
+<td><strong>2.41</strong></td>
+<td>134.1</td>
+<td>142.0</td>
+</tr>
+<tr>
+<td>Index route, joint fit</td>
+<td>0.089</td>
+<td>26.7</td>
+<td>0.065</td>
+<td>10 (bound)</td>
+<td>−0.27</td>
+<td>5.02</td>
+<td>118.6</td>
+<td>134.0</td>
+</tr>
+<tr>
+<td>Observed</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><strong>118.6</strong></td>
+<td><strong>134.0</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>The triangular route has no solution that day: VVIX 118.6 is above the Heston hump given the term structure,
+which fits the shock-regime pattern in 4.1. Three readings follow:</p>
+<ol>
+<li>The best Heston misses the smile by 2.4 vol points, 33× the half-spread, worst at 8 days (3.6) and in the
+   deep put wing.</li>
+<li>To get even that close it needs σ = 5.7 and a Feller ratio of 0.08. That σ implies a VVIX of 134 against
+   119 observed. This is the SPX–VIX puzzle (Gatheral 2008) seen directly on one day.</li>
+<li>Per-expiry fits with (v₀, κ, θ) held fixed need σ between 4.5 and 8 (<code>results/e6_per_expiry_sigma_rho.csv</code>).
+   No single σ covers the curve.</li>
+</ol>
+<p><img alt="Chain snapshot" loading="lazy" src="figures/fig7_chain_snapshot.png" /></p>
+<h2>5. Ablations and robustness</h2>
+<p>Weekly subsample (937 days), <code>results/ablations.csv</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Exact fit share</th>
+<th>σ_VVIX</th>
+<th>σ_SKEW</th>
+<th>Ratio</th>
+<th>Ratio &gt; 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A0 main</td>
+<td>9.9%</td>
+<td>0.57</td>
+<td>1.42</td>
+<td>2.27</td>
+<td>90%</td>
+</tr>
+<tr>
+<td>A1 wide bounds κ ∈ [0.02, 80], √θ ≤ 316%</td>
+<td>4.2%</td>
+<td>0.55</td>
+<td>1.43</td>
+<td>2.35</td>
+<td>95%</td>
+</tr>
+<tr>
+<td>A2 no VIX9D anywhere</td>
+<td>7.3%</td>
+<td>0.56</td>
+<td>1.37</td>
+<td>2.26</td>
+<td>92%</td>
+</tr>
+<tr>
+<td>A3 κ fixed at 4.4</td>
+<td>0.2%</td>
+<td>0.59</td>
+<td>1.35</td>
+<td>2.25</td>
+<td>99.8%</td>
+</tr>
+<tr>
+<td>A4 naive VVIX (instantaneous vol of VIX)</td>
+<td>0.7%</td>
+<td>0.44</td>
+<td>1.42</td>
+<td>2.95</td>
+<td>99%</td>
+</tr>
+</tbody>
+</table></div>
+<p>The headline ratio stays between 2.25 and 2.35 under every exact specification. The textbook shortcut for VVIX
+(A4) overstates it by a third, which is why the exact formula matters. κ hits a bound on 26% of days. That is a
+real identification limit: when the term structure is nearly straight between 9 days and 6 months, κ and θ
+trade off. It is the reason A3 exists.</p>
+<p><strong>Numerical validation</strong> (<code>tests/</code>, 14 tests): martingale and normalization of the characteristic function;
+cumulants are radius-invariant and match the closed-form mean; the zero-vol-of-vol limit equals Black–Scholes to
+10⁻⁸; COS prices match Monte Carlo within 4 standard errors; skewness matches 10⁶-path Monte Carlo; VVIX matches
+non-central χ² quadrature to 2·10⁻⁴; VIX futures match simulation; the calibration recovers known parameters
+exactly; infeasible days are flagged; and the CBOE moment formulas return σ and zero skewness on a lognormal
+strip.</p>
+<h2>6. Referee self-review (and what I changed)</h2>
+<ol>
+<li><em>"SKEW is a noisy, wing-driven index; maybe the conflict is just SKEW measurement error."</em> SKEW is noisy:
+   its median daily change is 1.7 points. But the gap is about 15 SKEW points at the median day (127 observed vs
+   about 112 reachable), it is persistent for years, and it shows up independently on the live chain. There, a
+   Heston fitted to 10,454 option quotes, which never sees SKEW, still produces a VVIX 15 points too high. I
+   added the chain experiment for exactly this reason.</li>
+<li><em>"The VVIX formula is an approximation."</em> It is not. For continuous F the CBOE log-contract variance equals
+   E[QV] exactly. The only approximation is CBOE's discrete strike strip, which the chain replication checks
+   (VIX within 0.01). The naive instantaneous approximation is reported as ablation A4, and it would have
+   inflated the headline.</li>
+<li><em>"You picked the low root to manufacture a conflict."</em> The high root is reported in full (4.1). It needs
+   σ ≈ 41 and ρ &gt; 0 on 98% of its days, which contradicts the most robust fact in equity volatility.</li>
+<li><em>"Bounds on κ drive the result."</em> A1 widens them to [0.02, 80] and A3 fixes κ. The ratio moves from 2.27 to
+   2.25–2.35.</li>
+<li><em>"P-measure σ depends on the estimator."</em> Yes, so both are shown. The non-robust estimate (2.75) is larger
+   than either Q value. That points to variance <em>jumps</em> in history. It does not rescue Heston, because a
+   diffusion cannot have them.</li>
+<li><em>"Multiple testing."</em> The 11 forecast tests are Holm-adjusted. The headline proportions and ratios come with
+   block-bootstrap CIs. The per-window table is descriptive, with no p-values claimed.</li>
+<li><em>"One chain snapshot is n = 1."</em> Agreed. It is a validation of the mechanism, not a statistic, and is
+   labelled as such. It was taken on a high-volatility day (VIX 27), when the conflict is smaller than average.</li>
+<li><em>"Costs."</em> There is no trading strategy, so trading costs do not apply. Bid–ask enters where it matters: as
+   the yardstick for chain-fit errors (the 0.07 median half-spread) and in the replication filters.</li>
+<li><em>"The data slope in E3 mixes the v-channel with parameter changes."</em> True. Heston's comparative statics hold
+   (κ, θ, σ, ρ) fixed. But the model's <em>own</em> day-to-day forecast (4.2, last paragraph), which updates only v,
+   loses to "no change". So the v-channel alone points the wrong way for VVIX and overshoots for SKEW.</li>
+<li>Fix applied after review: the non-Heston share is now undefined (instead of computed at the VVIX-peak σ) on
+   VVIX-unreachable days. Earlier it went negative in Covid and Nov 2026, which was an artefact.</li>
+</ol>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>Heston only.</strong> The paper shows <em>that</em> about half the skew is outside diffusive SV and that the diffusive
+  σ matches history. It does not fit the obvious repair (Bates or SVJJ, with jumps in price and variance). Under
+  those models VVIX would still pin the diffusive σ, and SKEW would then measure the jump cumulants. That is a
+  natural follow-up, and #30 (deep hedging) inherits the question.</li>
+<li><strong>Index definitions vs model horizons.</strong> CBOE interpolates two expiries to the target horizon, and the indices
+  use discrete strike strips with truncation. The model uses exact horizons and continuous strips. The chain
+  replication shows the gap is small for the VIX family. For SKEW, truncation removes far-wing mass, which
+  biases the <em>published</em> SKEW toward 100. If anything, that makes the true conflict larger.</li>
+<li><strong>Yahoo closes.</strong> The indices are end-of-day prints from Yahoo, not CBOE's official settlement files, and
+  their timestamps may differ by minutes. A few obviously broken SKEW/VVIX prints are filtered (Section 2 code).</li>
+<li><strong>κ identification</strong> is weak on days with a straight term structure (26% at a bound). θ is identified only
+  out to 6 months, because no 1-year index existed for most of the sample.</li>
+<li><strong>The physical estimates</strong> use v backed out of VIX with the day's Q-fit, so they are not independent of the
+  model. The robust σᴾ is a median-based estimator and ignores the tails by design.</li>
+<li><strong>One chain snapshot.</strong> Daily chains for 2008–2026 would allow a full-history direct calibration, but they are
+  not free.</li>
+</ul>
+<h2>8. How it connects to the other 29</h2>
+<ul>
+<li><strong>#1 (Monte Carlo):</strong> #1 found that the tails matter more than the dynamics for forecast calibration. Here,
+  the tails Heston cannot produce are most of the priced skew.</li>
+<li><strong>#4 (Black–Scholes break-even smile):</strong> #4 showed that the physical smile explains part of the implied one.
+  This project quantifies the part a stochastic-volatility diffusion can never reach.</li>
+<li><strong>#13 (GARCH half-life):</strong> #13 found two-speed volatility decay. Here, κ jumps from about 1 to 12 across
+  years, and the term-structure fit hits its bounds on 26% of days. That is consistent with one κ not being
+  enough.</li>
+<li><strong>#14 (crypto implied surface):</strong> same SVI/skew questions on BTC and ETH. The SKEW-vs-vol-of-vol diagnostic can
+  be run there with DVOL.</li>
+<li><strong>#15 (American options), #16 (delta hedging):</strong> #16's floor comes partly from the volatility level error that
+  a better model would remove. This paper shows that Heston removes only the diffusive half.</li>
+<li><strong>#30 (deep hedging):</strong> uses the Heston engine here (<code>src/heston.py</code>, with QE simulation) as its training
+  world, and should be judged against the jump share found here.</li>
+</ul>
+<h2>9. Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh        # about 15 minutes on 4 cores; ends by running the tests
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Script</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/heston.py</code></td>
+<td>characteristic function, cumulants, VIX/SKEW/VVIX closed forms, COS pricer, QE simulator</td>
+</tr>
+<tr>
+<td><code>src/calibrate.py</code></td>
+<td>daily triangular, high-root and joint calibrations → <code>results/daily_calibration.csv</code></td>
+</tr>
+<tr>
+<td><code>src/evaluate.py</code></td>
+<td>E2–E5 tables</td>
+</tr>
+<tr>
+<td><code>src/ablations.py</code></td>
+<td>A0–A4</td>
+</tr>
+<tr>
+<td><code>src/chain.py</code></td>
+<td>E6: forwards, CBOE replication, chain fit, per-expiry σ, index-route repricing</td>
+</tr>
+<tr>
+<td><code>src/figures.py</code></td>
+<td>all figures</td>
+</tr>
+<tr>
+<td><code>src/bs.py</code></td>
+<td>Black–76 pricer and implied-vol solver, reused from #4</td>
+</tr>
+</tbody>
+</table></div>
+<h2>References</h2>
+<p>Albrecher, Mayer, Schoutens &amp; Tistaert (2007), <em>The little Heston trap</em>. Andersen (2008), <em>Simple and efficient
+simulation of the Heston model</em> (QE scheme). Bakshi, Kapadia &amp; Madan (2003), <em>Stock return characteristics, skew
+laws</em>. CBOE, <em>SKEW Index</em>, <em>VIX</em> and <em>VVIX</em> white papers. Fang &amp; Oosterlee (2008), <em>A novel pricing method based
+on Fourier-cosine series</em>. Gatheral (2008), <em>Consistent modeling of SPX and VIX options</em>. Heston (1993). Kendall
+(1954), bias of the AR(1) estimator. Bates (1996), <em>Jumps and stochastic volatility</em>. Diebold &amp; Mariano (1995).
+Holm (1979).</p>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/26-heston-public-indices">26-heston-public-indices on GitHub</a>.</footer>
+</div>
+</body>
+</html>

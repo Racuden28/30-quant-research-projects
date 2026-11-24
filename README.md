@@ -38,7 +38,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 23 | Deflated Sharpe ratio | | ⏳ Planned |
 | 24 | PCA statistical arbitrage | | ⏳ Planned |
 | 25 | [The Kalman Hedge Ratio Is an EWMA in Disguise](25-kalman-hedge-ratio/) | Does a Kalman-filter hedge ratio beat rolling and EWMA betas out of sample, or is it an EWMA in disguise? | ✅ Published |
-| 26 | Heston calibration | | ⏳ Planned |
+| 26 | [Heston From Six Public Numbers](26-heston-public-indices/) | Can Heston be calibrated from free CBOE indices, and does it agree with itself? | ✅ Published |
 | 27 | Merton structural credit model | | ⏳ Planned |
 | 28 | Market-making agent | | ⏳ Planned |
 | 29 | Optimal execution | | ⏳ Planned |
