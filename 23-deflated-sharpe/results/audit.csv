@@ -1,0 +1,7 @@
+project,claim,freq,T,years,sr_ann,skew,kurt,n_raw,n_lj,ledger,v_xs_times_T,psr,dsr_textbook,dsr_nullV,sidak_raw_p,sidak_lj_p,mintrl_years_sidak_lj
+#03,S&P 500 200-day rule: positive alpha on buy & hold (net),daily,23576,93.556,0.30642,-0.10588,18.322,90,43,9 rules x 10 indices (Romano-Wolf grid of #3),4.4403,0.99845,0.011132,0.68069,0.13003,0.064384,98.639
+#03,Nasdaq 20-day rule: positive alpha on buy & hold (net),daily,13463,53.425,0.77927,-0.195,8.3288,90,43,9 rules x 10 indices (Romano-Wolf grid of #3),2.5356,1,0.9567,0.99926,6.9633e-07,3.3269e-07,15.411
+#11,"Country-ETF pairs, GGR top 20, gross",monthly,297,24.75,0.53809,0,3,16,16,16 configurations x universes reported (full period); moments assumed normal,3.4977,0.99605,0.24668,0.8078,0.061333,0.061333,26.067
+#12,"Industry momentum 12-1 (textbook), gross",monthly,1185,98.75,0.59428,-1.1528,10.241,126,21,2 universes x 3 signals x 21 trading designs,6.6053,1,0.23734,0.99829,9.7462e-06,1.6244e-06,28.482
+#17,Real-time factor selector (tangency of chosen model),monthly,513,42.75,0.95055,0.19183,8.4068,8,4,7 models + the selector,1.3209,1,0.99999,1,1.0347e-08,5.1733e-09,6.0863
+#20,Risk parity: positive alpha on 60/40,monthly,1167,97.25,0.26334,-1.8445,28.016,16,3,main + 15 robustness backtests,0.9856,0.99159,0.77191,0.76827,0.12646,0.025031,76.595

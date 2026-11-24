@@ -1,0 +1,5 @@
+study/
+__pycache__/
+.pytest_cache/
+results/*.log
+HANDOFF.md

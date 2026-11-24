@@ -1,0 +1,100 @@
+split,search,group,winner,N,T,sr_ann,skew,kurt,lj,k,rc_p,oos_ann_win,oos_ann_med,oos_ann_top10,oos_win_pct,oos_rank_corr,"PSR, no deflation","DSR textbook (raw N, cross-sectional V)","DSR, raw N, null V = 1/T","DSR, Li-Ji N, cross-sectional V","DSR, clusters (K, cluster V)","Sidak max-PSR, raw N","Sidak max-PSR, Li-Ji N","Sidak max-PSR, Nyholt N","Sidak max-PSR, participation N","Sidak max-PSR, cluster K",Reality check (drift-kept sign flip)
+1940,A-pooled,A pooled (all indices),GSPC|SMA5|LS,114,2496,0.4837,0.2276,8.027,30,5,0.6965,0.7106,0.986,0.9796,0.307,0.4908,False,False,False,False,False,False,False,False,False,False,False
+1940,A-GSPC,A single index,GSPC|SMA5|LS,114,2496,0.4837,0.2276,8.027,30,5,0.6965,0.7106,0.986,0.9796,0.307,0.4908,False,False,False,False,False,False,False,False,False,False,False
+1945,A-pooled,A pooled (all indices),GSPC|SMA5|LS,114,2501,0.6841,0.7644,10.93,27,6,0.3433,0.2375,0.1456,0.3184,0.7018,0.5264,True,False,False,False,False,False,False,False,False,False,False
+1945,A-GSPC,A single index,GSPC|SMA5|LS,114,2501,0.6841,0.7644,10.93,27,6,0.3433,0.2375,0.1456,0.3184,0.7018,0.5264,True,False,False,False,False,False,False,False,False,False,False
+1945,B,B industries,IND|MOM12-1|q3,176,120,0.5762,-0.108,4.9,35,2,0.7512,0.2619,-0.1663,-0.3879,0.733,-0.1177,True,False,False,False,False,False,False,False,False,False,False
+1950,A-pooled,A pooled (all indices),GSPC|XMA50/100|LF,114,2498,0.9618,-0.9779,11.74,26,6,0.1841,1.027,1.196,1.271,0.4035,0.7136,True,False,False,False,False,False,False,False,True,True,False
+1950,A-GSPC,A single index,GSPC|XMA50/100|LF,114,2498,0.9618,-0.9779,11.74,26,6,0.1841,1.027,1.196,1.271,0.4035,0.7136,True,False,False,False,False,False,False,False,True,True,False
+1950,B,B industries,IND|MOM6-1|q10,176,120,0.8437,-0.1345,3.453,36,2,0.806,0.7494,-0.3428,0.7733,0.8409,0.6831,True,False,False,False,True,False,False,False,True,True,False
+1955,A-pooled,A pooled (all indices),GSPC|TSMOM10|LF,114,2504,1.086,-0.8045,19.38,26,2,0.2786,1.066,0.3285,0.8561,0.9211,0.5858,True,False,False,False,False,False,True,False,True,True,False
+1955,A-GSPC,A single index,GSPC|TSMOM10|LF,114,2504,1.086,-0.8045,19.38,26,2,0.2786,1.066,0.3285,0.8561,0.9211,0.5858,True,False,False,False,False,False,True,False,True,True,False
+1955,B,B industries,IND|MOM6-1|q10,176,120,0.9204,-0.2387,3.56,37,2,0.9005,0.7873,-0.3457,0.8247,0.7386,0.6709,True,False,False,False,False,False,False,False,True,True,False
+1960,A-pooled,A pooled (all indices),GSPC|SMA10|LF,114,2514,1.647,-0.8825,26.67,24,2,0.00995,1.886,0.8685,1.401,0.9912,0.7904,True,False,True,False,True,True,True,True,True,True,True
+1960,A-GSPC,A single index,GSPC|SMA10|LF,114,2514,1.647,-0.8825,26.67,24,2,0.00995,1.886,0.8685,1.401,0.9912,0.7904,True,False,True,False,True,True,True,True,True,True,True
+1960,B,B industries,IND|MOM12-0|q7,176,120,1.164,0.3753,4.15,34,2,0.9005,1.518,-0.06286,0.0157,0.9773,0.541,True,False,False,False,False,True,True,True,True,True,False
+1965,A-pooled,A pooled (all indices),GSPC|SMA10|LF,114,2526,1.627,-0.04644,12.65,25,2,0.004975,1.554,0.2719,1.408,0.9474,0.5821,True,False,True,False,True,True,True,True,True,True,True
+1965,A-GSPC,A single index,GSPC|SMA10|LF,114,2526,1.627,-0.04644,12.65,25,2,0.004975,1.554,0.2719,1.408,0.9474,0.5821,True,False,True,False,True,True,True,True,True,True,True
+1965,B,B industries,IND|MOM12-0|q7,176,120,1.39,0.3953,4.251,32,2,0.194,0.8013,-0.03188,0.7654,0.9034,0.8886,True,False,True,False,True,True,True,True,True,True,False
+1970,A-pooled,A pooled (all indices),GSPC|TSMOM5|LS,114,2563,2.004,-0.04926,12.37,24,3,0.004975,1.03,0.3234,0.9404,0.9649,0.69,True,False,True,False,False,True,True,True,True,True,True
+1970,A-GSPC,A single index,GSPC|TSMOM5|LS,114,2563,2.004,-0.04926,12.37,24,3,0.004975,1.03,0.3234,0.9404,0.9649,0.69,True,False,True,False,False,True,True,True,True,True,True
+1970,B,B industries,IND|MOM6-0|q10,176,120,1.076,-1.43,10.94,28,2,0.4328,0.4931,-0.1271,0.5491,0.7841,0.6784,True,False,False,False,False,False,False,False,True,True,False
+1975,A-pooled,A pooled (all indices),GSPC|SMA5|LS,114,2596,2.223,-0.1726,6.044,27,3,0.004975,1.432,-0.02099,0.5407,1,0.5218,True,False,True,False,False,True,True,True,True,True,True
+1975,A-GSPC,A single index,GSPC|SMA5|LS,114,2596,2.223,-0.1726,6.044,27,3,0.004975,1.432,-0.02099,0.5407,1,0.5218,True,False,True,False,False,True,True,True,True,True,True
+1975,B,B industries,IND|MOM18-0|q5,176,120,1.035,-0.1863,4.456,26,2,0.6567,0.9754,-0.2004,0.9153,0.8295,0.8742,True,False,False,False,False,False,True,False,True,True,False
+1980,A-pooled,A pooled (all indices),GSPC|SMA5|LS,228,2599,1.65,-0.04479,5.127,54,6,0.0597,0.7196,0.4812,1.126,0.7193,0.7062,True,False,True,False,False,True,True,True,True,True,False
+1980,A-GSPC,A single index,GSPC|SMA5|LS,114,2599,1.65,-0.04479,5.127,29,4,0.004975,0.7196,0.2885,0.2715,0.9474,0.3426,True,False,True,False,False,True,True,True,True,True,True
+1980,A-N225,A single index,N225|SMA20|LF,114,2599,1.553,-1.439,31.97,25,2,0.0995,1.394,0.7805,1.314,0.9737,0.7393,True,False,True,False,True,True,True,True,True,True,False
+1980,B,B industries,IND|MOM12-0|q7,176,120,1.159,-0.2607,3.747,25,2,0.209,-0.2072,-0.08432,-0.1268,0.4148,-0.164,True,False,False,False,True,False,True,True,True,True,False
+1985,A-pooled,A pooled (all indices),IXIC|SMA5|LS,342,2600,3.277,0.3199,9.975,77,3,0.004975,2.021,0.4044,1.43,1,0.7322,True,False,True,True,True,True,True,True,True,True,True
+1985,A-GSPC,A single index,GSPC|SMA5|LS,114,2600,1.051,0.2309,4.831,28,2,0.0199,-0.2396,-0.007204,0.01304,0.1491,0.0519,True,False,False,False,False,False,True,True,True,True,True
+1985,A-IXIC,A single index,IXIC|SMA5|LS,114,2600,3.277,0.3199,9.975,27,2,0.004975,2.021,0.5422,1.787,1,0.825,True,False,True,False,True,True,True,True,True,True,True
+1985,A-N225,A single index,N225|SMA10|LF,114,2600,1.4,0.1225,10.4,25,2,0.3134,1.294,0.9686,1.277,0.9211,0.791,True,False,True,False,True,True,True,True,True,True,False
+1985,B,B industries,IND|MOM9-0|q7,176,120,0.7997,-0.2653,2.919,28,2,0.7214,0.2836,-0.2031,0.4361,0.6932,0.7204,True,False,False,False,False,False,False,False,True,True,False
+1990,A-pooled,A pooled (all indices),IXIC|SMA5|LS,342,2600,2.478,1.687,31.58,71,50,0.004975,2.073,0.1136,0.8156,0.9971,0.2912,True,False,True,False,False,True,True,True,True,True,True
+1990,A-GSPC,A single index,GSPC|SMA100|LF,114,2600,0.4541,-0.3916,12.23,27,2,0.6418,-0.0383,0.03528,0.05339,0.4737,0.1399,False,False,False,False,False,False,False,False,False,False,False
+1990,A-IXIC,A single index,IXIC|SMA5|LS,114,2600,2.478,1.687,31.58,27,3,0.004975,2.073,0.7711,1.053,0.9912,0.502,True,False,True,False,False,True,True,True,True,True,True
+1990,A-N225,A single index,N225|SMA20|LF,114,2600,1.653,-0.1482,9.55,24,5,0.02488,0.6423,-0.04882,-0.00422,0.9912,0.07325,True,False,True,False,False,True,True,True,True,True,True
+1990,B,B industries,IND|MOM1-0|q10,176,120,0.535,-0.2355,2.64,30,2,0.9851,0.4939,-0.1198,0.3618,0.892,0.6668,True,False,False,False,False,False,False,False,False,False,False
+1995,A-pooled,A pooled (all indices),GSPTSE|SMA5|LF,456,2654,2.228,0.1317,12.33,100,59,0.004975,1.411,0.2943,0.7146,1,0.4503,True,False,True,False,False,True,True,True,True,True,True
+1995,A-GSPC,A single index,GSPC|VOL63/252|LF,114,2654,0.7204,-0.4462,13.87,28,2,0.4627,0.09012,0.03922,-0.1137,0.5439,0.2861,True,False,False,False,True,False,False,False,False,True,False
+1995,A-IXIC,A single index,IXIC|SMA5|LF,114,2654,2.133,0.1536,14,27,2,0.004975,0.8386,0.5394,0.8031,0.9035,0.5001,True,False,True,False,True,True,True,True,True,True,True
+1995,A-GSPTSE,A single index,GSPTSE|SMA5|LF,114,2654,2.228,0.1317,12.33,28,24,0.004975,1.411,0.6775,0.8663,1,0.6076,True,False,True,False,False,True,True,True,True,True,True
+1995,A-N225,A single index,N225|SMA20|LF,114,2654,1.14,0.8526,16.76,28,5,0.02488,-0.4708,0.03798,-0.1646,0.07895,-0.09987,True,False,False,False,False,True,True,True,True,True,True
+1995,B,B industries,IND|MOM60-0|q3,176,120,0.8473,0.09368,3.023,32,2,0.8507,0.6456,-0.1398,0.5012,0.8864,0.8068,True,False,False,False,False,False,False,False,True,True,False
+2000,A-pooled,A pooled (all indices),GSPTSE|SMA5|LF,798,2769,1.646,-0.3807,26.7,183,31,0.02488,0.1659,0.2778,0.4239,0.4135,0.3913,True,False,True,False,False,True,True,True,True,True,True
+2000,A-GSPC,A single index,GSPC|REV10|LF,114,2769,0.6618,-0.327,20.46,29,2,0.7413,-0.1336,-0.03952,0.06703,0.386,0.2077,True,False,False,False,False,False,False,False,False,True,False
+2000,A-IXIC,A single index,IXIC|SMA5|LF,114,2769,1.298,-0.2911,13.46,27,2,0.1244,-0.1973,0.1233,0.1396,0.1491,0.2398,True,False,False,False,True,True,True,True,True,True,False
+2000,A-GSPTSE,A single index,GSPTSE|SMA5|LF,114,2769,1.646,-0.3807,26.7,26,2,0.004975,0.1659,0.7585,0.7012,0.1842,0.484,True,False,True,False,True,True,True,True,True,True,True
+2000,A-FTSE,A single index,FTSE|TSMOM504|LF,114,2769,0.728,0.07069,5.42,30,2,0.7612,0.5688,0.1697,0.1184,0.8333,0.1799,True,False,False,False,False,False,False,False,True,True,False
+2000,A-GDAXI,A single index,GDAXI|TSMOM126|LF,114,2769,0.8943,-0.4118,10.52,27,2,0.6816,0.7995,0.3543,0.344,0.9737,0.236,True,False,False,False,True,False,False,False,True,True,False
+2000,A-N225,A single index,N225|XMA10/100|LS,114,2769,0.3063,-0.2561,6.258,28,3,0.8308,0.2225,0.2797,0.1241,0.4298,0.145,False,False,False,False,False,False,False,False,False,False,False
+2000,A-HSI,A single index,HSI|SMA5|LF,114,2769,1.495,1.327,20.63,27,2,0.01493,0.09019,0.331,0.3256,0.2632,0.4487,True,False,True,False,True,True,True,True,True,True,True
+2000,B,B industries,IND|MOM12-0|q5,176,120,0.9587,0.523,4.09,29,2,0.7612,0.1522,-0.06729,0.2249,0.75,0.2765,True,False,False,False,True,False,True,False,True,True,False
+2005,A-pooled,A pooled (all indices),GSPTSE|CHAN50|LF,1026,2822,1.177,-0.4452,11.46,221,33,0.204,0.2987,0.2164,0.3025,0.6043,0.2432,True,False,False,False,False,False,True,False,True,True,False
+2005,A-GSPC,A single index,GSPC|TSMOM378|LF,114,2822,0.5767,-0.2998,12.06,28,5,0.4478,-0.06097,0.2511,0.1881,0.1842,-0.05491,True,False,False,False,False,False,False,False,False,False,False
+2005,A-IXIC,A single index,IXIC|SMA50|LF,114,2822,0.6867,-0.4514,8.635,28,5,0.3284,0.2664,0.2534,0.2431,0.5175,-0.1524,True,False,False,False,False,False,False,False,False,False,False
+2005,A-GSPTSE,A single index,GSPTSE|CHAN50|LF,114,2822,1.177,-0.4452,11.46,25,13,0.06468,0.2987,0.2681,0.337,0.5526,0.1811,True,False,False,False,False,True,True,True,True,True,False
+2005,A-FTSE,A single index,FTSE|TSMOM252|LF,114,2822,0.5844,-0.1638,6.987,28,5,0.5373,0.3251,0.1111,0.09528,0.8421,0.1757,True,False,False,False,False,False,False,False,False,False,False
+2005,A-GDAXI,A single index,GDAXI|TSMOM126|LF,114,2822,0.9713,-0.1225,7.596,27,5,0.1642,0.6694,0.4472,0.6696,0.8158,0.6965,True,False,False,False,False,False,True,False,True,True,False
+2005,A-N225,A single index,N225|XMA10/150|LS,114,2822,0.4875,-0.3249,5.744,28,5,0.5622,0.2003,-0.02271,-0.0002581,0.8947,0.1922,False,False,False,False,False,False,False,False,False,False,False
+2005,A-HSI,A single index,HSI|SMA10|LF,114,2822,0.7342,1.318,26.32,27,4,0.3234,0.393,0.4622,0.4954,0.4211,0.4636,True,False,False,False,False,False,False,False,True,True,False
+2005,A-AXJO,A single index,AXJO|XMA10/50|LF,114,2822,0.6841,-0.2883,7.381,28,2,0.7164,0.1601,0.3216,0.1316,0.3246,0.1111,True,False,False,False,False,False,False,False,True,True,False
+2005,A-FCHI,A single index,FCHI|CHAN252|LF,114,2822,1.009,-0.1448,7.203,26,6,0.1443,-0.3507,0.1122,0.05065,0.03509,0.1166,True,False,False,False,False,False,True,True,True,True,False
+2005,B,B industries,IND|MOM6-1|q10,176,120,0.6103,-0.2655,5.303,25,2,0.9055,-0.04112,-0.04247,-0.008196,0.5057,0.2907,True,False,False,False,False,False,False,False,False,False,False
+2010,A-pooled,A pooled (all indices),BVSP|XMA10/50|LF,1140,2825,0.8909,0.1123,7.66,240,48,0.592,0.1083,-0.1244,-0.1797,0.7193,0.07297,True,False,False,False,False,False,False,False,True,False,False
+2010,A-GSPC,A single index,GSPC|REV2|LS,114,2825,0.6887,0.8824,12.72,26,3,0.1791,-0.3193,0.1434,0.1433,0.1754,0.3275,True,False,False,False,True,False,False,False,True,True,False
+2010,A-IXIC,A single index,IXIC|REV2|LS,114,2825,0.5655,0.7753,9.515,27,3,0.393,-1.04,0.2109,0.1527,0.008772,0.2213,True,False,False,False,True,False,False,False,False,False,False
+2010,A-GSPTSE,A single index,GSPTSE|XMA10/100|LF,114,2825,0.8113,-0.4168,8.663,26,3,0.1393,0.493,-0.1682,0.06567,1,0.4174,True,False,False,False,False,False,False,False,True,True,False
+2010,A-FTSE,A single index,FTSE|REV3|LS,114,2825,0.596,0.6593,10.51,27,3,0.3184,-0.1587,-0.4642,-0.2363,0.8421,0.2865,True,False,False,False,False,False,False,False,False,False,False
+2010,A-GDAXI,A single index,GDAXI|SMA300|LF,114,2825,0.8268,-0.09912,7.507,25,3,0.06965,0.298,0.08103,0.2604,0.807,0.3163,True,False,False,False,True,False,False,False,True,True,False
+2010,A-N225,A single index,N225|CHAN50|LS,114,2825,0.3837,-0.0001105,10.83,26,3,0.7015,-0.233,0.2115,0.2719,0.1667,0.07291,False,False,False,False,False,False,False,False,False,False,False
+2010,A-HSI,A single index,HSI|CHAN50|LF,114,2825,0.8439,0.2899,10.44,25,4,0.1443,-0.1548,-0.1894,-0.1545,0.5526,-0.04112,True,False,False,False,False,False,False,False,True,True,False
+2010,A-AXJO,A single index,AXJO|XMA10/150|LF,114,2825,0.7956,-0.2766,8.456,27,4,0.1891,-0.0444,-0.1463,0.002557,0.6579,0.3667,True,False,False,False,False,False,False,False,True,True,False
+2010,A-BVSP,A single index,BVSP|XMA10/50|LF,114,2825,0.8909,0.1123,7.66,27,2,0.4478,0.1083,-0.4699,-0.4123,0.9474,-0.2507,True,False,False,False,True,False,True,False,True,True,False
+2010,A-FCHI,A single index,FCHI|XMA50/250|LS,114,2825,0.5709,-0.2809,9.737,27,3,0.3383,0.01268,-0.175,-0.02615,0.7193,0.3299,True,False,False,False,False,False,False,False,False,False,False
+2010,B,B industries,IND|MOM6-1|q3,176,120,0.2544,-0.1236,8.509,23,2,0.995,0.6284,-0.262,0.2775,0.6307,0.5237,False,False,False,False,False,False,False,False,False,False,False
+2015,A-pooled,A pooled (all indices),IXIC|VOL10/504|LF,1140,2839,0.7918,-0.1903,8.464,240,44,0.7363,1.072,0.06479,0.3818,0.9868,0.3689,True,False,False,False,False,False,False,False,False,False,False
+2015,A-GSPC,A single index,GSPC|REV2|LS,114,2839,0.6964,0.9785,15.19,27,3,0.3483,-0.7234,0.3312,0.4872,0.008772,0.2404,True,False,False,False,False,False,False,False,True,True,False
+2015,A-IXIC,A single index,IXIC|VOL10/504|LF,114,2839,0.7918,-0.1903,8.464,28,3,0.3632,1.072,0.477,0.8346,0.9474,0.5183,True,False,False,False,True,False,False,False,True,True,False
+2015,A-GSPTSE,A single index,GSPTSE|XMA10/100|LF,114,2839,0.5736,-0.446,9.721,27,3,0.3881,0.5838,0.1975,0.4809,0.7982,0.1981,True,False,False,False,False,False,False,False,False,False,False
+2015,A-FTSE,A single index,FTSE|REV3|LS,114,2839,0.3611,0.8144,11.91,28,3,0.7811,-0.2047,-0.2899,-0.09885,0.6404,0.3471,False,False,False,False,False,False,False,False,False,False,False
+2015,A-GDAXI,A single index,GDAXI|XMA50/150|LF,114,2839,0.6277,-0.3416,7.542,28,4,0.5622,-0.4067,-0.06012,0.09022,0.1579,0.3024,True,False,False,False,False,False,False,False,False,False,False
+2015,A-N225,A single index,N225|TSMOM378|LF,114,2839,0.4234,-0.2633,9.958,28,5,0.7214,0.04701,0.138,0.1401,0.4211,0.2991,False,False,False,False,False,False,False,False,False,False,False
+2015,A-HSI,A single index,HSI|TSMOM42|LF,114,2839,0.6183,0.4084,10.82,26,5,0.4627,0.3801,0.02387,0.1923,0.9035,0.4374,True,False,False,False,False,False,False,False,False,False,False
+2015,A-AXJO,A single index,AXJO|TSMOM126|LF,114,2839,0.368,-0.3293,7.118,27,4,0.7761,0.02905,0.02296,0.1048,0.5175,0.2973,False,False,False,False,False,False,False,False,False,False,False
+2015,A-BVSP,A single index,BVSP|XMA10/50|LF,114,2839,0.4439,0.1215,9.814,29,3,0.7512,1.199,0.4242,0.8491,0.9737,0.5697,False,False,False,False,False,False,False,False,False,False,False
+2015,A-FCHI,A single index,FCHI|REV3|LS,114,2839,0.4685,0.7953,10.13,30,3,0.597,-1.126,-0.1861,-0.3907,0.008772,-0.09933,False,False,False,False,False,False,False,False,False,False,False
+2015,B,B industries,IND|MOM3-1|q3,176,120,0.7302,-0.4161,3.254,23,2,0.7313,0.6745,-0.04798,0.2498,0.9432,0.6295,True,False,False,False,False,False,False,False,True,True,False
+2020,A-pooled,A pooled (all indices),IXIC|VOL10/504|LF,1140,2847,0.882,-0.6787,9.479,253,51,0.9055,0.4771,0.1083,0.4289,0.8465,0.4939,True,False,False,False,False,False,False,False,True,False,False
+2020,A-GSPC,A single index,GSPC|VOL21/504|LF,114,2847,0.8175,-0.9173,11.4,27,3,0.7214,0.5629,0.2387,0.5003,0.8947,0.7262,True,False,False,False,True,False,False,False,True,True,False
+2020,A-IXIC,A single index,IXIC|VOL10/504|LF,114,2847,0.882,-0.6787,9.479,27,2,0.8507,0.4771,0.3174,0.4788,0.7807,0.6457,True,False,False,False,True,False,False,False,True,True,False
+2020,A-GSPTSE,A single index,GSPTSE|SMA100|LF,114,2847,0.6628,-0.7806,10.41,28,2,0.3731,0.6385,0.4825,0.5736,0.6491,0.09445,True,False,False,False,True,False,False,False,False,True,False
+2020,A-FTSE,A single index,FTSE|REV10|LF,114,2847,0.2205,-0.9129,31.32,30,4,0.9154,0.6101,-0.06606,0.2463,0.9649,0.6123,False,False,False,False,False,False,False,False,False,False,False
+2020,A-GDAXI,A single index,GDAXI|REV5|LF,114,2847,0.5116,-0.4015,26.69,30,4,0.7612,0.2491,0.2967,0.314,0.4561,0.3839,True,False,False,False,False,False,False,False,False,False,False
+2020,A-N225,A single index,N225|TSMOM63|LF,114,2847,0.5945,-0.6085,12.99,29,6,0.8259,0.0942,0.197,0.3707,0.3947,0.7037,True,False,False,False,False,False,False,False,False,False,False
+2020,A-HSI,A single index,HSI|VOL63/504|LF,114,2847,0.4029,-0.4598,9.027,30,5,0.7711,-0.03414,-0.01866,-0.2361,0.4474,-0.2559,False,False,False,False,False,False,False,False,False,False,False
+2020,A-AXJO,A single index,AXJO|VOL63/252|LF,114,2847,0.3614,-0.4446,8.819,28,4,0.796,0.1962,-0.2464,0.1228,0.9561,0.6033,False,False,False,False,False,False,False,False,False,False,False
+2020,A-BVSP,A single index,BVSP|XMA10/50|LF,114,2847,0.7297,0.14,11.37,29,7,0.3483,0.4321,0.07869,0.2631,0.9561,0.4834,True,False,False,False,False,False,False,False,True,False,False
+2020,A-FCHI,A single index,FCHI|REV10|LF,114,2847,0.3715,-0.7418,22.67,31,2,0.8507,0.2177,-0.03706,0.1123,0.8596,0.5586,False,False,False,False,False,False,False,False,False,False,False
+2020,B,B industries,IND|MOM2-1|q3,176,120,0.9758,0.4762,3.444,28,2,0.6269,-1.073,-0.06439,-0.5253,0.01705,-0.3676,True,False,False,False,False,False,True,False,True,True,False

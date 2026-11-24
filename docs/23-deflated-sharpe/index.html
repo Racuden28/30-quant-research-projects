@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Deflated Sharpe Ratio Is Not a p-Value: Size, Power and an Audit of This Portfolio&#x27;s Own Backtests</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Is &quot;DSR &gt; 0.95&quot; really a 5% test, and which of this portfolio&#x27;s own claims survive one that is?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 23 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 23</p>
+<h1>The Deflated Sharpe Ratio Is Not a p-Value: Size, Power and an Audit of This Portfolio&#x27;s Own Backtests</h1>
+<p><em>Project 23 of <a href="../">30 Quant Research Projects</a> · a 1,316-rule strategy zoo on 10 equity indices (1928–2026, daily) and 49 US industries (1926–2026, monthly) · 300 sign-flip placebo worlds · 99 real in-sample searches with 5-year holdouts · six headline claims from projects 03–20 re-tested</em></p>
+<blockquote>
+<p><strong>Headline.</strong> The Deflated Sharpe Ratio (DSR) of Bailey &amp; López de Prado (2014) is the standard answer to "my best backtest out of N is probably luck". In practice people read <strong>DSR &gt; 0.95</strong> as "significant at 5% after correcting for N trials". <strong>It is not a 5% test.</strong> In 29,700 searches on real index and industry data whose returns were sign-flipped, so that every rule's true Sharpe ratio is exactly zero, the textbook DSR <strong>never</strong> crossed 0.95. When one rule with a true Sharpe ratio of <strong>1.0</strong> a year was added, the DSR found it in only <strong>15–18%</strong> of the searches. Two mechanisms explain this. (i) The DSR compares the winner with the <em>expected</em> maximum of N null Sharpe ratios, but it measures the gap in units of <em>one</em> strategy's standard error, so its false-positive rate is about <strong>0.01–0.1%</strong> even with independent trials. (ii) It estimates the noise in the trials from the cross-sectional variance of their Sharpe ratios, and that variance also contains every real strategy in the zoo and its mirror image. In a simulated zoo where 10% of the strategies have a true Sharpe ratio of 1.0, the textbook DSR flags the best one <strong>0–1%</strong> of the time. A simple fix works better: compare the winner's PSR with a Šidák bound, 0.95^(1/N). With the raw count N its size is <strong>2.0–3.4%</strong> (valid) and its power is about <strong>twice</strong> the DSR's (35–37%). On the real data the textbook DSR flagged <strong>none of 99</strong> in-sample winners, from 1940 to 2020. The 28 that the Šidák test flagged earned a mean out-of-sample Sharpe ratio of <strong>1.10</strong> over the next five years, against <strong>0.27</strong> for the rest (difference +0.83, 95% CI [+0.53, +1.12]). Run on this portfolio, a valid multiple-testing bound <strong>keeps</strong> industry momentum (#12), the real-time factor selector (#17) and the Nasdaq short-average rule (#03, a stale-price effect). It <strong>does not keep</strong> the S&amp;P 500 200-day rule's alpha (#03, p = 0.13), country-ETF pairs (#11, p = 0.06) or risk parity's alpha over 60/40 (#20, p = 0.13).</p>
+</blockquote>
+<p><img alt="DSR is not a p-value" loading="lazy" src="figures/fig1_dsr_is_not_a_p_value.png" /></p>
+<hr />
+<h2>1. Question</h2>
+<p>Every project in this portfolio reports a "best" configuration out of several. The honest question is how much of that Sharpe ratio is selection. Bailey &amp; López de Prado (2014) give the most cited answer. The <strong>Probabilistic Sharpe Ratio</strong> (PSR) is the probability that the true Sharpe ratio exceeds a benchmark $SR^*$:</p>
+<p>$$\mathrm{PSR}(SR^<em>) = \Phi!\left(\frac{(\widehat{SR}-SR^</em>)\sqrt{T-1}}{\sqrt{1-\hat\gamma_3\widehat{SR}+\frac{\hat\gamma_4-1}{4}\widehat{SR}^2}}\right)$$</p>
+<p>The <strong>Deflated Sharpe Ratio</strong> sets the benchmark to the Sharpe ratio you would expect from the best of $N$ worthless strategies (the "False Strategy Theorem"):</p>
+<p>$$SR_0=\sqrt{V[\widehat{SR}_n]}\Big((1-\gamma)\Phi^{-1}(1-\tfrac1N)+\gamma\,\Phi^{-1}(1-\tfrac1{Ne})\Big),\qquad \mathrm{DSR}=\mathrm{PSR}(SR_0),$$</p>
+<p>Here $V[\widehat{SR}_n]$ is the variance of the trials' Sharpe ratios, taken across the trials, and $\gamma$ is Euler's constant. The paper and most practitioners then read $\mathrm{DSR}&gt;0.95$ as a rejection of "the winner is luck" at 5%. Two inputs are left to the user: $N$ (independent trials, which nobody records honestly) and $V$.</p>
+<p><strong>Research question.</strong> Is "DSR &gt; 0.95" a 5% test? On real return data with realistic correlation between trials, how often does it flag a winner that is not there (size), and how often does it find one that is (power)? Which choice of $N$ and $V$ fixes it, if any? And on this portfolio's own published results, which claims survive a test that does have the right size?</p>
+<p><strong>Hypotheses.</strong> I wrote these down after the Gaussian simulation in §4.1 and a first pass over the real-data searches, and before the placebo worlds, the reality check and the audit were run. H3 is therefore not a clean out-of-sample prediction: I had seen the real winners' DSR values and their raw OOS Sharpe ratios, but not how any test sorted them.</p>
+<ul>
+<li><strong>H1 (size).</strong> With the textbook inputs (raw $N$, cross-sectional $V$), the false-positive rate of "DSR &gt; 0.95" on real-data placebos is far below 5%.</li>
+<li><strong>H2 (power).</strong> Because the cross-sectional $V$ includes real dispersion between strategies, the textbook DSR loses most of its power in zoos that contain real strategies. A Šidák bound on the PSR with a valid $N$ has more power at the same or smaller size.</li>
+<li><strong>H3 (out of sample).</strong> On real data, the winners a correctly sized test flags do better over the next five years than the winners it does not flag.</li>
+<li><strong>H4 (audit).</strong> At least one headline claim of projects 03–20 does not survive a correctly sized multiple-testing bound with the trial count that the project itself reports.</li>
+</ul>
+<p><strong>Why it matters.</strong> Project <a href="../03-moving-average-volatility/">03</a> applied Romano-Wolf within a 9-rule grid. Project <a href="../11-pairs-trading/">11</a> showed that cointegration screens produce false positives. Project <a href="../17-five-factor-holdout/">17</a> measured a Sharpe-ratio haircut on a real holdout. This project asks which of the portfolio's claims survive the most popular single-number correction, and whether that number deserves its popularity.</p>
+<h2>2. Data</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Panel</th>
+<th>Source</th>
+<th>Sample</th>
+<th>Frequency</th>
+<th>Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zoo A.</strong> 10 equity price indices (S&amp;P 500, Nasdaq, TSX, FTSE, DAX, Nikkei, Hang Seng, ASX, Ibovespa, CAC)</td>
+<td>Yahoo Finance, the file from project <a href="../03-moving-average-volatility/">03</a> (pulled 2026-11-18)</td>
+<td>1928-01 – 2026-11 (S&amp;P 500), later for the others</td>
+<td>daily</td>
+<td>57 signals × {long/flat, long/short} = 114 per index, 1,140 in total</td>
+</tr>
+<tr>
+<td><strong>Zoo B.</strong> 49 Fama-French industry portfolios</td>
+<td>Ken French data library, the file from projects <a href="../09-beta-horse-race/">09</a> and <a href="../12-momentum-trading-costs/">12</a></td>
+<td>1926-07 – 2026-09</td>
+<td>daily, compounded to monthly</td>
+<td>11 lookbacks × 2 skips × 4 breadths × {momentum, reversal} = 176</td>
+</tr>
+</tbody>
+</table></div>
+<p>I reuse both files on purpose. Project 03 asked what the 200-day rule knows, and project 12 asked what industry momentum costs. Here both universes become the hunting ground for a researcher who tries everything. Index returns are in excess of the T-bill for the US indices (the Fama-French daily RF, then ^IRX after 2026-09) and of zero for the others, as in project 03. Ibovespa starts in 1995, after the hyperinflation years. Every stress window falls inside an out-of-sample window: 2008 (in 2006–10), 2020 (in 2016–20) and 2022 (in 2021–26).</p>
+<p><strong>Zoo A rules.</strong> These are evaluated at each close and traded on the next day, with 5 bp per unit change in position (<code>src/zoo.py</code>). They include price above its 5–300-day moving average (12 rules), 19 fast/slow crossovers, time-series momentum over 5–504 days (10), position in the 20–252-day channel (5), short-term reversal over 1–10 days (5), and "volatility below its own 1–2-year average" (6). <strong>Zoo B rules</strong> rank industries on their past 1–60-month return, with or without skipping the last month. They go long the top 3/5/7/10 and short the same number at the bottom, or the reverse, are rebalanced monthly, and pay 10 bp per unit of one-way turnover.</p>
+<h2>3. Design</h2>
+<p><strong>Searches and splits.</strong> A <em>search</em> is one comparison of trials that a researcher might make: all eligible zoo-A trials pooled (up to 1,140), the 114 trials of one index, or the 176 industry trials. The in-sample (IS) window is the 10 calendar years ending in December of $Y$, for $Y = 1940, 1945, \dots, 2020$. The out-of-sample (OOS) window is the following 5 years (2021–2026-11 for the last split). A trial enters a search only once it has 600 trading days (61 months) of history before the IS window begins. That gives 17 pooled A searches, 66 single-index searches and 16 industry searches: <strong>99 real searches</strong>. The winner is the trial with the highest IS Sharpe ratio.</p>
+<p><strong>The deflation methods</strong> (<code>src/dsr.py</code>, <code>src/analyze.py</code>). Each one decides whether the winner is real at a nominal 5% level:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>$N$</th>
+<th>$V$</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PSR, no deflation</td>
+<td>1</td>
+<td>–</td>
+<td>PSR(0) &gt; 0.95</td>
+</tr>
+<tr>
+<td><strong>DSR textbook</strong></td>
+<td>raw count</td>
+<td>variance of the trials' Sharpe ratios, across trials</td>
+<td>DSR &gt; 0.95</td>
+</tr>
+<tr>
+<td>DSR, null $V$</td>
+<td>raw count</td>
+<td>$1/T$ (the null variance of one Sharpe estimate)</td>
+<td>DSR &gt; 0.95</td>
+</tr>
+<tr>
+<td>DSR, Li-Ji $N$</td>
+<td>Li &amp; Ji (2005) eigenvalue count</td>
+<td>cross-sectional</td>
+<td>DSR &gt; 0.95</td>
+</tr>
+<tr>
+<td>DSR, clusters</td>
+<td>$K$ clusters (average linkage on $\sqrt{(1-\rho)/2}$, $K$ chosen by silhouette, López de Prado 2019)</td>
+<td>variance of the cluster Sharpe ratios</td>
+<td>DSR &gt; 0.95</td>
+</tr>
+<tr>
+<td><strong>Šidák max-PSR</strong></td>
+<td>raw, Li-Ji, Nyholt (2004), participation ratio $(\sum\lambda)^2/\sum\lambda^2$, or $K$</td>
+<td>–</td>
+<td>PSR(0) &gt; 0.95^{1/N}</td>
+</tr>
+<tr>
+<td><strong>Reality check</strong> (real data only)</td>
+<td>–</td>
+<td>–</td>
+<td>the winner's IS Sharpe beats the 95th percentile of the best IS Sharpe in 200 drift-preserving sign-flip worlds</td>
+</tr>
+</tbody>
+</table></div>
+<p>The Šidák max-PSR test is the obvious alternative. If the trials were independent, $\max_n \mathrm{PSR}_n &gt; 0.95^{1/N}$ would occur with probability exactly 5% under the null. With positively correlated trials it is conservative (Šidák 1967). It uses the same inputs as the DSR, so anyone who can compute a DSR can compute it.</p>
+<p><strong>Part 0: a world we control</strong> (<code>src/synthetic.py</code>). This part has Gaussian trials, $T = 2{,}520$ days, $N\in{100, 1000}$ and one-factor correlation $\rho\in{0,\dots,0.99}$. The null has every Sharpe ratio at 0. The "signal-rich" alternative has 10% of the trials at $+\mu$ and 10% at $-\mu$ (a strategy and its mirror image, as in any real zoo), with $\mu = 0.5$ or $1.0$ a year. There are 20,000 draws per cell.</p>
+<p><strong>Part 1: placebo worlds built from the real data</strong> (<code>src/run_placebo.py</code>). In each of 300 worlds every day's excess return is multiplied by one random sign, common to all 10 indices, and every month's industry excess return by one sign common to all 49 industries. This keeps the volatility path, the fat tails and the cross-asset correlation of the real data exactly. Because the sign of tomorrow's return is independent of everything before it, <strong>every rule's true Sharpe ratio is exactly zero</strong> (gross of costs). The rules, the correlation between trials and the clustering are all recomputed in each world. That makes this a test of the DSR <em>on the dependence structure a researcher actually faces</em>. <strong>Power:</strong> one extra trial is added to the null zoo, equal to the world's own S&amp;P 500 (zoo A) or equal-weighted industry (zoo B) return plus a drift that gives it a true Sharpe ratio of 0.5, 1.0 or 1.5 a year. <strong>Implied $N$:</strong> the $N$ at which each test would have exactly 5% size.</p>
+<p><strong>Part 2: real data</strong> (<code>src/run_real.py</code>, <code>src/run_reality_check.py</code>). The same searches are run on the real returns, net of costs, with the winner's Sharpe ratio over the next five years. The exact benchmark is a reality check (White 2000) by sign flips that <strong>keep each series' in-sample drift</strong>: $x^*_t = s_t(x_t-\mu)+\mu$. Buy &amp; hold therefore keeps its equity premium, and only the ability to predict the sign of the next return is destroyed. There are 200 worlds per split. The p-value is the share of worlds whose best IS Sharpe ratio is at least the real winner's.</p>
+<p><strong>Part 3: audit</strong> (<code>src/audit.py</code>). It covers six headline claims of projects 03, 11, 12, 17 and 20 whose null is "Sharpe = 0". Claims of the form "better than the benchmark" are tested through the strategy's alpha on that benchmark: its return minus β × the benchmark. $N$ is the number of configurations that the project's own results files report. That is a <strong>lower bound</strong> on the trials actually run, because design choices made before the first result was written down are not counted.</p>
+<p><strong>No look-ahead.</strong> Positions use closes up to $t$ and earn the return of $t+1$. Tests rewrite the future and check that past P&amp;L does not change (zoo A and zoo B). Selection uses only the IS window. The OOS window is never used to choose anything. The drift-preserving reality check uses the in-sample mean only.</p>
+<h2>4. Results</h2>
+<h3>4.1 Part 0: in a Gaussian world, "DSR &gt; 0.95" is not a 5% test</h3>
+<p><img alt="Synthetic" loading="lazy" src="figures/fig2_synthetic_size_power.png" /></p>
+<p>With <strong>independent</strong> trials, $N = 1{,}000$ and every true Sharpe ratio at zero, the textbook DSR exceeds 0.95 in <strong>0.01%</strong> of draws (0.06% for $N = 100$). The Šidák max-PSR is at <strong>4.8%</strong>, as theory says. The reason is mechanical. $SR_0$ is the <em>mean</em> of the null maximum, but the DSR measures the distance to it with the standard error of <em>one</em> Sharpe ratio, $1/\sqrt T$. The maximum of $N$ Gaussians has a much smaller spread than one Gaussian (roughly $1.28/\sqrt{2\ln N}$ of it: about 0.43 for $N = 100$). Clearing $SR_0$ by 1.645 single standard errors therefore means landing almost four standard deviations of the maximum above its mean. For $N = 100$, "DSR &gt; 0.95" is the same as $Z_{\max} &gt; 4.15$, which is a p-value of 0.0017.</p>
+<p>As the trials become correlated, the textbook DSR's size rises towards 5% (4.9% at $\rho = 0.99$). The DSR's real false-positive rate therefore depends on a nuisance parameter that the user never sees. It ranges from 0.01% to 5% across ordinary zoos.</p>
+<p>The power result is the more damaging one. With 100 of 1,000 strategies at a true Sharpe ratio of <strong>+1.0</strong> a year (each with a t-statistic of 3.2) and their 100 mirror images at −1.0, <strong>the textbook DSR flags the best strategy in 0.1–0.9% of draws at every $\rho$.</strong> The PSR with no deflation flags it in 96–100%. The Šidák bound with the Li-Ji $N$ flags it in 76–100%. The cause is $V$. The cross-sectional variance of the trials' Sharpe ratios now includes $0.2\,\mu^2$ of real dispersion, so $SR_0$ climbs to roughly the winner's own Sharpe ratio. Setting $V = 1/T$ restores the power when $\rho = 0$ (98%), but it loses it again as $\rho$ rises (7% at 0.99), because the raw $N$ then overstates the number of independent bets.</p>
+<h3>4.2 Part 1: the same failure on real dependence (H1, H2)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Size: A pooled</th>
+<th>A one index</th>
+<th>B industries</th>
+<th>Power at SR 1.0: A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PSR, no deflation</td>
+<td>82.4%</td>
+<td>65.2%</td>
+<td>85.7%</td>
+<td>99%</td>
+<td>99%</td>
+</tr>
+<tr>
+<td><strong>DSR textbook</strong></td>
+<td><strong>0.00%</strong> [0, 0]</td>
+<td><strong>0.00%</strong></td>
+<td><strong>0.00%</strong></td>
+<td><strong>17.6%</strong></td>
+<td><strong>15.1%</strong></td>
+</tr>
+<tr>
+<td>DSR, raw $N$, $V = 1/T$</td>
+<td>0.00%</td>
+<td>0.05%</td>
+<td>0.12%</td>
+<td>9.7%</td>
+<td>10.3%</td>
+</tr>
+<tr>
+<td>DSR, Li-Ji $N$</td>
+<td>0.14%</td>
+<td>0.36%</td>
+<td>0.02%</td>
+<td>31.8%</td>
+<td>28.3%</td>
+</tr>
+<tr>
+<td>DSR, clusters</td>
+<td>11.0%</td>
+<td>19.7%</td>
+<td>40.8%</td>
+<td>50.4%</td>
+<td>82.4%</td>
+</tr>
+<tr>
+<td><strong>Šidák max-PSR, raw $N$</strong></td>
+<td><strong>2.06%</strong> [1.6, 2.5]</td>
+<td><strong>1.97%</strong></td>
+<td><strong>3.42%</strong> [2.9, 4.0]</td>
+<td><strong>35.2%</strong></td>
+<td><strong>36.6%</strong></td>
+</tr>
+<tr>
+<td>Šidák max-PSR, Li-Ji $N$</td>
+<td>6.24% [5.5, 7.0]</td>
+<td>6.22%</td>
+<td>10.9% [10.0, 11.9]</td>
+<td>50.8%</td>
+<td>56.0%</td>
+</tr>
+<tr>
+<td>Šidák max-PSR, Nyholt $N$</td>
+<td>2.35%</td>
+<td>2.51%</td>
+<td>4.17%</td>
+<td>36.9%</td>
+<td>39.4%</td>
+</tr>
+<tr>
+<td>Šidák max-PSR, participation $N$</td>
+<td>34.2%</td>
+<td>26.3%</td>
+<td>44.6%</td>
+<td>79.4%</td>
+<td>85.0%</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>300 sign-flip worlds × (17 pooled + 66 single-index + 16 industry) searches = 29,700 null searches. Brackets: 95% CI from resampling worlds. Power: share of searches flagged when a rule with a true Sharpe ratio of 1.0 a year is added. That rule has the highest IS Sharpe ratio in 80% (A) and 79% (B) of the worlds, which caps any test's useful power near those values (<code>results/size.csv</code>, <code>results/power.csv</code>).</em></p>
+<p><strong>H1 supported.</strong> The textbook DSR crossed 0.95 in <strong>0 of 29,700</strong> null searches. <strong>H2 supported.</strong> At the same data and the same nominal level, the Šidák max-PSR with the raw count is valid (2.0–3.4%) and has <strong>2.0–2.4× the power</strong> (35–37% against 15–18% at a true Sharpe ratio of 1.0; 87% against 68% at 1.5 in zoo A). With a Sharpe ratio of 0.5 a year, which is roughly what a good real strategy earns, nothing finds it reliably over 10 years. The textbook DSR finds it in 0.3–0.9% of searches.</p>
+<p><strong>No count of "effective trials" rescues both the DSR and the Šidák test at once</strong> (Figure 3, <code>results/implied_n.csv</code>). For the Šidák test to have exactly 5% size, $N$ would have to be 146 (A pooled, against a raw mean of 443), 36 (one index, against 114) and 102 (industries, against 176). These values lie between the Li-Ji count and the raw count. Li-Ji is closest for zoo A but undercounts zoo B, so its Šidák test is too liberal there (10.9%). For the <strong>DSR</strong> to reach 5%, $N$ would have to be understated <strong>17–33×</strong> (14, 6.9 and 5.3). The four estimators of the effective $N$ also disagree by up to 40× on the same correlation matrix: Nyholt is near the raw count, Li-Ji is about a quarter of it, and the participation ratio and the silhouette clusters give 4–23. The cluster-based DSR, the method López de Prado (2019) recommends, is <strong>too liberal</strong> (11–41%). Silhouette selection picks very few clusters (2–6 in a single-index or industry search, where it mostly splits momentum from reversal), so the max-over-clusters benchmark is set far too low.</p>
+<p><img alt="Effective trials" loading="lazy" src="figures/fig3_effective_trials.png" /></p>
+<p><img alt="Variance contamination" loading="lazy" src="figures/fig6_variance_contamination.png" /></p>
+<p><strong>Mechanism (Figure 6).</strong> In the placebo worlds, the cross-sectional variance of the trials' Sharpe ratios averages 0.7–1.0 × $1/T$: correlated trials have <em>less</em> dispersion than independent ones. On the real data it reaches up to 9.6 × $1/T$ (zoo A pooled; 19 in single-index searches) and 7.7 × $1/T$ (zoo B), because the zoo contains real winners together with their mirror images. The textbook DSR reads all of that as noise and raises its benchmark accordingly.</p>
+<h3>4.3 Part 2: real data, 1940–2020 (H3)</h3>
+<p><img alt="Real data" loading="lazy" src="figures/fig4_real_oos.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Method (99 real searches)</th>
+<th>Winners flagged</th>
+<th>OOS Sharpe, flagged</th>
+<th>OOS Sharpe, not flagged</th>
+<th>Difference [95% CI]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PSR, no deflation</td>
+<td>83</td>
+<td>0.56</td>
+<td>0.20</td>
+<td>+0.37 [+0.08, +0.67]</td>
+</tr>
+<tr>
+<td><strong>DSR textbook</strong></td>
+<td><strong>0</strong></td>
+<td>–</td>
+<td>0.50</td>
+<td>–</td>
+</tr>
+<tr>
+<td>DSR, $V = 1/T$</td>
+<td>24</td>
+<td>1.24</td>
+<td>0.27</td>
+<td>+0.97 [+0.70, +1.23]</td>
+</tr>
+<tr>
+<td><strong>Šidák max-PSR, raw $N$</strong></td>
+<td><strong>28</strong></td>
+<td><strong>1.10</strong></td>
+<td><strong>0.27</strong></td>
+<td><strong>+0.83 [+0.53, +1.12]</strong></td>
+</tr>
+<tr>
+<td>Šidák max-PSR, Li-Ji $N$</td>
+<td>39</td>
+<td>0.85</td>
+<td>0.28</td>
+<td>+0.58 [+0.28, +0.84]</td>
+</tr>
+<tr>
+<td>Reality check (drift-kept sign flip)</td>
+<td>22</td>
+<td>1.12</td>
+<td>0.33</td>
+<td>+0.80 [+0.45, +1.15]</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Net of costs and annualised. CIs resample searches. The pooled, single-index and industry searches overlap in time and in trials, so the CIs are too narrow and should be read as descriptive (<code>results/real_summary.csv</code>, <code>results/real_decisions.csv</code>).</em></p>
+<p><strong>H3 supported, for every correctly sized test.</strong> The textbook DSR flagged <strong>none</strong> of the 99 winners, not even the S&amp;P 500 short-term rules chosen in 1960–1975, whose in-sample Sharpe ratios of 1.6–2.2 were followed by 1.0–1.9 out of sample. Every test with roughly the right size separates the future winners from the rest by about 0.6–1.0 of Sharpe ratio. Across all 99 searches, the IS Sharpe ratio of the winner predicts its OOS Sharpe ratio with a slope of 0.71 and an intercept of −0.23. The in-sample winner kept about 70 cents of each extra in-sample dollar of Sharpe ratio, minus a fixed haircut of 0.23.</p>
+<p><strong>The persistence is real but mostly not tradable, and it ended around 2000.</strong> Before 2000, 23 of 43 winners pass the Šidák test, and the winners earned a mean OOS Sharpe ratio of 0.95 (rank of the winner OOS: 79th percentile of its zoo). From 2000, 5 of 56 pass, and the winners earned 0.16, barely above the median rule (0.10, 59th percentile). The winners that passed are mostly the 5–10-day moving-average rules on the S&amp;P 500 (1960–1980) and the Nasdaq (1985–1995). These rules exploit the positive daily autocorrelation of a price index whose small stocks traded infrequently (the stale-price effect that project <a href="../03-moving-average-volatility/">03</a> found for the Nasdaq and project <a href="../02-volatility-dashboard-audit/">02</a> measured with variance ratios). A correctly sized test is right that these winners are not luck. It cannot tell you that nobody could trade the index at those prices.</p>
+<p><strong>Industry momentum passes the DSR-style tests but fails the reality check.</strong> Zoo B's winners are almost always momentum rules (16/16), and they beat the median rule OOS by a mean 0.59 of Sharpe ratio. However, <strong>0 of 16</strong> pass the drift-preserving reality check. When each industry keeps its own in-sample mean and only the timing of its returns is randomised, ranking industries on past returns already earns as much as the real winner. In other words, most of the in-sample edge of industry momentum in a 10-year window comes from persistent differences in industries' average returns (Conrad &amp; Kaul 1998), not from serial correlation. That is a different null from "Sharpe = 0", and only the reality check, which uses the full return data, can test it. No single-number deflator can.</p>
+<h3>4.4 Stress windows (2008, 2020, 2022)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Search (chosen on)</th>
+<th>Winner</th>
+<th>Winner's return</th>
+<th>Zoo median</th>
+<th>Zoo 10th–90th pct</th>
+<th>Benchmark</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2008</td>
+<td>A pooled (1996–2005)</td>
+<td>TSX channel-50, long/flat</td>
+<td>−6.1%</td>
+<td>−3.2%</td>
+<td>−24.8% / +34.9%</td>
+<td>S&amp;P 500 −39.4%</td>
+</tr>
+<tr>
+<td>2008</td>
+<td>S&amp;P 500 only</td>
+<td>378-day momentum, long/flat</td>
+<td>−15.1%</td>
+<td>0.0%</td>
+<td>−25.0% / +39.5%</td>
+<td>−39.4%</td>
+</tr>
+<tr>
+<td>2008</td>
+<td>Industries</td>
+<td>Momentum 6-1, top/bottom 10</td>
+<td>−2.0%</td>
+<td>−5.5%</td>
+<td>−25.2% / +13.9%</td>
+<td>EW industries −39.7%</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>A pooled (2006–15)</td>
+<td>Nasdaq low-volatility filter</td>
+<td>+40.2%</td>
+<td>−2.0%</td>
+<td>−25.7% / +25.6%</td>
+<td>S&amp;P 500 +15.7%</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>S&amp;P 500 only</td>
+<td>2-day reversal, long/short</td>
+<td>−46.3%</td>
+<td>+5.5%</td>
+<td>−22.2% / +26.1%</td>
+<td>+15.7%</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>Industries</td>
+<td>Momentum 3-1, top/bottom 3</td>
+<td>+73.4%</td>
+<td>−1.1%</td>
+<td>−45.8% / +61.8%</td>
+<td>EW industries +20.0%</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>A pooled (2011–20)</td>
+<td>Nasdaq low-volatility filter</td>
+<td>−24.2%</td>
+<td>−10.8%</td>
+<td>−24.1% / +4.6%</td>
+<td>S&amp;P 500 −20.6%</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>S&amp;P 500 only</td>
+<td>Low-volatility filter (21/504)</td>
+<td>−20.3%</td>
+<td>−14.5%</td>
+<td>−25.1% / −2.5%</td>
+<td>−20.6%</td>
+</tr>
+<tr>
+<td>2022</td>
+<td>Industries</td>
+<td>Momentum 2-1, top/bottom 3</td>
+<td>−0.9%</td>
+<td>−3.8%</td>
+<td>−34.2% / +38.7%</td>
+<td>EW industries −13.6%</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Calendar-year net excess returns (<code>results/stress_windows.csv</code>).</em> The in-sample winners are not crash-proof. In 2008 the selected timing rules lost far less than buy &amp; hold, but about as much as the median rule or more (S&amp;P 500 winner −15% against a median of 0%). In 2020 the S&amp;P 500 winner (a 2-day reversal) lost 46%. In 2022 the low-volatility winners fell with the market. None of the 2005–2020 winners in these rows passed the raw-count Šidák test, which matches the post-2000 decay in §4.3.</p>
+<h3>4.5 Part 3: deflating this portfolio (H4)</h3>
+<p><img alt="Audit" loading="lazy" src="figures/fig5_portfolio_audit.png" /></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Project and claim</th>
+<th>Years</th>
+<th>Sharpe (ann.)</th>
+<th>$N$ reported (Li-Ji)</th>
+<th>PSR</th>
+<th>DSR textbook</th>
+<th>Šidák p, raw $N$</th>
+<th>Šidák p, Li-Ji $N$</th>
+<th>Verdict (raw $N$)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#03 S&amp;P 500 200-day rule: alpha on buy &amp; hold, net</td>
+<td>93.6</td>
+<td>0.31</td>
+<td>90 (43)</td>
+<td>0.998</td>
+<td>0.01</td>
+<td>0.13</td>
+<td>0.064</td>
+<td><strong>does not survive</strong></td>
+</tr>
+<tr>
+<td>#03 Nasdaq 20-day rule: alpha on buy &amp; hold, net</td>
+<td>53.4</td>
+<td>0.78</td>
+<td>90 (43)</td>
+<td>1.000</td>
+<td>0.96</td>
+<td>&lt;0.001</td>
+<td>&lt;0.001</td>
+<td>survives (stale prices, see #03)</td>
+</tr>
+<tr>
+<td>#11 Country-ETF pairs, GGR top 20, gross</td>
+<td>24.8</td>
+<td>0.54</td>
+<td>16 (–)</td>
+<td>0.996</td>
+<td>0.25</td>
+<td>0.061</td>
+<td>–</td>
+<td><strong>does not survive</strong> (borderline)</td>
+</tr>
+<tr>
+<td>#12 Industry momentum 12-1, gross</td>
+<td>98.8</td>
+<td>0.59</td>
+<td>126 (21)</td>
+<td>1.000</td>
+<td>0.24</td>
+<td>&lt;0.001</td>
+<td>&lt;0.001</td>
+<td>survives</td>
+</tr>
+<tr>
+<td>#17 Real-time factor selector (tangency)</td>
+<td>42.8</td>
+<td>0.95</td>
+<td>8 (4)</td>
+<td>1.000</td>
+<td>1.00</td>
+<td>&lt;0.001</td>
+<td>&lt;0.001</td>
+<td>survives</td>
+</tr>
+<tr>
+<td>#20 Risk parity: alpha on 60/40</td>
+<td>97.3</td>
+<td>0.26</td>
+<td>16 (3)</td>
+<td>0.992</td>
+<td>0.77</td>
+<td>0.13</td>
+<td>0.025</td>
+<td><strong>does not survive</strong> with raw $N$</td>
+</tr>
+</tbody>
+</table></div>
+<p><em><code>results/audit.csv</code>. Šidák p = $1-\mathrm{PSR}^N$. #11's moments are taken as normal because only summary rows are available, and its Li-Ji count could not be computed.</em></p>
+<p><strong>H4 supported.</strong> Three of the six claims fail a correctly sized bound with the projects' own trial counts. Each of those projects already flagged its claim as fragile. Project 03 found that the S&amp;P 500 return gain is concentrated before 1992. Project 11 reported only +0.44% a year net (t = 0.9). Project 20's full-sample Sharpe-ratio difference had p = 0.46. The audit makes that fragility quantitative. Two observations are uncomfortable for the textbook DSR:</p>
+<ul>
+<li>The textbook DSR fails <strong>#12's industry momentum</strong> (0.24), one of the most replicated anomalies in finance, observed here over 99 years. It does so because the 126 trading designs of #12 contain both fast and slow signals, so their Sharpe ratios are widely dispersed and $V$ is 6.6 × $1/T$. Every valid test passes it with p &lt; 0.001.</li>
+<li>The textbook DSR <strong>passes</strong> the Nasdaq 20-day rule (0.96). Project 03 had already shown that this rule exploits stale index prices. No statistical deflator can see that; only economics can.</li>
+</ul>
+<p><strong>Minimum track records.</strong> With its Li-Ji count, the S&amp;P 500 200-day alpha (Sharpe 0.31) would need <strong>99 years</strong> to pass the Šidák bound, and risk parity's alpha (0.26) would need 77. The record would have to be roughly as long as the history of the index for a Sharpe ratio of 0.3 to survive a search over a few dozen variants.</p>
+<h2>5. Robustness and checks</h2>
+<ul>
+<li><strong>Tests (9 pass, <code>tests/test_dsr.py</code>).</strong> The expected-maximum formula matches simulation within 3% (N = 10, 100, 1,000). The Mertens standard error matches simulation for Gaussian and Student-t(5) returns. The test of DSR size at 1/100 of nominal and of Šidák at exactly 5% reproduces the paper's first result in miniature. The effective-$N$ estimators have the right limits ($N$ for the identity matrix, 1 for perfect correlation). The clustering recovers three planted blocks. The minimum track record inverts the PSR. Zoo A and zoo B have no look-ahead (rewriting the future leaves the past unchanged). Sign flipping removes every rule's mean, even on a strongly trending series.</li>
+<li><strong>Common sign versus independent signs.</strong> One sign per day across all indices keeps the cross-index correlation of the trials. Drawing independent signs per index would destroy it and make the pooled search look more independent than any real one.</li>
+<li><strong>Gross versus net in the placebo.</strong> Size and power use gross returns, where the true Sharpe ratio is exactly zero. Costs would make every true Sharpe ratio negative and the tests look more conservative still.</li>
+<li><strong>Searches by period.</strong> The textbook DSR is at 0% in every split of every zoo. The Šidák raw-$N$ size stays between 0.7% and 5.3% in every split of the pooled A and industry searches (300 worlds per split, <code>results/placebo_searches.csv.gz</code>).</li>
+<li><strong>Trial counts in the audit.</strong> If the true number of trials were double the reported count, the Šidák p-values of the three surviving claims would stay below 0.001, and the three failing claims would fail more clearly (p = 0.12–0.24).</li>
+</ul>
+<h2>6. Limitations</h2>
+<ul>
+<li><strong>The null is "no predictability of the sign".</strong> The sign-flip worlds also make the return distribution symmetric, so negative skewness (short-volatility-like rules) is not stress-tested. A placebo that keeps skewness would need a different construction (for example, flipping signs of deviations from a skewed location). Strategy returns can still be skewed in the placebo (the winners' skewness has a median of +0.3 there, against −0.17 on real data, interquartile range −0.41 to +0.15). The PSR's skewness term is small at daily Sharpe ratios, so this matters little for zoo A, but a fat negative tail is not stress-tested.</li>
+<li><strong>Effective $N$ needs the trials' returns.</strong> Li-Ji, Nyholt and the clusters were computed on the in-sample correlation matrix of the actual trial returns. Most published backtests report a count at best. That is why the recommendation in §8 is the raw count with Šidák.</li>
+<li><strong>Price indices and stale prices.</strong> Zoo A uses price indices without dividends, and before about 1990 their daily returns are autocorrelated because small stocks traded rarely. This inflates the persistence of short-term rules on real data (§4.3) but does not affect the placebo results, where the sign flip removes all autocorrelation.</li>
+<li><strong>No local cash rate outside the US</strong>, and no futures before 1982: the zoo-A rules could not have been traded at those prices. The project tests statistical procedures, not tradable strategies.</li>
+<li><strong>Overlapping searches.</strong> The 99 real searches share years and trials (the S&amp;P 500 search is the pooled search until 1960). Their CIs treat them as independent and are too narrow. The placebo CIs resample whole worlds and are valid.</li>
+<li><strong>A finite zoo.</strong> 1,316 rules is a lower bound on what researchers try. Larger, more heterogeneous zoos would make the cross-sectional $V$ more contaminated and the textbook DSR more conservative still.</li>
+<li><strong>Multiple testing within this project.</strong> Ten methods × three zoos are compared. The headline comparisons (textbook DSR against Šidák raw $N$) were fixed in advance after Part 0. The cluster and participation-ratio variants and the reality check were added for completeness. Their conclusions are labelled with that in mind and none of the headline numbers depends on them.</li>
+</ul>
+<h2>7. Referee-style self-review: what it changed</h2>
+<p>I reviewed the first complete draft as a referee would, and changed the following before publishing.</p>
+<ol>
+<li><strong>"Equivalent to beating buy &amp; hold" was false.</strong> The audit first described a positive alpha on the benchmark as "the rule's Sharpe ratio is higher than the benchmark's". That is wrong: alpha &gt; 0 means $SR_a &gt; \rho_{ab} SR_b$, i.e. the rule improves a mix with the benchmark. The claims are now labelled "alpha on buy &amp; hold", and the docstrings explain the difference.</li>
+<li><strong>The first audit tested the wrong series for #03.</strong> It used the rule minus buy &amp; hold (active return), whose Sharpe ratio is negative simply because the rule holds the market less often. That had nothing to do with #03's claim. It now uses the benchmark-hedged return.</li>
+<li><strong>The reality check first crashed silently.</strong> Indices with no data in a split had a missing mean, which turned the whole series into missing values. Those indices now keep a mean of zero, and the run logs are checked.</li>
+<li><strong>The industry score could not handle the placebo.</strong> A +120% month becomes −120% after a sign flip, and a log return is then undefined. The formation score is now the sum of simple returns.</li>
+<li><strong>A pandas trap.</strong> The synthetic world labelled "null" was read back as a missing value, which silently emptied the first panel of Figure 2. It is now labelled "all-zero".</li>
+<li><strong>The star chart first said that Šidák with the Li-Ji count "stays near 5%".</strong> It does for zoo A (6.2%) but not zoo B (10.9%). The caption now recommends the raw count, which is valid in all three zoos.</li>
+<li><strong>Claims about stale prices.</strong> The draft called the 1960–1995 winners "real". They are not luck, but they are not tradable either. §4.3 now says both.</li>
+</ol>
+<p>Points a referee could still raise: a skewness-preserving placebo (§6); a bootstrap over overlapping searches for the real-data CIs; and a comparison with Harvey &amp; Liu's (2015) haircut and with the probability of backtest overfitting (Bailey et al. 2017), which is the subject of project 22's cross-validation design.</p>
+<h2>8. Conclusion</h2>
+<p>"DSR &gt; 0.95" is not a 5% test. On the real data used here its false-positive rate is 0% and its power is a fraction of what a valid test achieves. The fix costs nothing. With $N$ trials and a winner whose PSR you already computed, report $p = 1 - \mathrm{PSR}^N$ (Šidák) using the <strong>raw</strong> count of everything you tried. It is valid whatever the correlation between trials, and it found twice as many real strategies in this study. If you have the trials' returns, run a sign-flip reality check, which is exact and can also tell drift from timing. Report the DSR, if at all, as a <strong>descriptive</strong> shrinkage of the Sharpe ratio, not as a probability.</p>
+<p>For this portfolio, the claims that survive are #12's industry momentum, #17's factor selector and #03's Nasdaq rule (an artefact of stale index prices). The S&amp;P 500 200-day alpha (#03), the country-ETF pairs (#11) and risk parity's alpha over 60/40 (#20) are best read as hypotheses.</p>
+<p><strong>Links to other projects.</strong> <a href="../02-volatility-dashboard-audit/">02</a> (variance ratios), <a href="../03-moving-average-volatility/">03</a> (same index data and the rule grid audited here), <a href="../09-beta-horse-race/">09</a> and <a href="../12-momentum-trading-costs/">12</a> (the industry panel), <a href="../11-pairs-trading/">11</a> (screening and false positives), <a href="../17-five-factor-holdout/">17</a> (the Sharpe haircut on a real holdout), <a href="../19-hmm-regime-hindsight/">19</a> (an inflated Sharpe from look-ahead, the case no deflator can fix), <a href="../20-risk-parity-bond-bull/">20</a> (risk parity's alpha). Next: 21 (one backtest engine for the whole portfolio) and 22 (purged cross-validation and the probability of backtest overfitting).</p>
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh      # tests, all experiments, all figures (about 45 minutes on 4 cores)
+</code></pre>
+<p><code>src/dsr.py</code> holds PSR, DSR, the expected maximum, the minimum track record and the effective-trial estimators. <code>src/zoo.py</code> builds the 1,316 rules, and <code>src/search.py</code> runs one world's searches. <code>run_placebo.py</code>, <code>run_real.py</code> and <code>run_reality_check.py</code> write the raw records, <code>analyze.py</code> writes the tables in <code>results/</code>, <code>audit.py</code> re-tests the earlier projects (it reads the sibling project folders of the monorepo), and <code>figures.py</code> draws every figure.</p>
+<h2>References</h2>
+<ul>
+<li>Bailey, D. H. &amp; López de Prado, M. (2012). The Sharpe ratio efficient frontier. <em>Journal of Risk</em> 15(2).</li>
+<li>Bailey, D. H. &amp; López de Prado, M. (2014). The deflated Sharpe ratio: correcting for selection bias, backtest overfitting and non-normality. <em>Journal of Portfolio Management</em> 40(5).</li>
+<li>Bailey, D. H., Borwein, J., López de Prado, M. &amp; Zhu, Q. J. (2017). The probability of backtest overfitting. <em>Journal of Computational Finance</em> 20(4).</li>
+<li>Conrad, J. &amp; Kaul, G. (1998). An anatomy of trading strategies. <em>Review of Financial Studies</em> 11(3).</li>
+<li>Harvey, C. R. &amp; Liu, Y. (2015). Backtesting. <em>Journal of Portfolio Management</em> 42(1).</li>
+<li>Li, J. &amp; Ji, L. (2005). Adjusting multiple testing in multilocus analyses using the eigenvalues of a correlation matrix. <em>Heredity</em> 95.</li>
+<li>López de Prado, M. (2019). A data science solution to the multiple-testing crisis in financial research. <em>Journal of Financial Data Science</em> 1(1).</li>
+<li>López de Prado, M. &amp; Lewis, M. J. (2019). Detection of false investment strategies using unsupervised learning methods. <em>Quantitative Finance</em> 19(9).</li>
+<li>Mertens, E. (2002). Comments on variance of the IID estimator in Lo (2002). Working paper.</li>
+<li>Nyholt, D. R. (2004). A simple correction for multiple testing for SNPs in linkage disequilibrium with each other. <em>American Journal of Human Genetics</em> 74(4).</li>
+<li>Šidák, Z. (1967). Rectangular confidence regions for the means of multivariate normal distributions. <em>JASA</em> 62(318).</li>
+<li>White, H. (2000). A reality check for data snooping. <em>Econometrica</em> 68(5).</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/23-deflated-sharpe">23-deflated-sharpe on GitHub</a>.</footer>
+</div>
+</body>
+</html>

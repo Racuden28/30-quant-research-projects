@@ -1,0 +1,61 @@
+group,planted_sr,method,power,power_and_planted_won,planted_won
+A pooled (all indices),0.5,"PSR, no deflation",0.8886,0.2673,0.2994
+A pooled (all indices),0.5,"DSR textbook (raw N, cross-sectional V)",0.002549,0.002549,0.2994
+A pooled (all indices),0.5,"DSR, raw N, null V = 1/T",0.002745,0.002745,0.2994
+A pooled (all indices),0.5,"DSR, Li-Ji N, cross-sectional V",0.01529,0.01431,0.2994
+A pooled (all indices),0.5,"DSR, clusters (K, cluster V)",0.188,0.1351,0.2994
+A pooled (all indices),0.5,"Sidak max-PSR, raw N",0.04647,0.02961,0.2994
+A pooled (all indices),0.5,"Sidak max-PSR, Li-Ji N",0.112,0.06451,0.2994
+A pooled (all indices),0.5,"Sidak max-PSR, Nyholt N",0.05353,0.03471,0.2994
+A pooled (all indices),0.5,"Sidak max-PSR, participation N",0.4022,0.1555,0.2994
+A pooled (all indices),0.5,"Sidak max-PSR, cluster K",0.3739,0.1724,0.2994
+A pooled (all indices),1,"PSR, no deflation",0.9924,0.7973,0.8
+A pooled (all indices),1,"DSR textbook (raw N, cross-sectional V)",0.1765,0.1765,0.8
+A pooled (all indices),1,"DSR, raw N, null V = 1/T",0.09725,0.09725,0.8
+A pooled (all indices),1,"DSR, Li-Ji N, cross-sectional V",0.3178,0.3176,0.8
+A pooled (all indices),1,"DSR, clusters (K, cluster V)",0.5037,0.4931,0.8
+A pooled (all indices),1,"Sidak max-PSR, raw N",0.3524,0.3433,0.8
+A pooled (all indices),1,"Sidak max-PSR, Li-Ji N",0.5076,0.4829,0.8
+A pooled (all indices),1,"Sidak max-PSR, Nyholt N",0.3688,0.3588,0.8
+A pooled (all indices),1,"Sidak max-PSR, participation N",0.7937,0.6873,0.8
+A pooled (all indices),1,"Sidak max-PSR, cluster K",0.7443,0.66,0.8
+A pooled (all indices),1.5,"PSR, no deflation",1,0.9818,0.9818
+A pooled (all indices),1.5,"DSR textbook (raw N, cross-sectional V)",0.6782,0.6782,0.9818
+A pooled (all indices),1.5,"DSR, raw N, null V = 1/T",0.581,0.581,0.9818
+A pooled (all indices),1.5,"DSR, Li-Ji N, cross-sectional V",0.7922,0.7922,0.9818
+A pooled (all indices),1.5,"DSR, clusters (K, cluster V)",0.8896,0.8882,0.9818
+A pooled (all indices),1.5,"Sidak max-PSR, raw N",0.8686,0.8655,0.9818
+A pooled (all indices),1.5,"Sidak max-PSR, Li-Ji N",0.9324,0.9249,0.9818
+A pooled (all indices),1.5,"Sidak max-PSR, Nyholt N",0.8763,0.8729,0.9818
+A pooled (all indices),1.5,"Sidak max-PSR, participation N",0.9916,0.9755,0.9818
+A pooled (all indices),1.5,"Sidak max-PSR, cluster K",0.9829,0.9678,0.9818
+B industries,0.5,"PSR, no deflation",0.9244,0.2794,0.2915
+B industries,0.5,"DSR textbook (raw N, cross-sectional V)",0.009167,0.009167,0.2915
+B industries,0.5,"DSR, raw N, null V = 1/T",0.004792,0.003542,0.2915
+B industries,0.5,"DSR, Li-Ji N, cross-sectional V",0.02271,0.0225,0.2915
+B industries,0.5,"DSR, clusters (K, cluster V)",0.5492,0.2227,0.2915
+B industries,0.5,"Sidak max-PSR, raw N",0.06438,0.03104,0.2915
+B industries,0.5,"Sidak max-PSR, Li-Ji N",0.1735,0.0725,0.2915
+B industries,0.5,"Sidak max-PSR, Nyholt N",0.07667,0.03604,0.2915
+B industries,0.5,"Sidak max-PSR, participation N",0.5206,0.1854,0.2915
+B industries,0.5,"Sidak max-PSR, cluster K",0.7388,0.2419,0.2915
+B industries,1,"PSR, no deflation",0.9896,0.7835,0.7865
+B industries,1,"DSR textbook (raw N, cross-sectional V)",0.151,0.151,0.7865
+B industries,1,"DSR, raw N, null V = 1/T",0.1031,0.1019,0.7865
+B industries,1,"DSR, Li-Ji N, cross-sectional V",0.2827,0.2825,0.7865
+B industries,1,"DSR, clusters (K, cluster V)",0.824,0.7052,0.7865
+B industries,1,"Sidak max-PSR, raw N",0.3658,0.3417,0.7865
+B industries,1,"Sidak max-PSR, Li-Ji N",0.5598,0.4979,0.7865
+B industries,1,"Sidak max-PSR, Nyholt N",0.3937,0.3658,0.7865
+B industries,1,"Sidak max-PSR, participation N",0.8498,0.7048,0.7865
+B industries,1,"Sidak max-PSR, cluster K",0.9306,0.7492,0.7865
+B industries,1.5,"PSR, no deflation",0.9998,0.9838,0.984
+B industries,1.5,"DSR textbook (raw N, cross-sectional V)",0.5669,0.5669,0.984
+B industries,1.5,"DSR, raw N, null V = 1/T",0.5781,0.5781,0.984
+B industries,1.5,"DSR, Li-Ji N, cross-sectional V",0.7429,0.7429,0.984
+B industries,1.5,"DSR, clusters (K, cluster V)",0.9719,0.9631,0.984
+B industries,1.5,"Sidak max-PSR, raw N",0.8242,0.8194,0.984
+B industries,1.5,"Sidak max-PSR, Li-Ji N",0.9302,0.9202,0.984
+B industries,1.5,"Sidak max-PSR, Nyholt N",0.8448,0.839,0.984
+B industries,1.5,"Sidak max-PSR, participation N",0.9925,0.9775,0.984
+B industries,1.5,"Sidak max-PSR, cluster K",0.996,0.9804,0.984

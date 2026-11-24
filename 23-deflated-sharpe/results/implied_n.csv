@@ -1,0 +1,4 @@
+group,mean_raw_N,mean_liji,mean_nyholt,mean_participation,mean_clusters,implied_N_sidak,implied_N_dsr_textbook,mean_vxs_times_T
+A pooled (all indices),442.6,103.5,407,10.25,22.81,145.7,13.63,0.7791
+A single index,114,29.2,89.24,4.559,4.042,36,6.866,0.6856
+B industries,176,35.35,132,4.045,3.475,101.6,5.261,1.032

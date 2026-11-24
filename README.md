@@ -35,7 +35,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 20 | [Was Risk Parity Just a Bond Bull Market?](20-risk-parity-bond-bull/) | Did risk parity beat 60/40 because of a structural premium or because of the 40-year fall in bond yields? | ✅ Published |
 | 21 | [The Day After the Signal](21-backtest-engine-fills/) | Does the day you assume a trade fills change what a backtest concludes? | ✅ Published |
 | 22 | Purged cross-validation | | ⏳ Planned |
-| 23 | Deflated Sharpe ratio | | ⏳ Planned |
+| 23 | [The Deflated Sharpe Ratio Is Not a p-Value](23-deflated-sharpe/) | Is "DSR > 0.95" really a 5% test, and which of this portfolio's own claims survive one that is? | ✅ Published |
 | 24 | [The Filter That Lets Noise Through](24-pca-stat-arb/) | Does the OU machinery in PCA stat arb find mean reversion that noise would not? | ✅ Published |
 | 25 | [The Kalman Hedge Ratio Is an EWMA in Disguise](25-kalman-hedge-ratio/) | Does a Kalman-filter hedge ratio beat rolling and EWMA betas out of sample, or is it an EWMA in disguise? | ✅ Published |
 | 26 | [Heston From Six Public Numbers](26-heston-public-indices/) | Can Heston be calibrated from free CBOE indices, and does it agree with itself? | ✅ Published |

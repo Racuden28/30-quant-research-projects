@@ -1,0 +1,397 @@
+world,N,rho,pi,mu_ann,method,reject,ny,lj,pr,v_ratio
+all-zero,100,0,0,0,PSR (N = 1),0.993,100,100,100,0.99966
+all-zero,100,0,0,0,"DSR, raw N, cross-sectional V",0.00055,100,100,100,0.99966
+all-zero,100,0,0,0,"DSR, raw N, null V = 1/T",0.00145,100,100,100,0.99966
+all-zero,100,0,0,0,"DSR, Li-Ji N, cross-sectional V",0.00055,100,100,100,0.99966
+all-zero,100,0,0,0,"DSR, Li-Ji N, null V",0.00145,100,100,100,0.99966
+all-zero,100,0,0,0,"DSR, participation N, null V",0.00145,100,100,100,0.99966
+all-zero,100,0,0,0,"DSR, Nyholt N, null V",0.00145,100,100,100,0.99966
+all-zero,100,0,0,0,"Sidak max-PSR, raw N",0.0488,100,100,100,0.99966
+all-zero,100,0,0,0,"Sidak max-PSR, Li-Ji N",0.0488,100,100,100,0.99966
+all-zero,100,0,0,0,"Sidak max-PSR, Nyholt N",0.0488,100,100,100,0.99966
+all-zero,100,0,0,0,"Sidak max-PSR, participation N",0.0488,100,100,100,0.99966
+signal-rich,100,0,0.1,0.5,PSR (N = 1),0.99995,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"DSR, raw N, cross-sectional V",0.005,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"DSR, raw N, null V = 1/T",0.047,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.005,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"DSR, Li-Ji N, null V",0.047,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"DSR, participation N, null V",0.047,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"DSR, Nyholt N, null V",0.047,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"Sidak max-PSR, raw N",0.388,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.388,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"Sidak max-PSR, Nyholt N",0.388,100,100,100,1.5043
+signal-rich,100,0,0.1,0.5,"Sidak max-PSR, participation N",0.388,100,100,100,1.5043
+signal-rich,100,0,0.1,1,PSR (N = 1),1,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"DSR, raw N, cross-sectional V",0.0126,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"DSR, raw N, null V = 1/T",0.81345,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.0126,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"DSR, Li-Ji N, null V",0.81345,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"DSR, participation N, null V",0.81345,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"DSR, Nyholt N, null V",0.81345,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"Sidak max-PSR, raw N",0.99765,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"Sidak max-PSR, Li-Ji N",0.99765,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"Sidak max-PSR, Nyholt N",0.99765,100,100,100,3.0183
+signal-rich,100,0,0.1,1,"Sidak max-PSR, participation N",0.99765,100,100,100,3.0183
+all-zero,100,0.25,0,0,PSR (N = 1),0.7994,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"DSR, raw N, cross-sectional V",0.00385,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"DSR, raw N, null V = 1/T",0.00125,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"DSR, Li-Ji N, cross-sectional V",0.00555,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"DSR, Li-Ji N, null V",0.00205,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"DSR, participation N, null V",0.0278,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"DSR, Nyholt N, null V",0.0015,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"Sidak max-PSR, raw N",0.0381,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"Sidak max-PSR, Li-Ji N",0.05,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"Sidak max-PSR, Nyholt N",0.0401,93.812,76,13.913,0.7496
+all-zero,100,0.25,0,0,"Sidak max-PSR, participation N",0.20255,93.812,76,13.913,0.7496
+signal-rich,100,0.25,0.1,0.5,PSR (N = 1),0.9728,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"DSR, raw N, cross-sectional V",0.0133,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"DSR, raw N, null V = 1/T",0.04245,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.01905,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"DSR, Li-Ji N, null V",0.05665,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"DSR, participation N, null V",0.2547,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"DSR, Nyholt N, null V",0.04565,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"Sidak max-PSR, raw N",0.2994,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.3379,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"Sidak max-PSR, Nyholt N",0.30685,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,0.5,"Sidak max-PSR, participation N",0.6312,93.812,76,13.913,1.2552
+signal-rich,100,0.25,0.1,1,PSR (N = 1),1,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"DSR, raw N, cross-sectional V",0.0263,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"DSR, raw N, null V = 1/T",0.66035,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.04315,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"DSR, Li-Ji N, null V",0.7115,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"DSR, participation N, null V",0.94415,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"DSR, Nyholt N, null V",0.67265,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"Sidak max-PSR, raw N",0.9581,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"Sidak max-PSR, Li-Ji N",0.96755,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"Sidak max-PSR, Nyholt N",0.96055,93.812,76,13.913,2.771
+signal-rich,100,0.25,0.1,1,"Sidak max-PSR, participation N",0.9956,93.812,76,13.913,2.771
+all-zero,100,0.5,0,0,PSR (N = 1),0.56445,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"DSR, raw N, cross-sectional V",0.015,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"DSR, raw N, null V = 1/T",0.001,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"DSR, Li-Ji N, cross-sectional V",0.0263,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"DSR, Li-Ji N, null V",0.0027,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"DSR, participation N, null V",0.1203,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"DSR, Nyholt N, null V",0.00175,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"Sidak max-PSR, raw N",0.02615,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"Sidak max-PSR, Li-Ji N",0.0433,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"Sidak max-PSR, Nyholt N",0.03185,75.25,51,3.8835,0.4987
+all-zero,100,0.5,0,0,"Sidak max-PSR, participation N",0.2779,75.25,51,3.8835,0.4987
+signal-rich,100,0.5,0.1,0.5,PSR (N = 1),0.89715,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"DSR, raw N, cross-sectional V",0.03135,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"DSR, raw N, null V = 1/T",0.03455,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.0573,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"DSR, Li-Ji N, null V",0.06165,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"DSR, participation N, null V",0.495,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"DSR, Nyholt N, null V",0.04335,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"Sidak max-PSR, raw N",0.22735,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.3039,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"Sidak max-PSR, Nyholt N",0.2583,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,0.5,"Sidak max-PSR, participation N",0.7067,75.25,51,3.8835,1.0066
+signal-rich,100,0.5,0.1,1,PSR (N = 1),0.9993,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"DSR, raw N, cross-sectional V",0.03945,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"DSR, raw N, null V = 1/T",0.5322,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.10235,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"DSR, Li-Ji N, null V",0.65005,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"DSR, participation N, null V",0.9739,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"DSR, Nyholt N, null V",0.5809,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"Sidak max-PSR, raw N",0.88105,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"Sidak max-PSR, Li-Ji N",0.92355,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"Sidak max-PSR, Nyholt N",0.9008,75.25,51,3.8835,2.5187
+signal-rich,100,0.5,0.1,1,"Sidak max-PSR, participation N",0.99385,75.25,51,3.8835,2.5187
+all-zero,100,0.75,0,0,PSR (N = 1),0.33165,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"DSR, raw N, cross-sectional V",0.02955,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"DSR, raw N, null V = 1/T",0.00035,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"DSR, Li-Ji N, cross-sectional V",0.05595,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"DSR, Li-Ji N, null V",0.00305,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"DSR, participation N, null V",0.18845,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"DSR, Nyholt N, null V",0.00115,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"Sidak max-PSR, raw N",0.01025,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"Sidak max-PSR, Li-Ji N",0.03265,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"Sidak max-PSR, Nyholt N",0.02095,44.312,26,1.7641,0.25
+all-zero,100,0.75,0,0,"Sidak max-PSR, participation N",0.2345,44.312,26,1.7641,0.25
+signal-rich,100,0.75,0.1,0.5,PSR (N = 1),0.78155,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"DSR, raw N, cross-sectional V",0.0489,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"DSR, raw N, null V = 1/T",0.0224,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.1234,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"DSR, Li-Ji N, null V",0.0739,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"DSR, participation N, null V",0.63235,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"DSR, Nyholt N, null V",0.0475,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"Sidak max-PSR, raw N",0.15045,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.27795,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"Sidak max-PSR, Nyholt N",0.22065,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,0.5,"Sidak max-PSR, participation N",0.69005,44.312,26,1.7641,0.75467
+signal-rich,100,0.75,0.1,1,PSR (N = 1),0.9943,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"DSR, raw N, cross-sectional V",0.0455,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"DSR, raw N, null V = 1/T",0.38955,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.19975,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"DSR, Li-Ji N, null V",0.6105,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"DSR, participation N, null V",0.98075,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"DSR, Nyholt N, null V",0.519,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"Sidak max-PSR, raw N",0.75515,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"Sidak max-PSR, Li-Ji N",0.87135,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"Sidak max-PSR, Nyholt N",0.82975,44.312,26,1.7641,2.2691
+signal-rich,100,0.75,0.1,1,"Sidak max-PSR, participation N",0.9872,44.312,26,1.7641,2.2691
+all-zero,100,0.9,0,0,PSR (N = 1),0.1853,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"DSR, raw N, cross-sectional V",0.04315,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"DSR, raw N, null V = 1/T",0.0002,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"DSR, Li-Ji N, cross-sectional V",0.0792,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"DSR, Li-Ji N, null V",0.00515,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"DSR, participation N, null V",0.20565,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"DSR, Nyholt N, null V",0.0019,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"Sidak max-PSR, raw N",0.00485,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"Sidak max-PSR, Li-Ji N",0.03065,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"Sidak max-PSR, Nyholt N",0.0189,19.81,11,1.2317,0.099901
+all-zero,100,0.9,0,0,"Sidak max-PSR, participation N",0.1588,19.81,11,1.2317,0.099901
+signal-rich,100,0.9,0.1,0.5,PSR (N = 1),0.66165,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"DSR, raw N, cross-sectional V",0.0534,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"DSR, raw N, null V = 1/T",0.01525,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.1843,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"DSR, Li-Ji N, null V",0.1036,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"DSR, participation N, null V",0.6898,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"DSR, Nyholt N, null V",0.06335,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"Sidak max-PSR, raw N",0.10085,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.2821,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"Sidak max-PSR, Nyholt N",0.22015,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,0.5,"Sidak max-PSR, participation N",0.62645,19.81,11,1.2317,0.60563
+signal-rich,100,0.9,0.1,1,PSR (N = 1),0.98075,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"DSR, raw N, cross-sectional V",0.04065,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"DSR, raw N, null V = 1/T",0.2934,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.35605,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"DSR, Li-Ji N, null V",0.6549,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"DSR, participation N, null V",0.98425,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"DSR, Nyholt N, null V",0.54425,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"Sidak max-PSR, raw N",0.64765,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"Sidak max-PSR, Li-Ji N",0.8607,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"Sidak max-PSR, Nyholt N",0.81225,19.81,11,1.2317,2.1197
+signal-rich,100,0.9,0.1,1,"Sidak max-PSR, participation N",0.9754,19.81,11,1.2317,2.1197
+all-zero,100,0.99,0,0,PSR (N = 1),0.08155,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"DSR, raw N, cross-sectional V",0.0488,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"DSR, raw N, null V = 1/T",5e-05,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"DSR, Li-Ji N, cross-sectional V",0.07385,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"DSR, Li-Ji N, null V",0.0263,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"DSR, participation N, null V",0.23005,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"DSR, Nyholt N, null V",0.01195,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"Sidak max-PSR, raw N",0.00105,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"Sidak max-PSR, Li-Ji N",0.04315,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"Sidak max-PSR, Nyholt N",0.0296,2.9701,2,1.0201,0.0099951
+all-zero,100,0.99,0,0,"Sidak max-PSR, participation N",0.0801,2.9701,2,1.0201,0.0099951
+signal-rich,100,0.99,0.1,0.5,PSR (N = 1),0.5431,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"DSR, raw N, cross-sectional V",0.04325,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"DSR, raw N, null V = 1/T",0.0068,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.39365,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"DSR, Li-Ji N, null V",0.3376,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"DSR, participation N, null V",0.7794,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"DSR, Nyholt N, null V",0.23005,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"Sidak max-PSR, raw N",0.0626,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.4179,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"Sidak max-PSR, Nyholt N",0.3557,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,0.5,"Sidak max-PSR, participation N",0.5396,2.9701,2,1.0201,0.51504
+signal-rich,100,0.99,0.1,1,PSR (N = 1),0.95325,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"DSR, raw N, cross-sectional V",0.02435,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"DSR, raw N, null V = 1/T",0.1934,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.81995,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"DSR, Li-Ji N, null V",0.87505,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"DSR, participation N, null V",0.9896,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"DSR, Nyholt N, null V",0.79295,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"Sidak max-PSR, raw N",0.5085,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"Sidak max-PSR, Li-Ji N",0.9136,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"Sidak max-PSR, Nyholt N",0.885,2.9701,2,1.0201,2.0302
+signal-rich,100,0.99,0.1,1,"Sidak max-PSR, participation N",0.95215,2.9701,2,1.0201,2.0302
+all-zero,1000,0,0,0,PSR (N = 1),1,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"DSR, raw N, cross-sectional V",0.00015,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"DSR, raw N, null V = 1/T",0.0002,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"DSR, Li-Ji N, cross-sectional V",0.00015,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"DSR, Li-Ji N, null V",0.0002,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"DSR, participation N, null V",0.0002,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"DSR, Nyholt N, null V",0.0002,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"Sidak max-PSR, raw N",0.0483,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"Sidak max-PSR, Li-Ji N",0.0483,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"Sidak max-PSR, Nyholt N",0.0483,1000,1000,1000,1.0003
+all-zero,1000,0,0,0,"Sidak max-PSR, participation N",0.0483,1000,1000,1000,1.0003
+signal-rich,1000,0,0.1,0.5,PSR (N = 1),1,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"DSR, raw N, cross-sectional V",0.0024,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"DSR, raw N, null V = 1/T",0.0431,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.0024,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"DSR, Li-Ji N, null V",0.0431,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"DSR, participation N, null V",0.0431,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"DSR, Nyholt N, null V",0.0431,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"Sidak max-PSR, raw N",0.6641,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.6641,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"Sidak max-PSR, Nyholt N",0.6641,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,0.5,"Sidak max-PSR, participation N",0.6641,1000,1000,1000,1.5008
+signal-rich,1000,0,0.1,1,PSR (N = 1),1,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"DSR, raw N, cross-sectional V",0.00135,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"DSR, raw N, null V = 1/T",0.9839,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.00135,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"DSR, Li-Ji N, null V",0.9839,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"DSR, participation N, null V",0.9839,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"DSR, Nyholt N, null V",0.9839,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"Sidak max-PSR, raw N",1,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"Sidak max-PSR, Li-Ji N",1,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"Sidak max-PSR, Nyholt N",1,1000,1000,1000,3.0005
+signal-rich,1000,0,0.1,1,"Sidak max-PSR, participation N",1,1000,1000,1000,3.0005
+all-zero,1000,0.25,0,0,PSR (N = 1),0.97965,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"DSR, raw N, cross-sectional V",0.0038,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"DSR, raw N, null V = 1/T",0.00045,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"DSR, Li-Ji N, cross-sectional V",0.00525,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"DSR, Li-Ji N, null V",0.00075,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"DSR, participation N, null V",0.1389,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"DSR, Nyholt N, null V",0.00055,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"Sidak max-PSR, raw N",0.03535,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"Sidak max-PSR, Li-Ji N",0.04475,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"Sidak max-PSR, Nyholt N",0.03705,937.56,751,15.764,0.74975
+all-zero,1000,0.25,0,0,"Sidak max-PSR, participation N",0.54965,937.56,751,15.764,0.74975
+signal-rich,1000,0.25,0.1,0.5,PSR (N = 1),0.99995,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"DSR, raw N, cross-sectional V",0.00855,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"DSR, raw N, null V = 1/T",0.0355,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.0121,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"DSR, Li-Ji N, null V",0.0463,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"DSR, participation N, null V",0.688,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"DSR, Nyholt N, null V",0.03755,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"Sidak max-PSR, raw N",0.4034,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.4491,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"Sidak max-PSR, Nyholt N",0.41405,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,0.5,"Sidak max-PSR, participation N",0.9556,937.56,751,15.764,1.2505
+signal-rich,1000,0.25,0.1,1,PSR (N = 1),1,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"DSR, raw N, cross-sectional V",0.00475,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"DSR, raw N, null V = 1/T",0.7551,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.00785,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"DSR, Li-Ji N, null V",0.79825,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"DSR, participation N, null V",0.99955,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"DSR, Nyholt N, null V",0.76465,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"Sidak max-PSR, raw N",0.9911,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"Sidak max-PSR, Li-Ji N",0.99385,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"Sidak max-PSR, Nyholt N",0.99185,937.56,751,15.764,2.752
+signal-rich,1000,0.25,0.1,1,"Sidak max-PSR, participation N",1,937.56,751,15.764,2.752
+all-zero,1000,0.5,0,0,PSR (N = 1),0.7999,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"DSR, raw N, cross-sectional V",0.0129,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"DSR, raw N, null V = 1/T",0.0003,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"DSR, Li-Ji N, cross-sectional V",0.022,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"DSR, Li-Ji N, null V",0.00075,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"DSR, participation N, null V",0.28965,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"DSR, Nyholt N, null V",0.00045,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"Sidak max-PSR, raw N",0.01605,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"Sidak max-PSR, Li-Ji N",0.0295,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"Sidak max-PSR, Nyholt N",0.0206,750.25,501,3.988,0.50007
+all-zero,1000,0.5,0,0,"Sidak max-PSR, participation N",0.5265,750.25,501,3.988,0.50007
+signal-rich,1000,0.5,0.1,0.5,PSR (N = 1),0.9879,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"DSR, raw N, cross-sectional V",0.0231,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"DSR, raw N, null V = 1/T",0.02305,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.03955,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"DSR, Li-Ji N, null V",0.04055,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"DSR, participation N, null V",0.80085,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"DSR, Nyholt N, null V",0.02895,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"Sidak max-PSR, raw N",0.23955,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.3135,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"Sidak max-PSR, Nyholt N",0.27025,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,0.5,"Sidak max-PSR, participation N",0.9252,750.25,501,3.988,1.0003
+signal-rich,1000,0.5,0.1,1,PSR (N = 1),1,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"DSR, raw N, cross-sectional V",0.0088,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"DSR, raw N, null V = 1/T",0.50635,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.02465,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"DSR, Li-Ji N, null V",0.61295,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"DSR, participation N, null V",0.9982,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"DSR, Nyholt N, null V",0.5478,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"Sidak max-PSR, raw N",0.9133,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"Sidak max-PSR, Li-Ji N",0.9434,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"Sidak max-PSR, Nyholt N",0.9265,750.25,501,3.988,2.5018
+signal-rich,1000,0.5,0.1,1,"Sidak max-PSR, participation N",0.9997,750.25,501,3.988,2.5018
+all-zero,1000,0.75,0,0,PSR (N = 1),0.48575,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"DSR, raw N, cross-sectional V",0.03125,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"DSR, raw N, null V = 1/T",5e-05,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"DSR, Li-Ji N, cross-sectional V",0.0519,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"DSR, Li-Ji N, null V",0.00045,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"DSR, participation N, null V",0.3129,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"DSR, Nyholt N, null V",0.00025,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"Sidak max-PSR, raw N",0.00405,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"Sidak max-PSR, Li-Ji N",0.01445,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"Sidak max-PSR, Nyholt N",0.00855,438.06,251,1.7764,0.24994
+all-zero,1000,0.75,0,0,"Sidak max-PSR, participation N",0.37295,438.06,251,1.7764,0.24994
+signal-rich,1000,0.75,0.1,0.5,PSR (N = 1),0.9092,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"DSR, raw N, cross-sectional V",0.0349,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"DSR, raw N, null V = 1/T",0.00975,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.0769,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"DSR, Li-Ji N, null V",0.0329,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"DSR, participation N, null V",0.811,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"DSR, Nyholt N, null V",0.02095,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"Sidak max-PSR, raw N",0.1199,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.21715,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"Sidak max-PSR, Nyholt N",0.1726,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,0.5,"Sidak max-PSR, participation N",0.8517,438.06,251,1.7764,0.75039
+signal-rich,1000,0.75,0.1,1,PSR (N = 1),0.99945,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"DSR, raw N, cross-sectional V",0.0087,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"DSR, raw N, null V = 1/T",0.29335,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.04795,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"DSR, Li-Ji N, null V",0.46685,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"DSR, participation N, null V",0.99645,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"DSR, Nyholt N, null V",0.3946,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"Sidak max-PSR, raw N",0.72015,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"Sidak max-PSR, Li-Ji N",0.8398,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"Sidak max-PSR, Nyholt N",0.7931,438.06,251,1.7764,2.2518
+signal-rich,1000,0.75,0.1,1,"Sidak max-PSR, participation N",0.9984,438.06,251,1.7764,2.2518
+all-zero,1000,0.9,0,0,PSR (N = 1),0.2524,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"DSR, raw N, cross-sectional V",0.04085,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"DSR, raw N, null V = 1/T",0,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"DSR, Li-Ji N, cross-sectional V",0.0648,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"DSR, Li-Ji N, null V",0.00035,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"DSR, participation N, null V",0.2746,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"DSR, Nyholt N, null V",0.0001,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"Sidak max-PSR, raw N",0.0012,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"Sidak max-PSR, Li-Ji N",0.0087,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"Sidak max-PSR, Nyholt N",0.00515,190.81,101,1.2343,0.099991
+all-zero,1000,0.9,0,0,"Sidak max-PSR, participation N",0.22035,190.81,101,1.2343,0.099991
+signal-rich,1000,0.9,0.1,0.5,PSR (N = 1),0.7778,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"DSR, raw N, cross-sectional V",0.03015,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"DSR, raw N, null V = 1/T",0.0034,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.1007,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"DSR, Li-Ji N, null V",0.0295,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"DSR, participation N, null V",0.79745,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"DSR, Nyholt N, null V",0.01685,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"Sidak max-PSR, raw N",0.0576,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.16925,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"Sidak max-PSR, Nyholt N",0.12925,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,0.5,"Sidak max-PSR, participation N",0.74695,190.81,101,1.2343,0.60052
+signal-rich,1000,0.9,0.1,1,PSR (N = 1),0.99205,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"DSR, raw N, cross-sectional V",0.00535,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"DSR, raw N, null V = 1/T",0.15785,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.07665,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"DSR, Li-Ji N, null V",0.40745,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"DSR, participation N, null V",0.9936,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"DSR, Nyholt N, null V",0.3216,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"Sidak max-PSR, raw N",0.52685,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"Sidak max-PSR, Li-Ji N",0.75875,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"Sidak max-PSR, Nyholt N",0.69595,190.81,101,1.2343,2.1017
+signal-rich,1000,0.9,0.1,1,"Sidak max-PSR, participation N",0.98955,190.81,101,1.2343,2.1017
+all-zero,1000,0.99,0,0,PSR (N = 1),0.09255,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"DSR, raw N, cross-sectional V",0.04875,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"DSR, raw N, null V = 1/T",0,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"DSR, Li-Ji N, cross-sectional V",0.068,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"DSR, Li-Ji N, null V",0.0014,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"DSR, participation N, null V",0.2554,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"DSR, Nyholt N, null V",0.00065,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"Sidak max-PSR, raw N",0.0002,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"Sidak max-PSR, Li-Ji N",0.01095,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"Sidak max-PSR, Nyholt N",0.00555,20.88,11,1.0203,0.010005
+all-zero,1000,0.99,0,0,"Sidak max-PSR, participation N",0.09115,20.88,11,1.0203,0.010005
+signal-rich,1000,0.99,0.1,0.5,PSR (N = 1),0.57285,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"DSR, raw N, cross-sectional V",0.01475,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"DSR, raw N, null V = 1/T",0.00105,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"DSR, Li-Ji N, cross-sectional V",0.16165,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"DSR, Li-Ji N, null V",0.0741,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"DSR, participation N, null V",0.804,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"DSR, Nyholt N, null V",0.04005,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"Sidak max-PSR, raw N",0.01795,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"Sidak max-PSR, Li-Ji N",0.21825,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"Sidak max-PSR, Nyholt N",0.1588,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,0.5,"Sidak max-PSR, participation N",0.569,20.88,11,1.0203,0.51051
+signal-rich,1000,0.99,0.1,1,PSR (N = 1),0.96335,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"DSR, raw N, cross-sectional V",0.0024,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"DSR, raw N, null V = 1/T",0.06685,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"DSR, Li-Ji N, cross-sectional V",0.2965,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"DSR, Li-Ji N, null V",0.56035,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"DSR, participation N, null V",0.9936,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"DSR, Nyholt N, null V",0.4399,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"Sidak max-PSR, raw N",0.31785,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"Sidak max-PSR, Li-Ji N",0.79295,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"Sidak max-PSR, Nyholt N",0.72625,20.88,11,1.0203,2.0121
+signal-rich,1000,0.99,0.1,1,"Sidak max-PSR, participation N",0.9623,20.88,11,1.0203,2.0121
