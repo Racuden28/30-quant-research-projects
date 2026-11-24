@@ -102,7 +102,7 @@ def fig1_star(runs):
     ax.set_yticks([l[0] for l in labels], [l[1] for l in labels])
     ax.set_xlabel("Annualised Sharpe ratio of the Avellaneda-Lee s-score strategy")
     ax.set_title("B. Stocks: real edge, gone after costs. Crypto: below noise", loc="left")
-    ax.legend(loc="lower right", fontsize=9, framealpha=0.9, frameon=True, edgecolor=GRID)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13), ncol=2, fontsize=9)
     ax.grid(axis="y", visible=False)
     title(fig, "A residual that 'mean-reverts' is not evidence of an edge",
           "PCA stat arb (Avellaneda-Lee 2010), walk-forward, no look-ahead. Placebo market = every day's returns "
