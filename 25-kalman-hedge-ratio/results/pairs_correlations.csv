@@ -1,0 +1,9 @@
+universe,a,b,corr_monthly
+countries,K,REV1,0.712
+countries,K,S,0.194
+countries,K,R,0.239
+countries,K,K-wait5,-0.304
+industries,K,REV1,0.711
+industries,K,S,0.209
+industries,K,R,0.324
+industries,K,K-wait5,0.286

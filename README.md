@@ -37,7 +37,7 @@ in the write-up as CSV, and a section on what does *not* work.
 | 22 | Purged cross-validation | | ⏳ Planned |
 | 23 | Deflated Sharpe ratio | | ⏳ Planned |
 | 24 | PCA statistical arbitrage | | ⏳ Planned |
-| 25 | Kalman-filter hedge ratio | | ⏳ Planned |
+| 25 | [The Kalman Hedge Ratio Is an EWMA in Disguise](25-kalman-hedge-ratio/) | Does a Kalman-filter hedge ratio beat rolling and EWMA betas out of sample, or is it an EWMA in disguise? | ✅ Published |
 | 26 | Heston calibration | | ⏳ Planned |
 | 27 | Merton structural credit model | | ⏳ Planned |
 | 28 | Market-making agent | | ⏳ Planned |

@@ -1,0 +1,5 @@
+universe,source,eg_residual_sig_share,kalman_innovation_sig_share,ra_median,rb_median,share_pairs_ra_gt_0_1
+countries,N1,0.08764,1,10,20.81,1
+countries,real,0.2026,1,6.581,31.62,0.9986
+industries,N1,0.1464,1,10,31.62,1
+industries,real,0.2004,1,10,100,0.9995

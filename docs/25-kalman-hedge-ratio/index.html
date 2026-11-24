@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Kalman Hedge Ratio Is an EWMA in Disguise</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Does a Kalman-filter hedge ratio beat rolling and EWMA betas out of sample, or is it an EWMA in disguise?">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  /* Layout: single reading column (~68ch) with full-bleed figures; landing = tiered index of 30 rows */
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#12151a; --fg2:#4a5160; --muted:#7a8291; --rule:#dde1e7;
+  --accent:#1c5cab; --accent-soft:#e3edf9; --figure:#fcfcfb; --code:#eef1f5;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --surface:#161a20; --fg:#e6e8ec; --fg2:#b4bac5; --muted:#8a92a0; --rule:#2a303a;
+  --accent:#6da7ec; --accent-soft:#16263b; --figure:#fcfcfb; --code:#1c2129; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:46rem;margin:0 auto;padding-block:2.5rem 4rem}
+.wide{max-width:64rem}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(2rem,5vw,3rem);margin:.2rem 0 .6rem;font-weight:700}
+h2{font-size:1.55rem;margin:2.8rem 0 .8rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-weight:700}
+h3{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:600}
+p,li{color:var(--fg)}
+.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:1.15rem;color:var(--fg2)}
+nav.top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;
+  font:500 .8rem var(--mono);color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule)}
+nav.top a{text-decoration:none}
+img{max-width:100%;height:auto;display:block;margin:1.5rem auto;background:var(--figure);
+  border:1px solid var(--rule);border-radius:6px;padding:.5rem}
+.table-scroll{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;font-size:.86rem;min-width:100%}
+th,td{padding:.45rem .65rem;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--fg2);background:var(--surface)}
+td{font-variant-numeric:tabular-nums}
+code{font:.85em var(--mono);background:var(--code);padding:.1em .35em;border-radius:3px}
+pre{background:var(--code);padding:1rem;border-radius:6px;overflow-x:auto;font-size:.82rem;line-height:1.5}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.2rem 1rem;border-left:3px solid var(--accent);color:var(--fg2)}
+hr{border:0;border-top:1px solid var(--rule);margin:2rem 0}
+hr + h2{border-top:0;padding-top:0;margin-top:1rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.85rem;color:var(--muted)}
+/* landing */
+.hero{padding-block:2rem 1rem}
+.tier{margin-top:2.5rem}
+.tier h2{border:0;padding:0;margin:0 0 .8rem;font-size:1rem;font-family:var(--mono);font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.rows{display:grid;gap:0;border-top:1px solid var(--rule)}
+.row{display:grid;grid-template-columns:3.2rem minmax(0,1fr) auto;gap:1rem;align-items:baseline;
+  padding:.85rem 0;border-bottom:1px solid var(--rule);text-decoration:none;color:inherit}
+.row .n{font:600 1rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.row .t{font-weight:600;min-width:0}
+.row .q{display:block;font-weight:400;color:var(--fg2);font-size:.92rem;margin-top:.2rem}
+.row .s{font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+a.row:hover .t{color:var(--accent)}
+a.row .s{color:var(--accent);background:var(--accent-soft);padding:.2rem .45rem;border-radius:3px}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:1rem 2rem;margin-top:1rem}
+.principles div{font-size:.92rem;color:var(--fg2)}
+.principles b{display:block;color:var(--fg);font-family:var(--display);font-size:1rem}
+@media (max-width:480px){.row{grid-template-columns:2.4rem minmax(0,1fr)}.row .s{grid-column:2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top"><a href="../">← 30 Quant Research Projects</a><span>Project 25 / 30</span></nav>
+<p class="eyebrow" style="margin-top:2rem">Working paper · Project 25</p>
+<h1>The Kalman Hedge Ratio Is an EWMA in Disguise</h1>
+<p><strong>And its likelihood picks the wrong memory: an out-of-sample test on a century of US industries, twenty years of country ETFs and a placebo market</strong></p>
+<p><em>Project 25 of <a href="../">30 Quant Research Projects</a> · Working paper, November 2026</em></p>
+<p><img alt="A Kalman hedge ratio is an EWMA, and its likelihood picks the wrong memory" loading="lazy" src="figures/fig1_kalman_is_an_ewma.png" /></p>
+<hr />
+<h2>Abstract</h2>
+<p>The Kalman filter is the standard "advanced" answer to a hedge ratio that changes over time. The beta is
+modelled as a random walk, the filter updates it every day, and the one free parameter, the ratio of
+state noise to observation noise, is set by maximum likelihood or by a value copied from a textbook. I test
+what this machinery adds out of sample, using exactly the data, protocols and placebo of two earlier
+projects. The first is <a href="../09-beta-horse-race/">project 09</a>, with 49 Fama–French industries hedged with the
+market from 1929 to 2026 and scored by its own hedge-loss metric. The second is
+<a href="../11-pairs-trading/">project 11</a>, with pairs trading on 22 country ETFs and 49 industries, scored against
+its placebo market, in which relative prices have no memory.</p>
+<p>Four results.</p>
+<p><strong>(1) The Kalman beta is an exponentially weighted regression.</strong> For every value of the noise ratio, the
+filter's hedge loss is within a fraction of a percent of an EWMA regression that forgets at the filter's
+steady-state rate. With the noise ratio chosen by likelihood, the gap is −0.08 % of the loss on industries
+(95 % CI −0.73 % to +0.58 %) and −0.06 % on country ETFs (CI −0.75 % to +0.63 %). Equivalence within ±1 % holds
+with Holm-adjusted p = 0.012 in both. The only systematic difference is that the filter's gain grows with
+the size of the market move. That makes it win 85 % of calm months, by 1.1 %, and lose the most volatile 10 % of
+months by 1.8 %, which nets to zero.</p>
+<p><strong>(2) The likelihood chooses a memory that is far too short.</strong> The noise ratio picked by maximum likelihood
+implies a median half-life of 9 trading days for industries and 15 for country ETFs. The out-of-sample
+optimum is near 55 and 35 days. On project 09's scoreboard, the likelihood-tuned Kalman beta leaves 0.86 of
+the textbook beta's avoidable error at a monthly rebalance, against 0.58 for project 09's best (Welch). It is
+2.3 % worse than a plain 126-day EWMA when both update daily (CI +0.9 % to +4.4 %). A simulation pins down
+why. When volatility clusters and tails are fat, the random-walk model explains large errors on volatile days
+as uncertainty about beta. The likelihood then pays for the heteroskedasticity with a shorter memory: in the
+simulation it picks 40 days when the truth is 63 and the best out of sample is 74. If the memory is chosen
+instead by past hedging loss (the loss being minimised), the same filter becomes the best estimator in the
+study, at 0.54 on project 09's scale.</p>
+<p><strong>(3) In pairs trading, every Kalman diagnostic is passed on pure noise.</strong> On the same 20 pairs per window,
+the Kalman spread converges on 99 % of trades in the real market and on 99 % in the placebo. Its innovations
+reject a unit root for 100 % of pairs in both markets. Only 8 % of the spread's closing on country ETFs (0.1 %
+on industries) comes from relative prices converging; the rest is the filter moving its intercept and
+slope.</p>
+<p><strong>(4) The Kalman pairs trade is a one-day reversal trade.</strong> It holds a position for about two days, its
+monthly returns correlate 0.71 with a naive one-day reversal rule, and its edge over the placebo disappears
+when the trade waits five days (+1.40 % a year becomes −0.10 %). It is not more profitable than a static hedge
+ratio on the same pairs: the edge difference is −0.26 % a year (t = −0.4). At 5 bp per leg it loses 0.7 % a
+year on country ETFs and 1.7 % a year on industries.</p>
+<p><strong>Practical rule.</strong> If you need a time-varying hedge ratio, use an EWMA or rolling regression and choose its
+memory by out-of-sample hedging loss. Update it daily: that alone is worth 1–2 %, for any estimator. A Kalman
+filter is a convenient way to write the same estimator, but its likelihood is not a good way to tune it. In
+pairs trading, a Kalman spread that converges and looks stationary is evidence about the filter, not about the
+pair.</p>
+<hr />
+<h2>1. Question</h2>
+<p>The Kalman hedge ratio has a strong reputation. It appears in algorithmic-trading textbooks (Chan 2013), in
+the pairs-trading literature (Elliott, van der Hoek and Malcolm 2005) and in older comparisons of
+time-varying betas, which found it fits better than GARCH or rolling betas (Brooks, Faff and McKenzie 1998;
+Faff, Hillier and Hillier 2000). Those comparisons were mostly in-sample, or tuned on the evaluation sample.
+Two earlier projects in this series ask the same question with simpler tools.
+<a href="../09-beta-horse-race/">Project 09</a> found that age-weighted daily betas (EWMA, Welch) leave about 0.58 of
+the textbook beta's error. <a href="../11-pairs-trading/">Project 11</a> found that convergence and cointegration are
+weak evidence once they are compared with a placebo market.</p>
+<p>So the question is:</p>
+<blockquote>
+<p>What does a Kalman-filter hedge ratio add, out of sample, over the static hedge ratio of project 11 and the
+rolling and exponentially weighted hedge ratios of project 09? And how much of what it seems to add is
+mechanical?</p>
+</blockquote>
+<p><strong>Why the comparison with an EWMA is the right one.</strong> The scalar model is</p>
+<p>y_t = β_t x_t + ε_t, ε_t ~ N(0, R);  β_t = β_{t−1} + η_t, η_t ~ N(0, q).</p>
+<p>Only the ratio r = q/R moves the hedge ratio (a unit test checks this). Two facts follow. In a steady state
+with market variance s², each new day gets a weight of s²p⁻/(1 + s²p⁻) in the update, where p⁻ solves the
+Riccati equation s²p⁻² = r(1 + s²p⁻). That is exactly an exponentially weighted least-squares regression with
+decay λ = 1/(1 + s²p⁻) (Ljung 1987; Harvey 1989), so every r has an implied half-life. Outside the steady
+state, the gain is p⁻x_t/(1 + x_t²p⁻) and depends on today's market move: a crash day is weighted more
+heavily than an EWMA would weight it. The empirical question is whether that second difference, or anything
+else, is worth having.</p>
+<p><strong>Pre-registration.</strong> The hypotheses, universes, protocols and tests were written down before any Kalman
+loss or strategy return was computed: <a href="https://github.com/Racuden28/30-quant-research-projects/blob/main/25-kalman-hedge-ratio/PREREGISTRATION.md">PREREGISTRATION.md</a>. Six changes made later are
+listed there and in Section 7. They all add analyses; none changes a registered one.</p>
+<h2>2. Data</h2>
+<p>All data are reused on purpose from earlier projects and copied unchanged into <code>data/</code> (provenance in
+<code>src/data.py</code>).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Use</th>
+<th>Assets</th>
+<th>Period</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hedging A</td>
+<td>49 Fama–French value-weighted industries, daily excess returns, hedged with the value-weighted market</td>
+<td>forecasts Aug 1929 – Sep 2026 (1,166 months, 54,328 industry-months)</td>
+<td>Ken French Data Library, vintage 202609, as built by <a href="../09-beta-horse-race/">project 09</a></td>
+</tr>
+<tr>
+<td>Hedging B</td>
+<td>21 iShares single-country ETFs hedged with SPY, daily total returns</td>
+<td>evaluation Jan 2006 – Nov 2026 (251 months, 5,271 ETF-months)</td>
+<td>Yahoo adjusted closes to 20 Nov 2026, as downloaded by <a href="../11-pairs-trading/">project 11</a></td>
+</tr>
+<tr>
+<td>Pairs B (primary)</td>
+<td>SPY + 21 country ETFs</td>
+<td>Jan 2002 – Nov 2026</td>
+<td>project 11</td>
+</tr>
+<tr>
+<td>Pairs A</td>
+<td>49 industries (≥ 5 firms)</td>
+<td>Jul 1927 – Sep 2026</td>
+<td>project 11</td>
+</tr>
+</tbody>
+</table></div>
+<p>The country ETFs had many stale (exactly zero) daily returns in their first years. For hedging, each series
+starts after the last calendar year in which 10 % or more of its returns were zero (1998–2004 depending on
+the fund), and evaluation starts in January 2006 for all, after at least two years of estimation data. The
+pairs part keeps project 11's rule (fewer than 5 % zero returns in each formation window). Country-ETF
+returns are not net of the risk-free rate; at a daily horizon this changes losses by less than 0.01 %.</p>
+<p><strong>Stress windows</strong> covered: 1929–32, 1987, 2000–02, 2008–09, 2020 and 2022 (industries); 2008–09, the 2011
+euro crisis, 2020 and 2022 (country ETFs).</p>
+<h2>3. Design</h2>
+<h3>3.1 Hedging: eleven hedge ratios, two protocols</h3>
+<p>All estimators use only data before the day the hedge is applied (unit test: perturbing the future leaves
+every past forecast unchanged).</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Name</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Kalman (likelihood)</strong></td>
+<td>Random-walk beta. Every January, r is chosen from a 41-point grid (0 and 1e-5 … 1e3, half-lives from about 2 days to infinity) by the profile likelihood of all earlier data (R concentrated out, diffuse start).</td>
+</tr>
+<tr>
+<td>EWMA, same memory</td>
+<td>Weighted least squares through the origin with the decay λ implied by the same r̂ and the same past s²</td>
+</tr>
+<tr>
+<td>EWMA, same memory, variance / |x| clock</td>
+<td>The same average memory, but the weights decay with cumulative market variance or absolute return instead of calendar days</td>
+</tr>
+<tr>
+<td>Kalman, time-varying noise</td>
+<td>R_t = EWMA (21 days) of past squared errors; r by likelihood</td>
+</tr>
+<tr>
+<td><strong>Kalman (past loss)</strong> / EWMA (past loss)</td>
+<td>The grid value with the smallest sum of past squared hedge errors, i.e. the hedging loss itself, chosen every January</td>
+</tr>
+<tr>
+<td>EWMA 126 days</td>
+<td>Project 09's EWMA half-life</td>
+</tr>
+<tr>
+<td>OLS 252 / OLS 63</td>
+<td>Rolling regressions with intercept (OLS 252 is project 09's OLS-1Y-D)</td>
+</tr>
+<tr>
+<td>Static</td>
+<td>Expanding-window OLS: the hedge ratio of project 11's static world</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Protocol D (daily):</strong> the predicted β_{t|t−1} is used on day t.</li>
+<li><strong>Protocol M (month-end):</strong> the beta known at a month-end is held for the whole next month, as in project 09.</li>
+<li><strong>Loss:</strong> project 09's, L = mean over the month's days of (y − β̂x)², averaged across assets each month. Tests
+  are Diebold–Mariano style on the monthly series, with Newey–West errors (6 lags). CIs come from a
+  stationary block bootstrap over months (mean block 12, 2,000 draws).</li>
+</ul>
+<p>For industries, the month-end betas are also scored on project 09's own forecast panel. The next-month sums
+match it to the last digit (<code>results/p09_comparison.csv</code>, column <code>max_abs_diff_sxx_vs_p09</code> = 0), so the
+Kalman beta can be placed directly in project 09's table.</p>
+<h3>3.2 Pairs: same pairs, three hedge ratios</h3>
+<p>Project 11's design, unchanged: monthly portfolios, 252-day formation, 126-day trading, eligibility rules,
+returns on committed capital, a one-day wait, and project 11's placebo N1. In N1, every asset in the window is
+given the same drift, then whole days are resampled IID, with 10 replications per window. In every window
+the 20 pairs with the smallest distance are selected <strong>once</strong>, then traded with three spreads, so that only
+the hedge ratio differs:</p>
+<ul>
+<li><strong>Static:</strong> OLS of log price A on log price B over formation; z = residual / formation residual s.d.</li>
+<li><strong>Rolling:</strong> the same regression on the last 63 days, re-estimated daily; z = today's residual / the s.d.
+  of those residuals.</li>
+<li><strong>Kalman:</strong> the intercept and slope follow independent random walks. Their noise ratios are chosen from a
+  12 × 14 grid by profile likelihood on the formation year, and the state is carried into trading.
+  z = innovation / its predicted s.d.</li>
+</ul>
+<p>All three rules open at |z| &gt; 2, close at the zero crossing, and size the legs 1 : β at the open. Ablations:
+legs rebalanced to the current β every day; Chan's (2013) fixed settings (δ = 1e-4, V_e = 1e-3), with a 2-s.d.
+and a 1-s.d. entry; a 5-day wait; and all rules on Engle–Granger-selected pairs. Added after the first
+results as a benchmark: a one-day reversal rule that trades today's relative return of the pair when it
+exceeds 2 formation s.d.</p>
+<h3>3.3 Pre-registered hypotheses and tests</h3>
+<p>Confirmatory tests: H1 and H3 on both hedging universes, and H6, so five tests, Holm-corrected. H1 is an
+equivalence test (two one-sided tests, margin ±1 % of the loss). H2, H4 and H5 are descriptive.</p>
+<h2>4. Results: hedging</h2>
+<h3>4.1 The Kalman beta and its EWMA twin are the same estimator</h3>
+<p>Next-day hedge loss with daily-updated betas, relative to the 126-day EWMA (negative = better):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Hedge ratio</th>
+<th>Industries 1929–2026</th>
+<th>95 % CI</th>
+<th>Country ETFs 2006–2026</th>
+<th>95 % CI</th>
+<th>β turnover / yr (ind.)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kalman, likelihood memory</td>
+<td><strong>+2.29 %</strong></td>
+<td>[+0.87, +4.37]</td>
+<td>−0.26 %</td>
+<td>[−1.45, +0.90]</td>
+<td>10.1</td>
+</tr>
+<tr>
+<td>EWMA, same memory</td>
+<td>+2.37 %</td>
+<td>[+1.33, +3.76]</td>
+<td>−0.20 %</td>
+<td>[−1.19, +0.71]</td>
+<td>15.2</td>
+</tr>
+<tr>
+<td>EWMA, same memory, variance clock</td>
+<td>+3.89 %</td>
+<td>[+1.54, +7.13]</td>
+<td>+2.28 %</td>
+<td>[−0.49, +6.07]</td>
+<td>7.7</td>
+</tr>
+<tr>
+<td>EWMA, same memory, |x| clock</td>
+<td>+3.23 %</td>
+<td>[+1.41, +5.81]</td>
+<td>+0.34 %</td>
+<td>[−0.95, +1.66]</td>
+<td>11.8</td>
+</tr>
+<tr>
+<td>Kalman, time-varying noise</td>
+<td>+1.67 %</td>
+<td>[+0.15, +3.76]</td>
+<td>−0.76 %</td>
+<td>[−1.48, −0.08]</td>
+<td>4.9</td>
+</tr>
+<tr>
+<td><strong>Kalman, memory by past loss</strong></td>
+<td><strong>−0.15 %</strong></td>
+<td>[−0.50, +0.23]</td>
+<td><strong>−0.75 %</strong></td>
+<td>[−1.29, −0.28]</td>
+<td>1.7</td>
+</tr>
+<tr>
+<td>EWMA, memory by past loss</td>
+<td>+0.03 %</td>
+<td>[−0.33, +0.55]</td>
+<td>−0.96 %</td>
+<td>[−1.67, −0.31]</td>
+<td>2.3</td>
+</tr>
+<tr>
+<td>EWMA 126 days (project 09)</td>
+<td>0</td>
+<td></td>
+<td>0</td>
+<td></td>
+<td>0.8</td>
+</tr>
+<tr>
+<td>Rolling OLS 252 days</td>
+<td>+0.34 %</td>
+<td>[+0.21, +0.49]</td>
+<td>+0.23 %</td>
+<td>[−0.16, +0.60]</td>
+<td>1.1</td>
+</tr>
+<tr>
+<td>Rolling OLS 63 days</td>
+<td>+0.79 %</td>
+<td>[+0.42, +1.26]</td>
+<td>−0.25 %</td>
+<td>[−1.36, +0.66]</td>
+<td>4.6</td>
+</tr>
+<tr>
+<td>Static (expanding OLS)</td>
+<td>+5.60 %</td>
+<td>[+3.96, +7.62]</td>
+<td>+9.16 %</td>
+<td>[+5.01, +13.51]</td>
+<td>0.03</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Industries: 1.363 %²/day for EWMA 126; country ETFs: 1.120 %²/day. Full table with both protocols and DM
+t-statistics: <code>results/hedge_summary.csv</code>.</em></p>
+<p>The first two rows are the headline. With the same memory, the Kalman filter and the EWMA are statistically
+and economically indistinguishable (H1: −0.08 % and −0.06 %, equivalence p = 0.003 and 0.004, Holm 0.012).
+Figure 1 shows why this is not a coincidence of one setting. Across the whole grid, from a 3-day to a
+6,000-day memory, the filter's loss curve sits on top of the EWMA's. The two clocks that try to imitate the
+filter's data-dependent gain are both <em>worse</em> than the plain calendar EWMA. So the filter is, to a very good
+approximation, a calendar EWMA.</p>
+<p><strong>The only systematic difference is crash days (H2, reversed).</strong> I registered that whatever the filter gains
+over its twin would come from the most volatile months. The opposite happens (Figure 4):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Industries: Kalman vs twin</th>
+<th>months Kalman better</th>
+<th>Country ETFs: Kalman vs twin</th>
+<th>months Kalman better</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Most volatile 10 % of months</td>
+<td>+1.79 % (t = 2.3)</td>
+<td>26 %</td>
+<td>+1.55 % (t = 1.6)</td>
+<td>27 %</td>
+</tr>
+<tr>
+<td>Other 90 %</td>
+<td>−1.12 % (t = −7.1)</td>
+<td>85 %</td>
+<td>−0.62 % (t = −5.3)</td>
+<td>71 %</td>
+</tr>
+</tbody>
+</table></div>
+<p>The filter's gain p⁻x_t/(1 + x_t²p⁻) is largest on the days the market moves most. A single crash day
+therefore moves the Kalman beta further than it moves the EWMA beta (Figure 7: Japan in October 2008, Brazil in
+March 2020). That reaction hurts in crashes and helps in calm months, and the two cancel.</p>
+<h3>4.2 The likelihood picks the wrong memory</h3>
+<p>The median half-life implied by the likelihood-chosen r is 9 days for industries and 15 for country ETFs. Past
+hedging loss chooses 55 and 38 (<code>results/halflife_by_decade.csv</code>). Figure 1 marks both on the loss curve: the
+likelihood's choice is 3.6 % above the minimum for industries, 0.5 % for country ETFs. The gap is stable: in
+every decade since the 1930s the likelihood picks 6–13 days for industries (Figure 3, right).</p>
+<p>Simulation (<code>src/mechanism.py</code>, 200 paths of 6,000 days per world; the first 4,000 choose, the last 2,000 score):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>World</th>
+<th>Likelihood half-life (median)</th>
+<th>Past-loss half-life</th>
+<th>Best out of sample</th>
+<th>Loss of likelihood choice vs best</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. constant β, constant volatility</td>
+<td>∞ (64 % of paths)</td>
+<td>∞</td>
+<td>∞</td>
+<td>+0.03 %</td>
+</tr>
+<tr>
+<td>C. random-walk β (true half-life 63), constant volatility</td>
+<td>60</td>
+<td>60</td>
+<td>61</td>
+<td>+0.10 %</td>
+</tr>
+<tr>
+<td>G. constant β, slow common volatility factor</td>
+<td>1,608</td>
+<td>∞</td>
+<td>∞</td>
+<td>+0.79 %</td>
+</tr>
+<tr>
+<td>H. G + GARCH + Student-t(4)</td>
+<td>379</td>
+<td>∞</td>
+<td>∞</td>
+<td>+2.96 %</td>
+</tr>
+<tr>
+<td><strong>I. random-walk β (63) inside H's volatility and tails</strong></td>
+<td><strong>40</strong></td>
+<td>86</td>
+<td>74</td>
+<td><strong>+2.69 %</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>With constant volatility the likelihood is an excellent tuner (world C). Once market and idiosyncratic
+volatility cluster together and tails are fat (I), it forgets too fast and costs 2.7 %, the same size as in
+the industry data (+2.3 % against EWMA 126). The mechanism is visible in the model: the one-step error
+variance is R(1 + x_t²p⁻), so a larger p⁻ lets the model "explain" big errors on volatile days. Real errors are
+big on volatile days for a different reason (common volatility), and the likelihood cannot tell the two
+apart. Two pieces of evidence support this reading. Letting R vary over time (Kalman, time-varying noise)
+lengthens the likelihood's memory to a median 28 days and recovers about a quarter of the loss. Choosing r by
+past squared error removes the bias (86 days against a best of 74 in world I). Worlds B, D, E and F in
+<code>results/mechanism.csv</code> show that neither clustering alone nor transient beta noise alone is enough. The
+combination with fat tails is what fools the likelihood.</p>
+<h3>4.3 Project 09's scoreboard, with the Kalman filter added</h3>
+<p>Same 54,245 industry-months, same loss, same oracle, same textbook benchmark (Figure 2):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Estimator</th>
+<th>Share of textbook's avoidable error left</th>
+<th>95 % CI</th>
+<th>DM t vs textbook</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Textbook OLS 5y monthly (project 09)</td>
+<td>1</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Welch age-weighted (project 09's best)</td>
+<td>0.58</td>
+<td>[0.53, 0.65]</td>
+<td>−6.1</td>
+</tr>
+<tr>
+<td>EWMA 126 (project 09)</td>
+<td>0.59</td>
+<td>[0.54, 0.65]</td>
+<td>−6.0</td>
+</tr>
+<tr>
+<td><strong>Kalman, likelihood memory, month-end</strong></td>
+<td><strong>0.86</strong></td>
+<td>[0.72, 1.01]</td>
+<td>−2.4</td>
+</tr>
+<tr>
+<td>Kalman, likelihood memory, daily</td>
+<td>0.68</td>
+<td>[0.62, 0.76]</td>
+<td>−6.0</td>
+</tr>
+<tr>
+<td>EWMA 126, daily</td>
+<td>0.55</td>
+<td>[0.51, 0.60]</td>
+<td>−6.4</td>
+</tr>
+<tr>
+<td><strong>Kalman, memory by past loss, daily</strong></td>
+<td><strong>0.54</strong></td>
+<td>[0.50, 0.58]</td>
+<td>−6.8</td>
+</tr>
+</tbody>
+</table></div>
+<p>At project 09's own monthly rebalancing, the likelihood-tuned Kalman beta is worse than every estimator in
+project 09's table except the textbook itself and β = 1. Updating it daily (H3) cuts its loss by 2.2 % (t = −2.9; country
+ETFs 2.4 %, t = −2.7; Holm p ≤ 0.012). But daily updating helps every estimator: the plain EWMA goes from 0.59
+to 0.55. The best number in this project, 0.54, belongs to the Kalman filter with its memory chosen by
+hedging loss, and an EWMA with the same choice is statistically tied with it.</p>
+<p><strong>Costs of rebalancing the hedge.</strong> The likelihood-tuned Kalman beta moves by 10 units of beta a year per
+industry, against 0.8 for EWMA 126 and 1.7 for the loss-tuned filter. At 1 bp per unit of notional traded in
+an index future, that is about 10 bp a year of the hedged position against 1–2 bp. Small, but a cost added
+to a worse hedge.</p>
+<h3>4.4 Stress windows</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Kalman (likelihood)</th>
+<th>EWMA, same memory</th>
+<th>Kalman (past loss)</th>
+<th>Rolling OLS 252</th>
+<th>Static</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1929–32 crash (ind.)</td>
+<td>+6.7 %</td>
+<td>+4.9 %</td>
+<td>+0.6 %</td>
+<td>+0.0 %</td>
+<td>+2.5 %</td>
+</tr>
+<tr>
+<td>1987 crash (ind.)</td>
+<td>+4.8 %</td>
+<td>+2.5 %</td>
+<td>+0.4 %</td>
+<td>+1.2 %</td>
+<td>+18.0 %</td>
+</tr>
+<tr>
+<td>2000–02 dot-com (ind.)</td>
+<td>+1.3 %</td>
+<td>−0.1 %</td>
+<td>−1.8 %</td>
+<td>+0.8 %</td>
+<td>+17.1 %</td>
+</tr>
+<tr>
+<td>2008–09 GFC (ind.)</td>
+<td>+0.7 %</td>
+<td>−2.5 %</td>
+<td>−2.7 %</td>
+<td>+1.0 %</td>
+<td>+22.6 %</td>
+</tr>
+<tr>
+<td>2020 Covid (ind.)</td>
+<td>+7.2 %</td>
+<td>+1.8 %</td>
+<td>+0.6 %</td>
+<td>+0.7 %</td>
+<td>+2.2 %</td>
+</tr>
+<tr>
+<td>2022 inflation (ind.)</td>
+<td>+0.9 %</td>
+<td>−0.1 %</td>
+<td>−1.0 %</td>
+<td>−0.1 %</td>
+<td>+5.0 %</td>
+</tr>
+<tr>
+<td>2008–09 GFC (ETFs)</td>
+<td>+4.1 %</td>
+<td>+0.9 %</td>
+<td>+1.3 %</td>
+<td>+0.1 %</td>
+<td>+14.6 %</td>
+</tr>
+<tr>
+<td>2011 euro crisis (ETFs)</td>
+<td>+0.6 %</td>
+<td>+0.8 %</td>
+<td>−0.2 %</td>
+<td>+0.3 %</td>
+<td>+29.6 %</td>
+</tr>
+<tr>
+<td>2020 Covid (ETFs)</td>
+<td>+3.3 %</td>
+<td>+1.8 %</td>
+<td>+0.0 %</td>
+<td>−0.1 %</td>
+<td>+1.7 %</td>
+</tr>
+<tr>
+<td>2022 inflation (ETFs)</td>
+<td>+1.0 %</td>
+<td>+0.6 %</td>
+<td>−0.7 %</td>
+<td>−0.7 %</td>
+<td>+13.0 %</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Loss relative to EWMA 126 in each window; <code>results/hedge_stress_windows.csv</code>.</em></p>
+<p>The likelihood-tuned filter is worse than EWMA 126 in all ten windows, and worse than its own EWMA twin in
+nine. The static hedge ratio of project 11's world is the worst estimator in most crises, by up to 30 %.</p>
+<h2>5. Results: pairs trading</h2>
+<h3>5.1 Three kinds of evidence the filter produces on noise (H4, H5)</h3>
+<p>Same 20 distance pairs per window; real market against project 11's placebo (Figure 5):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Static</th>
+<th>Rolling 63d</th>
+<th><strong>Kalman</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trades that converge, countries: real / placebo</td>
+<td>41 % / 37 %</td>
+<td>85 % / 83 %</td>
+<td><strong>99 % / 99 %</strong></td>
+</tr>
+<tr>
+<td>Trades that converge, industries: real / placebo</td>
+<td>40 % / 40 %</td>
+<td>84 % / 84 %</td>
+<td><strong>99 % / 99 %</strong></td>
+</tr>
+<tr>
+<td>Share of the spread's closing due to prices, countries: real / placebo</td>
+<td>100 % / 100 %</td>
+<td>22 % / 10 %</td>
+<td><strong>8 % / 0.3 %</strong></td>
+</tr>
+<tr>
+<td>Same, industries</td>
+<td>100 % / 100 %</td>
+<td>7 % / 8 %</td>
+<td><strong>0.1 % / 0.1 %</strong></td>
+</tr>
+<tr>
+<td>Formation spread rejects a unit root at 5 %, countries: real / placebo</td>
+<td>20 % / 9 %</td>
+<td></td>
+<td><strong>100 % / 100 %</strong></td>
+</tr>
+<tr>
+<td>Same, industries</td>
+<td>20 % / 15 %</td>
+<td></td>
+<td><strong>100 % / 100 %</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>(The unit-root row uses the Engle–Granger test for the static residual and an ADF with constant for the Kalman
+innovation, MacKinnon p-values; <code>results/pairs_unit_root.csv</code>.)</p>
+<p>On formation data, the likelihood almost always chooses a large intercept noise. Its median ratio is at or
+near the top of the grid, and above 0.1 for 99.9 % of pairs. The intercept therefore absorbs nearly all of
+the level of the spread, and the "spread" that is left is close to the day's prediction error. Such a series
+is stationary by construction, so it rejects a unit root whatever the pair is. And it crosses zero within a
+few days whatever prices do, because the closing is done by the filter re-estimating the intercept, not by
+the prices converging. All three classic pieces of pairs-trading evidence are mechanical for a Kalman spread.</p>
+<h3>5.2 What the Kalman pairs trade actually earns (H6)</h3>
+<p>Returns on committed capital, distance pairs, % a year (Figure 6):</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Countries 2002–2026: real gross</th>
+<th>net 5 bp</th>
+<th>placebo</th>
+<th>edge over placebo (t)</th>
+<th>Industries 1927–2026: real gross</th>
+<th>net 5 bp</th>
+<th>edge (t)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static</td>
+<td>+0.86</td>
+<td>+0.35</td>
+<td>−0.79</td>
+<td>+1.65 (2.9)</td>
+<td>−1.49</td>
+<td>−2.04</td>
+<td>−0.89 (−2.5)</td>
+</tr>
+<tr>
+<td>Rolling 63d</td>
+<td>+1.51</td>
+<td>+0.24</td>
+<td>−1.15</td>
+<td>+2.66 (4.2)</td>
+<td>−2.28</td>
+<td>−3.56</td>
+<td>−0.74 (−1.9)</td>
+</tr>
+<tr>
+<td><strong>Kalman</strong></td>
+<td><strong>+1.33</strong></td>
+<td><strong>−0.71</strong></td>
+<td>−0.07</td>
+<td>+1.40 (3.8)</td>
+<td><strong>+0.38</strong></td>
+<td><strong>−1.72</strong></td>
+<td>+0.54 (2.9)</td>
+</tr>
+<tr>
+<td>Kalman, legs rebalanced daily</td>
+<td>+1.36</td>
+<td>−0.71</td>
+<td>−0.07</td>
+<td>+1.42 (3.8)</td>
+<td>+0.42</td>
+<td>−1.71</td>
+<td>+0.57 (3.2)</td>
+</tr>
+<tr>
+<td>Kalman, 5-day wait</td>
+<td>−0.14</td>
+<td>−2.11</td>
+<td>−0.04</td>
+<td>−0.10 (−0.3)</td>
+<td>+0.01</td>
+<td>−2.02</td>
+<td>+0.13 (0.8)</td>
+</tr>
+<tr>
+<td>Kalman, Chan's settings</td>
+<td>+0.03</td>
+<td>+0.00</td>
+<td>−0.02</td>
+<td>+0.05 (0.1)</td>
+<td>+0.15</td>
+<td>+0.11</td>
+<td>+0.16 (1.8)</td>
+</tr>
+<tr>
+<td>One-day reversal (benchmark)</td>
+<td>+1.68</td>
+<td>−0.61</td>
+<td>−0.06</td>
+<td>+1.73 (5.1)</td>
+<td>+0.83</td>
+<td>−1.73</td>
+<td>+0.83 (5.0)</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Full table with Engle–Granger selection and all ablations: <code>results/pairs_summary.csv</code>.</em></p>
+<p>The Kalman rule does have a positive edge over the placebo in both universes, and in industries it is the
+only rule with a positive gross return. But four facts identify that edge as one-day reversal, not as a
+better hedge ratio. A position lasts about two days (open 9 % of the time across 5.1 trades per pair per
+window). Its monthly returns correlate 0.71 with the naive one-day reversal rule, against 0.19–0.32 with the
+static and rolling rules. The edge disappears with a five-day wait. And the one-day reversal rule, with no
+filter at all, earns more. Its edge is not larger than the static rule's on country ETFs (H6: −0.26 % a year,
+CI −1.5 % to +1.0 %, t = −0.4). It trades four times as often, so at 5 bp per leg it loses money in both
+universes and in both country sub-periods (2002–09: +0.07 %; 2010–26: −1.08 %, t = −3.0).</p>
+<p>Chan's fixed settings are a different story. On log prices they make the filter so slow that it almost never
+trades (0.06 trades per pair per window). That is a reminder that a "standard" noise setting has no meaning
+without the scale of the data it was set on.</p>
+<h3>5.3 Scorecard of the pre-registered hypotheses</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th></th>
+<th>Hypothesis</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Kalman within ±1 % of the matched EWMA (daily protocol), both universes</td>
+<td><strong>Supported</strong>: −0.08 % and −0.06 %, Holm p = 0.012</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>Kalman's gain over the EWMA comes mostly from the most volatile months</td>
+<td><strong>Rejected, reversed</strong>: it loses those months (+1.8 %, +1.6 %) and wins calm ones</td>
+</tr>
+<tr>
+<td>H3</td>
+<td>Daily updating beats month-end updating for the Kalman beta</td>
+<td><strong>Supported</strong>: −2.2 % and −2.4 %, Holm p ≤ 0.012</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>Kalman innovation spreads reject a unit root for &gt; 90 % of pairs on the placebo</td>
+<td><strong>Supported</strong>: 100 % in both markets</td>
+</tr>
+<tr>
+<td>H5</td>
+<td>More than half of the closing of a Kalman spread is the filter, not prices</td>
+<td><strong>Supported</strong>: 92 % (countries), 99.9 % (industries)</td>
+</tr>
+<tr>
+<td>H6</td>
+<td>Kalman's edge over the placebo is not larger than the static rule's (countries)</td>
+<td><strong>Supported</strong>: difference −0.26 % a year, t = −0.4</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. Robustness</h2>
+<ul>
+<li><strong>Selection.</strong> With Engle–Granger instead of distance selection the picture is the same: Kalman edge +1.22 %
+  (countries) and +0.87 % (industries) gross, negative net, convergence 99 % on both markets.</li>
+<li><strong>Rebalancing the legs daily</strong> to the current Kalman β changes returns by less than 0.05 % a year.</li>
+<li><strong>Entry threshold.</strong> Chan's 1-s.d. entry gives +0.98 % gross on countries (t = 1.0, not significant).</li>
+<li><strong>Time-varying noise.</strong> A Kalman filter with R_t from an EWMA of its own errors is the best likelihood-tuned
+  filter on both universes, but still loses to EWMA 126 on industries (+1.7 %).</li>
+<li><strong>Sub-periods.</strong> In pairs, country ETFs 2002–09 and 2010–26 give the same ordering (<code>pairs_subperiods.csv</code>).
+  In hedging, the likelihood's memory is 6–13 days in every decade since 1930 and the past-loss memory 40–63
+  days (<code>halflife_by_decade.csv</code>).</li>
+<li><strong>Protocol M.</strong> At a monthly rebalance every estimator is worse by 0.5–2.5 %; the ordering is broadly the same.</li>
+</ul>
+<h2>7. Limitations</h2>
+<ul>
+<li><strong>One state-space model.</strong> I test the random-walk beta and its intercept-plus-slope version, which are what
+  practitioners use. A mean-reverting (AR(1)) beta, a model with stochastic volatility in the observation
+  equation, or a smoother with hand-picked priors could behave differently. The time-varying-noise variant is
+  one step in that direction, and it helps.</li>
+<li><strong>Grid, not continuous optimisation.</strong> r is chosen on a 41-point grid (12 × 14 for pairs). The loss curves in
+  Figure 1 are flat enough near the optimum that a finer grid cannot change the conclusions.</li>
+<li><strong>No intercept in the hedging model</strong>, as in project 09's EWMA. Daily alphas are tiny; OLS 252 with an
+  intercept is in the table and behaves as expected.</li>
+<li><strong>Costs are stylised</strong>: 5 bp per leg for pairs (project 11), 1 bp per unit of beta traded for hedges. No
+  market impact, borrow fees or short constraints.</li>
+<li><strong>Industries are not tradable portfolios</strong> and their 1930s data are noisy; the country ETFs are tradable but
+  only cover 2002–2026. Results agree on both.</li>
+<li><strong>The placebo removes all relative memory, including one-day reversal.</strong> A positive edge over it is
+  therefore not evidence of convergence of pairs: Section 5.2 is the check.</li>
+<li><strong>Changes after registration</strong> (PREREGISTRATION.md): (i) the grid for r was widened from [1e-7, 1e-1] to
+  [1e-5, 1e3] after a first run showed the likelihood at the upper edge (no losses had been computed);
+  (ii) the past-loss-tuned filter and EWMA were added after the first loss table; (iii) simulation worlds E–I
+  were added after A–D failed to reproduce the short memory; (iv) the 5-day-wait and one-day-reversal rules
+  were added after the first pairs results; (v) the country-ETF stale-year rule was tightened from "first
+  clean year" to "after the last stale year" before any result; (vi) the 2011 euro crisis was added as a
+  country-ETF stress window. Results from (ii)–(iv) are exploratory and are labelled as such. None of them
+  enters the five confirmatory tests.</li>
+<li><strong>Multiple comparisons.</strong> Beyond the five Holm-corrected tests there are many numbers in the tables. Treat
+  any single t-statistic below 3 in them as suggestive.</li>
+</ul>
+<h2>8. Referee-style self-review: what it changed</h2>
+<p>I reviewed the first draft as a hostile referee would. The points that led to changes:</p>
+<ol>
+<li><em>"Your 'Kalman = EWMA' finding may just reflect one value of r."</em> Added the full tuning curves (Figure 1)
+   for every grid value, plus the TOST equivalence test, instead of one comparison.</li>
+<li><em>"The likelihood might be fine; maybe beta really changes that fast."</em> Built the simulation with a known
+   true half-life (worlds C and I). The likelihood is accurate when volatility is constant and too fast when
+   it clusters with fat tails. Also added the time-varying-noise filter as a partial fix.</li>
+<li><em>"First version of the mechanism was wrong."</em> I first expected common GARCH volatility alone (world B) to
+   explain the short memory. It does not, and that is reported rather than dropped.</li>
+<li><em>"The Kalman pairs edge over the placebo could be real convergence."</em> Added the decomposition of each
+   trade's closing, a 5-day-wait ablation and a one-day reversal benchmark. Together they show the edge is
+   short-term reversal.</li>
+<li><em>"Your project-09 comparison might be on a different sample."</em> Scored on project 09's own forecast panel;
+   the next-month sums are identical to project 09's (difference 0).</li>
+<li><em>"Figure 3 claimed the gap was largest in the 1930s."</em> It is not (the likelihood's memory is shortest in
+   the 1950s–60s). The panel title was corrected.</li>
+<li><em>"Numba cache corruption on the shared drive crashed runs."</em> <code>run_all.sh</code> now sets a local
+   <code>NUMBA_CACHE_DIR</code>.</li>
+<li><em>"Subtitle of Figure 1 said the likelihood memory is 4–6× too short."</em> For country ETFs it is 2.5×
+   (15 vs 38 days); corrected to 2.5–6×.</li>
+</ol>
+<h2>9. Conclusion</h2>
+<p>A Kalman filter is a good way to <em>write</em> a time-varying hedge ratio and a poor way to <em>tune</em> one. Written as
+a filter, it is an exponentially weighted regression with a slightly louder reaction to crash days, and that
+reaction is worth nothing net. Tuned by its own likelihood, it forgets in one or two weeks what should take two
+or three months. The cause is heteroskedasticity that the random-walk model mistakes for beta drift. Tuned by
+the loss it is meant to minimise, it is the best hedge ratio in this study, tied with an EWMA tuned the same
+way. In pairs trading, the filter's spread converges, looks stationary and earns money before costs on a
+market where nothing should, or almost nothing: what it earns is one-day reversal, and costs take it. Projects 09
+and 11 asked what a beta and a pair are worth; this one adds that a sophisticated estimator mostly changes
+how convincing the diagnostics look, not what the hedge is worth.</p>
+<p>Cross-links: <a href="../09-beta-horse-race/">project 09</a> (the beta horse race this extends),
+<a href="../11-pairs-trading/">project 11</a> (the placebo market), <a href="../13-garch-shock-half-life/">project 13</a>
+(volatility clustering and half-lives), <a href="../02-volatility-dashboard-audit/">project 02</a> (EWMA half-lives).</p>
+<h2>Reproduce</h2>
+<pre><code class="language-bash">pip install -r requirements.txt
+bash run_all.sh          # about 6 minutes on 4 cores
+</code></pre>
+<p><code>src/hedging.py</code> (hedging horse race, ~10 s), <code>src/pairs.py</code> (pairs on real and placebo markets, ~5 min),
+<code>src/mechanism.py</code> (simulation), <code>src/evaluate.py</code> (every table above), <code>src/figures.py</code>, and
+<code>tests/test_kalman.py</code> (12 tests: filter against a textbook implementation, scale invariance, no look-ahead,
+recovery of a known noise ratio, steady-state algebra, zero P&amp;L on a placebo, and the spread decomposition).</p>
+<h2>References</h2>
+<ul>
+<li>Brooks, R., Faff, R. and McKenzie, M. (1998). Time-varying beta risk of Australian industry portfolios: a
+  comparison of modelling techniques. <em>Australian Journal of Management</em> 23(1).</li>
+<li>Chan, E. (2013). <em>Algorithmic Trading: Winning Strategies and Their Rationale</em>. Wiley, ch. 3.</li>
+<li>Durbin, J. and Koopman, S. J. (2012). <em>Time Series Analysis by State Space Methods</em>, 2nd ed. Oxford.</li>
+<li>Elliott, R., van der Hoek, J. and Malcolm, W. (2005). Pairs trading. <em>Quantitative Finance</em> 5(3).</li>
+<li>Faff, R., Hillier, D. and Hillier, J. (2000). Time varying beta risk: an analysis of alternative modelling
+  techniques. <em>Journal of Business Finance &amp; Accounting</em> 27(5–6).</li>
+<li>Gatev, E., Goetzmann, W. and Rouwenhorst, K. G. (2006). Pairs trading. <em>Review of Financial Studies</em> 19(3).</li>
+<li>Harvey, A. (1989). <em>Forecasting, Structural Time Series Models and the Kalman Filter</em>. Cambridge.</li>
+<li>Holm, S. (1979). A simple sequentially rejective multiple test procedure. <em>Scandinavian Journal of
+  Statistics</em> 6(2).</li>
+<li>Kalman, R. (1960). A new approach to linear filtering and prediction problems. <em>Journal of Basic
+  Engineering</em> 82(1).</li>
+<li>Lehmann, B. (1990). Fads, martingales and market efficiency. <em>Quarterly Journal of Economics</em> 105(1).</li>
+<li>Ljung, L. (1987). <em>System Identification: Theory for the User</em>. Prentice Hall.</li>
+<li>MacKinnon, J. (1994). Approximate asymptotic distribution functions for unit-root and cointegration tests.
+  <em>Journal of Business &amp; Economic Statistics</em> 12(2).</li>
+<li>Newey, W. and West, K. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation
+  consistent covariance matrix. <em>Econometrica</em> 55(3).</li>
+<li>Politis, D. and Romano, J. (1994). The stationary bootstrap. <em>JASA</em> 89(428).</li>
+<li>Schuirmann, D. (1987). A comparison of the two one-sided tests procedure and the power approach for
+  assessing the equivalence of average bioavailability. <em>Journal of Pharmacokinetics and Biopharmaceutics</em> 15(6).</li>
+<li>Welch, I. (2022). Simply better market betas. <em>Critical Finance Review</em> 11(1).</li>
+</ul>
+<footer>Code, data and every number in this article: <a href="https://github.com/Racuden28/30-quant-research-projects/tree/main/25-kalman-hedge-ratio">25-kalman-hedge-ratio on GitHub</a>.</footer>
+</div>
+</body>
+</html>

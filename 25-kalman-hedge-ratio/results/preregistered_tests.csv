@@ -1,0 +1,6 @@
+test,estimate_pct,ci_lo_pct,ci_hi_pct,t,p,holm_p
+H1 industries: Kalman within 1% of matched EWMA (TOST),-0.07773,-0.7349,0.5795,-0.2318,0.002975,0.0119
+H3 industries: daily-updated Kalman beats month-end Kalman,-2.231,-3.74,-0.7225,-2.898,0.001875,0.009374
+H1 countries: Kalman within 1% of matched EWMA (TOST),-0.05826,-0.7511,0.6346,-0.1648,0.003858,0.0119
+H3 countries: daily-updated Kalman beats month-end Kalman,-2.407,-4.179,-0.6358,-2.663,0.003868,0.0119
+H6 countries: Kalman edge over placebo larger than static edge,-0.2557,-1.503,0.9918,-0.4017,0.656,0.656

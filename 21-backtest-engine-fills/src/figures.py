@@ -64,10 +64,11 @@ def fig1_star():
             ax.errorbar(i + dx, m.bp_per_trade, yerr=[[m.bp_per_trade - m.lo], [m.hi - m.bp_per_trade]], fmt="D",
                         ms=8, color=KIND_COLOR[kind], ecolor=KIND_COLOR[kind], elinewidth=2, capsize=4, zorder=3,
                         label=KIND_LABEL[kind] if i == (0 if kind == "index" else 1) else None)
-            up = m.bp_per_trade >= 0
-            ax.annotate(f"{m.bp_per_trade:+.0f} bp\n{int(m.n_positive)}/{int(m.n)} > 0", (i + dx, m.hi if up else m.lo),
-                        xytext=(0, 6 if up else -6), textcoords="offset points", ha="center",
-                        va="bottom" if up else "top", fontsize=8.5,
+            # label beside the diamond, outside the jittered dots (index to the left, ETF to the right)
+            left = kind == "index"
+            ax.annotate(f"{m.bp_per_trade:+.0f} bp\n{int(m.n_positive)}/{int(m.n)} > 0",
+                        (i + dx + (-0.11 if left else 0.11), m.bp_per_trade),
+                        ha="right" if left else "left", va="center", fontsize=8.5,
                         color=KIND_COLOR[kind], fontweight="bold")
     ax.set_xticks(range(3))
     ax.set_xticklabels(["Before 1990\n(indices only)", "1990–2005\n(ETFs from 1993–2001)", "2006–2026"])
